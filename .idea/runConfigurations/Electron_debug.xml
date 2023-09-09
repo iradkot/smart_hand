@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Electron-debug" type="NodeJSConfigurationType" path-to-node="$PROJECT_DIR$/node_modules/.bin/electron" node-parameters="." working-dir="$PROJECT_DIR$">
+    <method v="2" />
+  </configuration>
+</component>
