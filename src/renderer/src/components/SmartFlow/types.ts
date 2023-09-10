@@ -8,3 +8,6 @@ export type StepState = {
   copiedContent?: string
   gptAnswer?: string
 }
+
+export type TableRow = string[]
+

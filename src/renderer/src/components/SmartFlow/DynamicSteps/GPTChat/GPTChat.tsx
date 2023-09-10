@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import Prism from 'prismjs'
 import 'prismjs/themes/prism-tomorrow.css'
 import { askGPTPost } from '../../../../../../api/requests'
-import { renderGPTResponse } from './formatGptResponse'
 import { useChatHistory } from './useChatHistory'
 import ChatInput from './ChatInput'
 import ChatHistory from './ChatHistory' // Separate component for displaying chat history
