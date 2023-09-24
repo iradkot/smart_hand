@@ -2,11 +2,10 @@
 import React, { FC } from 'react'
 import { StyledTable, StyledHeader, StyledCell } from '../../../../SmartTable/SmartTable'
 
-import { parseMarkdownTable } from '../utils/parseMarkdownTable'
-import { TableRow } from '../../../types'
+import {gptChatTableSegment, TableRow} from '../../../types'
 
 type RenderTableProps = {
-  segment: { content: TableRow[] }
+  segment: gptChatTableSegment
 }
 export const renderTableSegment: FC<RenderTableProps> = ({ segment }) => {
   console.log({ segment })

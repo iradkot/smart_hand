@@ -2,16 +2,18 @@ import React, { useEffect, useState } from 'react'
 import Prism from 'prismjs'
 import 'prismjs/themes/prism-tomorrow.css'
 import { askGPTPost } from '../../../../../../api/requests'
-import { useChatHistory } from './useChatHistory'
-import ChatInput from './ChatInput'
-import ChatHistory from './ChatHistory' // Separate component for displaying chat history
+import { useChatHistory } from './hooks/useChatHistory'
+import ChatInput from './components/ChatInput'
+import ChatHistory from './components/ChatHistory'
+import Loader from "../../../Loader"; // Separate component for displaying chat history
 
-function GPTChat({ state, setState }) {
-  const [userInput, setUserInput] = useState('')
+function GPTChat() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [userInput, setUserInput] = useState(
+    'Give 2 tables side by side, one of top earned women in basketball and one of top earned women in soccer, with how much money they earned\n',
+  )
   const { chatHistory, addMessage } = useChatHistory()
-  const handleInputChange = (e) => setUserInput(e.target.value)
-
-  const fetchGPTResponse = async (input) => {
+  const fetchGPTResponse = async (input): Promise<string> => {
     try {
       const response = await askGPTPost(input)
       return response
@@ -21,30 +23,35 @@ function GPTChat({ state, setState }) {
     }
   }
 
-  const handleSend = async () => {
-    // Add user message to chat history
+  const handleSend = async (): Promise<void> => {
     addMessage('user', userInput)
+    setIsLoading(true)
 
-    // Fetch GPT response
-    const gptResponse = await fetchGPTResponse(userInput)
-
-    // Add GPT message to chat history
-    const gptMessage = { role: 'gpt', content: gptResponse }
-    console.log({ gptMessage, gptResponse })
-    addMessage('gpt', gptResponse)
-    // Clear user input
-    setUserInput('')
+    try {
+      const gptResponse = await fetchGPTResponse(userInput)
+      addMessage('gpt', gptResponse)
+      setUserInput('')
+    } catch (error) {
+      // Handle the error gracefully; Maybe show an error toast/message.
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
-    Prism.highlightAll()
+    const highlightCode = (): void => Prism.highlightAll()
+    highlightCode()
   }, [chatHistory])
 
   return (
     <div>
       <h2>GPT Chat</h2>
       <ChatHistory chatHistory={chatHistory} />
-      <ChatInput value={userInput} onChange={setUserInput} onSend={handleSend} />
+      {isLoading ? (
+        <Loader size={50} color="#000000" />
+      ) : (
+        <ChatInput value={userInput} onChange={setUserInput} onSend={handleSend} />
+      )}
     </div>
   )
 }

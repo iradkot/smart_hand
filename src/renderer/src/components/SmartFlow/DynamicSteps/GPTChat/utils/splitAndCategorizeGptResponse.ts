@@ -32,6 +32,7 @@ export const splitAndCategorizeGptResponse = (gptResponse: string | any): GptRes
   if (!gptResponse) {
     return []
   }
+  debugger;
 
   // Convert string-based GPT response into an array for uniform handling
   const responseArray = Array.isArray(gptResponse) ? gptResponse : gptResponse.split('\n')

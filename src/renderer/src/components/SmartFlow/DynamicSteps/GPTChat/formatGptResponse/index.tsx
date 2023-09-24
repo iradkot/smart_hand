@@ -1,23 +1,18 @@
 // formatGptResponse/index.tsx
 import React from 'react'
-import { splitAndCategorizeGptResponse } from '../utils/splitAndCategorizeGptResponse'
-import { renderTableSegment } from './renderTable'
-import { renderCodeSegment } from './renderCode'
-import { renderTextSegment } from './renderText'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
+import remarkLint from 'remark-lint'
+import remarkToc from 'remark-toc'
 
 export const renderGPTResponse = (gptResponse: any): JSX.Element[] => {
-  const segments = splitAndCategorizeGptResponse(gptResponse)
-  console.log({ segments })
-
-  return segments.map((segment, index) => {
-    switch (segment.type) {
-      case 'table':
-        return renderTableSegment({segment })
-      case 'code':
-        return renderCodeSegment(segment, index)
-      case 'text':
-      default:
-        return renderTextSegment(segment, index)
-    }
-  })
+  // const segments = splitAndCategorizeGptResponse(gptResponse)
+  // console.log({ segments })
+  return (
+    <ReactMarkdown
+      children={gptResponse}
+      remarkPlugins={[remarkGfm, remarkBreaks, remarkLint, remarkToc]}
+    />
+  )
 }
