@@ -3,6 +3,7 @@ import * as Steps from './DynamicSteps'
 import { StepState } from './types'
 import { useCopyToClipboard } from '../../contexts/CopyToClipboardContext'
 import { ChooseOptionsStep, DirectoryPathInput, GPTChatStep, StatusStep } from './constants'
+import styled from "styled-components";
 
 const stepsConfig = [
   {
@@ -55,17 +56,21 @@ const StepManager: FC = () => {
   const CurrentStepComponent = currentStep?.component
 
   return (
-    <div>
+    <StepContainer>
       {CurrentStepComponent ? (
-        <>
+        <StepContainer>
           <CurrentStepComponent state={stepState} setState={setStepState} />
           <button onClick={proceedToNextStep}>Next</button>
-        </>
+        </StepContainer>
       ) : (
         <p>Step not found</p>
       )}
-    </div>
+    </StepContainer>
   )
 }
 
 export default StepManager
+
+const StepContainer = styled.div`
+  max-width: 100%;
+`;

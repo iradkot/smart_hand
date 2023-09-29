@@ -1,16 +1,30 @@
-import React from 'react'
-import CopyHistory from "./components/CopyHistory";
-import CopyToClipboardSteps from "./components/SmartFlow/CopyToClipboardSteps"; // Make sure to adjust the path!
+import React from 'react';
+import styled from 'styled-components';
+import { Grid, Container as MuiContainer } from '@material-ui/core';
+import SideMenu from "./components/SideMenu";
+import MainMenu from "./components/SmartFlow/MainMenu"; // Adjust the path accordingly!
+
+const Container = styled(MuiContainer)`
+  padding: 20px;
+`;
 
 function App() {
   return (
-    <div>
-      <h1>Your App Title</h1>
-      <CopyToClipboardSteps />
-      <CopyHistory />
-      {/* Other components or elements */}
-    </div>
-  )
+    <Container>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <h1>Your App Title</h1>
+        </Grid>
+        <Grid item xs={10}>
+          <MainMenu />
+        </Grid>
+        <Grid item xs={2}>
+          <SideMenu />
+        </Grid>
+        {/* Other components or elements */}
+      </Grid>
+    </Container>
+  );
 }
 
-export default App
+export default App;

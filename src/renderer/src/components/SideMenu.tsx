@@ -17,7 +17,7 @@ const HistoryItem = styled.li`
   }
 `
 
-function CopyHistory() {
+function SideMenu() {
   const { history } = useCopyHistory()
 
   const handleItemClick = (content: string) => {
@@ -48,4 +48,4 @@ function CopyHistory() {
   )
 }
 
-export default CopyHistory
+export default SideMenu

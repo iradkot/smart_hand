@@ -3,7 +3,7 @@ import { Container } from './CopyToClipboardSteps.styles';
 import StepManager from './StepManager';
 import {StepState} from "./types";
 
-function CopyToClipboardSteps() {
+function MainMenu() {
   return (
     <Container>
       <StepManager />
@@ -11,4 +11,4 @@ function CopyToClipboardSteps() {
   );
 }
 
-export default CopyToClipboardSteps;
+export default MainMenu;

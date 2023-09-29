@@ -11,3 +11,13 @@ export const askGPTPost = async (question: string): Promise<any> => {
     throw error
   }
 }
+
+export const createUser = async (userData: any): Promise<any> => {
+  try {
+    const response = await smartHandServer.post('/users', userData)
+    return response.data
+  } catch (error) {
+    console.log('error in creating user:', error)
+    throw error
+  }
+}

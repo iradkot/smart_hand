@@ -5,14 +5,14 @@ import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
 import remarkLint from 'remark-lint'
 import remarkToc from 'remark-toc'
+import remarkExtendedTable from 'remark-extended-table'
 
 export const renderGPTResponse = (gptResponse: any): JSX.Element[] => {
-  // const segments = splitAndCategorizeGptResponse(gptResponse)
-  // console.log({ segments })
+  console.log({ gptResponse })
   return (
     <ReactMarkdown
       children={gptResponse}
-      remarkPlugins={[remarkGfm, remarkBreaks, remarkLint, remarkToc]}
+      remarkPlugins={[remarkGfm, remarkBreaks, remarkLint, remarkToc, remarkExtendedTable]}
     />
   )
 }
