@@ -1,4 +1,6 @@
-const MAX_SECTION_LENGTH = 8192
+import {config} from "../../../config";
+
+const MAX_SECTION_LENGTH = config.maxSectionLength
 
 export function splitContent(content: string, maxSectionLength = MAX_SECTION_LENGTH) {
   const sections = []

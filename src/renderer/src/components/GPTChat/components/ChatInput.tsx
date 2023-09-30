@@ -11,8 +11,9 @@ const ChatInput = ({value, onChange, onSend}) => (
       onChange={e => onChange(e.target.value)}
       multiline
       rows={3}
-      rowsMax={10}
+      // rowsMax={10}
       fullWidth
+      style={{ maxHeight: '100%', marginBottom: 8 }}
     />
     <Button
       variant="contained"
