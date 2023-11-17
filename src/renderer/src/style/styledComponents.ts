@@ -26,3 +26,18 @@ export const Button = styled.button`
     background-color: #0056b3;
   }
 `;
+
+
+export const StyledButton = styled.button`
+  background-color: ${props => props.theme.buttonBackgroundColor};
+  color: ${props => props.theme.buttonTextColor};
+  padding: 10px 15px;
+  border-radius: ${props => props.theme.borderRadius}px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+  &:hover {
+    background-color: ${props => props.theme.accentColor};
+  }
+`;
+

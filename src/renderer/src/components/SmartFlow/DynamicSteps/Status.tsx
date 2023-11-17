@@ -4,7 +4,7 @@ import { Button, Label } from '../../../style/styledComponents'
 import CopySections from '../CopySections'
 import { useCopyToClipboard } from '../../../contexts/CopyToClipboardContext'
 
-function Status({ state, setState }) {
+function Status({ stepState, setStepState }) {
   const { option, chatWithGPT, isLoading, error, copiedContent } = useCopyToClipboard()
   console.log({ copiedContent })
 
@@ -19,10 +19,10 @@ function Status({ state, setState }) {
       {isLoading && <p>Loading...</p>}
       {error && <p>Error: {error}</p>}
       {gptError && <p>GPT Error: {gptError}</p>}
-      {option === '3' && state.gptAnswer && !isLoading && !error && (
+      {option === '3' && stepState.gptAnswer && !isLoading && !error && (
         <div>
           <h2>GPT Answer</h2>
-          <p>{state.gptAnswer}</p>
+          <p>{stepState.gptAnswer}</p>
         </div>
       )}
       <CopySections content={copiedContent} />

@@ -2,13 +2,16 @@ import React from 'react'
 import styled from 'styled-components'
 import { Grid, Container as MuiContainer } from '@material-ui/core'
 import SideMenu from './components/SideMenu'
-import MainMenu from './components/SmartFlow/MainMenu' // Adjust the path accordingly!
+import MainMenu from './components/SmartFlow'
+import { useCopyToClipboard } from './contexts/CopyToClipboardContext' // Adjust the path accordingly!
 
 const Container = styled(MuiContainer)`
   padding: 20px;
 `
 
 function App() {
+  const { currentStepId } = useCopyToClipboard()
+  console.log({ currentStepId })
   return (
     <Container>
       <Grid container spacing={3}>
@@ -18,9 +21,11 @@ function App() {
         <Grid item xs={10}>
           <MainMenu />
         </Grid>
-        <Grid item xs={2}>
-          <SideMenu />
-        </Grid>
+        {currentStepId === 4 && (
+          <Grid item xs={2}>
+            <SideMenu />
+          </Grid>
+        )}
         {/* Other components or elements */}
       </Grid>
     </Container>

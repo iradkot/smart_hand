@@ -1,9 +1,11 @@
 // renderer/src/contexts/CopyToClipboardContext.tsx
 
-import React, {createContext, useContext, useEffect, useState} from 'react'
-import {useCopyHistory} from './CopyHistoryContext'
-import {StepState} from '../components/SmartFlow/types'
-import {firstStep, StatusStep} from "../components/SmartFlow/constants";
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { useCopyHistory } from './CopyHistoryContext'
+import { StepState } from '../components/SmartFlow/types'
+import { firstStep, StatusStep } from '../components/SmartFlow/constants'
+import { useStepManager } from './StepManagerContext'
+import { COPYING_PROCESS_INVOKE } from "../../../constants";
 
 interface ContextProps {
   directoryPath: string
@@ -18,17 +20,14 @@ interface ContextProps {
 
 const CopyToClipboardContext = createContext<ContextProps | undefined>(undefined)
 
-export const CopyToClipboardProvider: React.FC = ({children}) => {
-  const {addToHistory} = useCopyHistory()
-  const [currentStepId, setCurrentStepId] = useState(firstStep)
-  const [stepState, setStepState] = useState<StepState>({})
+export const CopyToClipboardProvider: React.FC = ({ children }) => {
+  const { addToHistory } = useCopyHistory()
+  const { currentStepId, setCurrentStepId, stepState, setStepState } = useStepManager()
   const [gptResponse, setGptResponse] = useState<string>('')
   const [step, setStep] = useState<number>(1)
   const [option, setOption] = useState<string>('')
   const [message, setMessage] = useState<string>('')
   const [copiedContent, setCopiedContent] = useState<string>('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (copiedContent) {
@@ -37,11 +36,12 @@ export const CopyToClipboardProvider: React.FC = ({children}) => {
   }, [copiedContent])
 
   useEffect(() => {
-    console.log({currentStepId})
+    console.log('3', { currentStepId })
     if (currentStepId === StatusStep) {
       window.electron.ipcRenderer
-        .invoke('invoke-copying-process', stepState.directoryPath, stepState.option)
-        .then(({message, content}) => {
+        .invoke(COPYING_PROCESS_INVOKE, stepState.directoryPath, stepState.option)
+        .then(({ message, content }) => {
+          console.log('4', { message, content });
           setMessage(message)
           setCopiedContent(content)
         })

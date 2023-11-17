@@ -28,7 +28,7 @@ function SideMenu() {
         console.log('Content copied to clipboard!')
       })
       .catch((err) => {
-        console.error('Failed to copy content: ', err)
+        console.error('1Failed to copy content: ', err)
       })
   }
 

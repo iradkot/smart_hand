@@ -1,13 +1,43 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
-import { join } from 'path'
+import {app, BrowserWindow, dialog, ipcMain, shell} from 'electron'
+import {join} from 'path'
 import axios from 'axios'
 import icon from '../../resources/icon.png?asset'
-import startCopyingProcess from './fileOperations/copyFilesToClipboard'
+import Copier from '../main/fileOperations/Copier'
+import { FileHandler } from "./fileOperations/utils/FileHandler";
+import { COPYING_PROCESS_INVOKE } from "../constants";
+
+
+// Constants
+const WINDOW_WIDTH = 900
+const WINDOW_HEIGHT = 670
+const DEVELOPMENT_MODE = 'development'
+const ELECTRON_RENDERER_URL = 'ELECTRON_RENDERER_URL'
+const API_URL = 'http://localhost:5000';
+const CHAT_ENDPOINT = '/chat';
+
+
+// Dependency inversion: abstract API client
+interface ApiClient {
+  post(url: string, data: any): Promise<any>
+}
+
+class AxiosApiClient implements ApiClient {
+  async post(url: string, data: any): Promise<any> {
+    try {
+      const response = await axios.post(url, data)
+      return response.data
+    } catch (error) {
+      return {error: error.message}
+    }
+  }
+}
+
+const apiClient: ApiClient = new AxiosApiClient()
+const copier = new Copier(new FileHandler())
 
 function createWindow(): void {
-  // Create and load main window
-  const mainWindow1 = createAndLoadMainWindow()
-  const mainWindow2 = createAndLoadMainWindow()
+  createAndLoadMainWindow()
+  createAndLoadMainWindow()
 }
 
 app.whenReady().then(() => {
@@ -20,17 +50,20 @@ app.whenReady().then(() => {
   })
 })
 
-function createAndLoadMainWindow() {
+function createMainWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    ...(process.platform === 'linux' ? {icon} : {}),
     webPreferences: getWebPreferences(),
   })
 
-  loadMainWindow(mainWindow)
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.show()
+    mainWindow.maximize()
+  })
 
   return mainWindow
 }
@@ -46,22 +79,23 @@ function getWebPreferences() {
   }
 }
 
-function loadMainWindow(mainWindow: BrowserWindow) {
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
-    mainWindow.maximize()
-  })
-
+function loadWindow(mainWindow: BrowserWindow) {
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
-    return { action: 'deny' }
+    return {action: 'deny'}
   })
 
-  if (process.env.NODE_ENV === 'development' && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  if (process.env.NODE_ENV === DEVELOPMENT_MODE && process.env[ELECTRON_RENDERER_URL]) {
+    mainWindow.loadURL(process.env[ELECTRON_RENDERER_URL])
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+}
+
+function createAndLoadMainWindow() {
+  const mainWindow = createMainWindow()
+  loadWindow(mainWindow)
+  return mainWindow
 }
 
 app.on('window-all-closed', () => {
@@ -77,21 +111,18 @@ ipcMain.handle('open-file-dialog', async () => {
   return result.filePaths
 })
 
-ipcMain.handle('invoke-copying-process', async (_, directoryPath, option) => {
+ipcMain.handle(COPYING_PROCESS_INVOKE, async (_, directoryPath, option) => {
   try {
-    const result = await startCopyingProcess(directoryPath, option)
-    return result
+    console.log('Copying process started', directoryPath, option);
+    const content = await copier.startCopyingProcess(directoryPath, option)
+    const message = `Copied ${content.length} files to clipboard`
+    return { message, content }
   } catch (err) {
-    console.error('Failed to copy to clipboard:', err)
-    return 'Error copying to clipboard'
+    console.error('3Failed to copy:', err)
+    return 'Error during copying'
   }
 })
 
 ipcMain.handle('chat-with-gpt', async (_, messages) => {
-  try {
-    const response = await axios.post('http://localhost:3000/chat', { messages }) // Replace with your server URL
-    return response.data
-  } catch (error) {
-    return { error: error.message }
-  }
+  return await apiClient.post(`${API_URL}${CHAT_ENDPOINT}`, {messages})
 })

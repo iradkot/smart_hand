@@ -19,7 +19,7 @@ function renderSections(sections: string[]) {
   ))
 }
 
-function CopySections({ content }: { content: string }) {
+function CopySections({ content = "" }: { content?: string }) {
   useEffect(() => {
     Prism.highlightAll()
   }, [content])

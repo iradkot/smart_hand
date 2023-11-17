@@ -1,14 +1,13 @@
-import React, {useState} from 'react';
-import { Container } from './CopyToClipboardSteps.styles';
-import StepManager from './StepManager';
-import {StepState} from "./types";
+import React from 'react'
+import { Container } from './CopyToClipboardSteps.styles'
+import StepManager from './StepManager'
 
-function MainMenu() {
+const MainMenu = (): JSX.Element => {
   return (
     <Container>
       <StepManager />
     </Container>
-  );
+  )
 }
 
-export default MainMenu;
+export default MainMenu

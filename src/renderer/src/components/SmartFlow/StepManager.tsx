@@ -4,15 +4,18 @@ import { StepState } from './types'
 import { useCopyToClipboard } from '../../contexts/CopyToClipboardContext'
 import { ChooseOptionsStep, DirectoryPathInput, GPTChatStep, StatusStep } from './constants'
 import styled from "styled-components";
+import {useStepManager} from "../../contexts/StepManagerContext";
+import { StyledButton } from "../../style/styledComponents";
+import useKeyboardNavigation from "../../hooks/useKeyboardNavigation";
 
 const stepsConfig = [
   {
     id: ChooseOptionsStep,
     component: Steps.ChooseOptions,
-    getNextStepId: (state: StepState) => {
-      if (state.option === '1' || state.option === '2') {
+    getNextStepId: (stepState: StepState) => {
+      if (stepState.option === '1' || stepState.option === '2') {
         return DirectoryPathInput
-      } else if (state.option === '3') {
+      } else if (stepState.option === '3') {
         return GPTChatStep
       }
       return null
@@ -36,7 +39,7 @@ const stepsConfig = [
 ]
 
 const StepManager: FC = () => {
-  const { stepState, setStepState, currentStepId, setCurrentStepId } = useCopyToClipboard()
+  const { stepState, setStepState, currentStepId, setCurrentStepId } = useStepManager()
 
   const currentStep = stepsConfig.find((step) => step.id === currentStepId)
 
@@ -55,12 +58,15 @@ const StepManager: FC = () => {
 
   const CurrentStepComponent = currentStep?.component
 
+  useKeyboardNavigation(proceedToNextStep);
+
+
   return (
     <StepContainer>
       {CurrentStepComponent ? (
         <StepContainer>
-          <CurrentStepComponent state={stepState} setState={setStepState} />
-          <button onClick={proceedToNextStep}>Next</button>
+          <CurrentStepComponent stepState={stepState} setStepState={setStepState} />
+          <StyledButton onClick={proceedToNextStep}>Next</StyledButton>
         </StepContainer>
       ) : (
         <p>Step not found</p>
