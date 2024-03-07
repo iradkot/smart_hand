@@ -1,7 +1,7 @@
 // contexts/StepManagerContext.tsx
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { StepState } from '../components/SmartFlow/types'
+import { StepState } from '../../../components/layout/SmartFlow/types'
 
 export interface StepManagerContextProps {
   currentStepId: string
@@ -12,10 +12,12 @@ export interface StepManagerContextProps {
 
 const StepManagerContext = createContext<StepManagerContextProps | undefined>(undefined)
 
-export const StepManagerProvider: React.FC = ({ children }) => {
+export const StepManagerProvider: React.FC<{
+  children: React.ReactNode
+}> = ({ children }) => {
   const [currentStepId, setCurrentStepId] = useState<string>('ChooseOptions')
   const initialStepState: StepState = {
-    directoryPath: '/Users/irad.kotton/projects/side-projcts/smart-hand/src/renderer/src',
+    directoryPath: '/Users/iradkotton/projects/smart_hand',
     option: '',
     message: '',
     copiedContent: '',

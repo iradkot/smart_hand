@@ -1,9 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Grid, Container as MuiContainer } from '@material-ui/core'
-import SideMenu from './components/SideMenu'
-import MainMenu from './components/SmartFlow'
-import { useCopyToClipboard } from './contexts/CopyToClipboardContext' // Adjust the path accordingly!
+import SideMenu from '../../components/ui/SideMenu'
+import MainMenu from '../../components/layout/SmartFlow'
+import { useCopyToClipboard } from './contexts/CopyToClipboardContext' // Adju  st the path accordingly!
+
+// import * from '../../utils/errorHandling';
 
 const Container = styled(MuiContainer)`
   padding: 20px;
@@ -26,7 +28,6 @@ function App() {
             <SideMenu />
           </Grid>
         )}
-        {/* Other components or elements */}
       </Grid>
     </Container>
   )

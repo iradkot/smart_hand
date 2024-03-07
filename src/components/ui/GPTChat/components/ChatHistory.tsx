@@ -1,6 +1,6 @@
-import React, { FC } from 'react'
+import { FC } from 'react'
 import { renderGPTResponse } from '../formatGptResponse'
-import { ChatEntry } from '../../SmartFlow/types' // Import or define your type
+import { ChatEntry } from '../../../layout/SmartFlow/types' // Import or define your type
 
 interface Props {
   chatHistory: ChatEntry[]

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Prism from 'prismjs'
 import 'prismjs/themes/prism-tomorrow.css'
-import { askGPTPost, createUser } from '../../../../api/requests'
+import { askGPTPost, createUser } from '../../../api/requests'
 import { useChatHistory } from './hooks/useChatHistory'
 import ChatInput from './components/ChatInput'
 import ChatHistory from './components/ChatHistory'

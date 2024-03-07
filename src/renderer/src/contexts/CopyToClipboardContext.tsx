@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useCopyHistory } from './CopyHistoryContext'
-import { StepState } from '../components/SmartFlow/types'
-import { firstStep, StatusStep } from '../components/SmartFlow/constants'
+import { StepState } from '../../../components/layout/SmartFlow/types'
+import { firstStep, StatusStep } from '../../../components/layout/SmartFlow/constants'
 import { useStepManager } from './StepManagerContext'
 import { COPYING_PROCESS_INVOKE } from "../../../constants";
 

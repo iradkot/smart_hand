@@ -1,4 +1,4 @@
-import {config} from "../../../config";
+import {config} from "../../../../renderer/src/config";
 
 const MAX_SECTION_LENGTH = config.maxSectionLength
 

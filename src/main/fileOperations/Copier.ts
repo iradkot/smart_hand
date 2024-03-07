@@ -172,6 +172,26 @@ export default class Copier {
     return clipboardContent;
   }
 
+  async getDirectoryStructure(dirPath: string): Promise<any[]> {
+    let structure = [];
+    const items = await this.fileHandler.readDir(dirPath);
+
+    for (const item of items) {
+      const fullPath = path.join(dirPath, item);
+      const stat = await this.fileHandler.stat(fullPath);
+
+      if (stat.isDirectory()) {
+        const children = await this.getDirectoryStructure(fullPath);
+        structure.push({ label: item, value: fullPath, children });
+      } else {
+        structure.push({ label: item, value: fullPath });
+      }
+    }
+
+    return structure;
+  }
+
+
   getClipboardContentForFolder(
     directoryPath: string,
     fileEntries: string[],

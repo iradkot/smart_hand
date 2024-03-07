@@ -6,6 +6,7 @@ import { CopyToClipboardProvider } from './contexts/CopyToClipboardContext'
 import { StepManagerProvider } from './contexts/StepManagerContext'
 import { ThemeProvider } from 'styled-components'
 import { theme } from "./style/theme";
+import '../../utils/errorHandling';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

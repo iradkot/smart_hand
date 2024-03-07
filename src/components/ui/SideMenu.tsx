@@ -2,7 +2,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { useCopyHistory } from '../contexts/CopyHistoryContext'
+import { useCopyHistory } from '../../renderer/src/contexts/CopyHistoryContext'
 
 const Container = styled.div`
   margin-top: 20px;
@@ -28,7 +28,7 @@ function SideMenu() {
         console.log('Content copied to clipboard!')
       })
       .catch((err) => {
-        console.error('1Failed to copy content: ', err)
+        console.error('Failed to copy content to clipboard:', err)
       })
   }
 
