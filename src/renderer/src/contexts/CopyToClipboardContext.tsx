@@ -1,54 +1,37 @@
-// renderer/src/contexts/CopyToClipboardContext.tsx
-
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { useCopyHistory } from './CopyHistoryContext'
-import { StepState } from '../../../components/layout/SmartFlow/types'
-import { firstStep, StatusStep } from '../../../components/layout/SmartFlow/constants'
-import { useStepManager } from './StepManagerContext'
-import { COPYING_PROCESS_INVOKE } from "../../../constants";
+import React, {createContext, useContext, useState, ReactNode} from 'react';
+import {useCopyHistory} from './CopyHistoryContext';
+// Removed unused StepState import
+import {firstStep, StatusStep} from '../constants';
+import {useStepManager} from './StepManagerContext';
+import {COPYING_PROCESS_INVOKE} from "../../../constants";
+import {useNavigate} from "react-router-dom";
 
 interface ContextProps {
-  directoryPath: string
-  option: string
-  setOption: React.Dispatch<React.SetStateAction<string>>
-  message: string
-  copiedContent: string
-  step: number
-  setStep: React.Dispatch<React.SetStateAction<number>>
-  resetProcess: () => void
+  directoryPath: string;
+  option: string;
+  setOption: React.Dispatch<React.SetStateAction<string>>;
+  message: string;
+  copiedContent: string;
+  step: number;
+  setStep: React.Dispatch<React.SetStateAction<number>>;
+  resetProcess: () => void;
+  copyToClipboard: (content: string) => Promise<{ message: string; content: string }>;
 }
 
-const CopyToClipboardContext = createContext<ContextProps | undefined>(undefined)
+const CopyToClipboardContext = createContext<ContextProps | undefined>(undefined);
 
-export const CopyToClipboardProvider: React.FC = ({ children }) => {
-  const { addToHistory } = useCopyHistory()
-  const { currentStepId, setCurrentStepId, stepState, setStepState } = useStepManager()
-  const [gptResponse, setGptResponse] = useState<string>('')
-  const [step, setStep] = useState<number>(1)
-  const [option, setOption] = useState<string>('')
-  const [message, setMessage] = useState<string>('')
-  const [copiedContent, setCopiedContent] = useState<string>('')
+interface ProviderProps {
+  children: ReactNode; // Correctly type children prop
+}
 
-  useEffect(() => {
-    if (copiedContent) {
-      addToHistory(stepState.directoryPath, copiedContent)
-    }
-  }, [copiedContent])
-
-  useEffect(() => {
-    console.log('3', { currentStepId })
-    if (currentStepId === StatusStep) {
-      window.electron.ipcRenderer
-        .invoke(COPYING_PROCESS_INVOKE, stepState.directoryPath, stepState.option)
-        .then(({ message, content }) => {
-          console.log('4', { message, content });
-          setMessage(message)
-          setCopiedContent(content)
-        })
-        .catch((err) => setMessage(`Error: ${err.message}`))
-    }
-  }, [currentStepId, stepState.directoryPath, stepState.option])
-
+export const CopyToClipboardProvider: React.FC<ProviderProps> = ({children}) => {
+  const { addToHistory } = useCopyHistory();
+  const navigate = useNavigate(); // Correct use of useNavigate
+  const { currentStepId, setCurrentStepId, stepState, setStepState } = useStepManager();
+  const [step, setStep] = useState<number>(1);
+  const [option, setOption] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [copiedContent, setCopiedContent] = useState<string>('');
   const resetProcess = () => {
     setStepState({
       ...stepState,
@@ -56,13 +39,31 @@ export const CopyToClipboardProvider: React.FC = ({ children }) => {
       option: '',
       message: '',
       copiedContent: '',
-    })
-    setCurrentStepId(firstStep)
-  }
+    });
+    setCurrentStepId(firstStep);
+  };
 
+  const copyToClipboard = (content: string) => {
+    return new Promise((resolve, reject) => {
+      setCopiedContent(content);
+      window.electron.ipcRenderer
+        .invoke(COPYING_PROCESS_INVOKE, stepState.directoryPath, stepState.option)
+        .then(({message, content}) => {
+          setMessage(message);
+          setCopiedContent(content);
+          navigate('/status');
+          resolve({message, content});
+        })
+        .catch((err) => {
+          setMessage(`Error: ${err.message}`);
+          reject(err);
+        });
+    });
+  };
   return (
     <CopyToClipboardContext.Provider
       value={{
+        directoryPath: stepState.directoryPath, // Correctly reference directoryPath from stepState
         option,
         setOption,
         message,
@@ -70,24 +71,18 @@ export const CopyToClipboardProvider: React.FC = ({ children }) => {
         step,
         setStep,
         resetProcess,
-        gptResponse,
-        setGptResponse,
-        setCopiedContent,
-        currentStepId,
-        setCurrentStepId,
-        stepState,
-        setStepState,
+        copyToClipboard,
       }}
     >
       {children}
     </CopyToClipboardContext.Provider>
-  )
-}
+  );
+};
 
 export const useCopyToClipboard = () => {
-  const context = useContext(CopyToClipboardContext)
+  const context = useContext(CopyToClipboardContext);
   if (!context) {
-    throw new Error('useCopyToClipboard must be used within a CopyToClipboardProvider')
+    throw new Error('useCopyToClipboard must be used within a CopyToClipboardProvider');
   }
-  return context
-}
+  return context;
+};

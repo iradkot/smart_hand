@@ -21,3 +21,16 @@ export const createUser = async (userData: any): Promise<any> => {
     throw error
   }
 }
+
+export const askGPTForFileName = async (content: string): Promise<string> => {
+  try {
+    const response = await smartHandServer.post('/chat', {
+      messages: [content],
+    })
+    // Assuming the response contains a 'filename' field
+    return response.data.filename
+  } catch (error) {
+    console.log('error in asking gpt for file name:', error)
+    throw error
+  }
+}

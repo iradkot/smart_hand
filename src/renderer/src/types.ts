@@ -1,4 +1,3 @@
-type OptionValue = '' | '1' | '2' | '3'
 
 export type StepState = {
   directoryPath: string
@@ -17,3 +16,5 @@ export type ChatEntry = {
   role: 'user' | 'gpt'
   content: string
 }
+
+export type OptionValue = '' | '1' | '2' | '3' | '4'

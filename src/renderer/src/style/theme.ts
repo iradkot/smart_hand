@@ -1,68 +1,60 @@
-// theme.ts
 import { DefaultTheme } from 'styled-components';
 
-const colors = {
-  primary: '#3498db',
-  secondary: '#9b59b6',
-  tertiary: '#e74c3c',
-  quaternary: '#2ecc71',
-  green: {
-    main: '#27ae60',
-  },
-  red: {
-    main: '#c0392b',
-    900: '#7d3c3c',
-  },
-  yellow: {
-    main: '#f1c40f',
-    800: '#d4ac0d',
-  },
-  gray: {
-    200: '#f7dc6f',
-    300: '#d5dbdb',
-  },
-  black: '#34495e',
-  white: '#ecf0f1',
-  purple: {
-    500: '#8e44ad',
-  },
+// Define a base color palette
+const baseColors = {
+  primary: '#007bff', // A vibrant blue for primary actions
+  secondary: '#6c757d', // A neutral tone for secondary actions or elements
+  success: '#28a745', // A positive, success-indicating green
+  danger: '#dc3545', // A strong red for errors or warnings
+  warning: '#ffc107', // An attention-grabbing yellow
+  info: '#17a2b8', // A calming blue for informational messages
 };
 
+// Define shades for text, backgrounds, and borders
+const shades = {
+  dark: '#343a40', // Dark shade for text or elements
+  light: '#f8f9fa', // Light shade for backgrounds
+  lighter: '#e9ecef', // Even lighter shade for card backgrounds or similar
+};
+
+// Enhanced theme with improved color scheme
 export const theme: DefaultTheme = {
   tabBarHeight: 50,
   screenHeight: window.innerHeight,
   screenWidth: window.innerWidth,
   dark: false,
-  inRangeColor: colors.green.main,
-  belowRangeColor: colors.red.main,
-  aboveRangeColor: colors.yellow.main,
-  severeBelowRange: colors.red[900],
-  severeAboveRange: colors.yellow[800],
-  backgroundColor: colors.gray[200],
-  textColor: colors.black,
-  buttonTextColor: colors.white,
-  buttonBackgroundColor: colors.purple[500],
-  accentColor: colors.purple[500],
-  shadowColor: colors.black,
-  white: colors.white,
-  borderColor: colors.gray[300],
+  inRangeColor: baseColors.success,
+  belowRangeColor: baseColors.danger,
+  aboveRangeColor: baseColors.warning,
+  severeBelowRange: '#c82333', // Darker shade of danger for severe conditions
+  severeAboveRange: '#e0a800', // Darker shade of warning for extreme conditions
+  backgroundColor: shades.lighter,
+  textColor: shades.dark,
+  buttonTextColor: shades.light,
+  buttonBackgroundColor: baseColors.primary,
+  accentColor: baseColors.info,
+  shadowColor: 'rgba(0,0,0,0.2)',
+  white: shades.light,
+  borderColor: '#dee2e6',
   fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
   lineHeight: 1.5,
   textSize: 16,
   borderRadius: 8,
   determineBgColorByGlucoseValue: (bgValue: number) => {
-    // Implement your logic here to determine background color based on bgValue
-    return colors.primary; // Placeholder, replace with actual logic
+    // Example logic: Change color based on glucose value
+    if (bgValue < 70) return baseColors.danger;
+    else if (bgValue <= 180) return baseColors.success;
+    else return baseColors.warning;
   },
-  getShadowStyles: (elevation: number, color = colors.black) => {
+  getShadowStyles: (elevation: number, color = 'rgba(0,0,0,0.1)') => {
     const opacity = elevation * 0.1;
-    return `box-shadow: 0px ${elevation}px ${elevation * 2}px rgba(${color}, ${opacity});`;
+    return `box-shadow: 0px ${elevation}px ${elevation * 2}px ${color};`;
   },
   shadow: {
-    default: `box-shadow: 0px 1px 2px rgba(${colors.black}, 0.1);`,
-    small: `box-shadow: 0px 0.5px 1px rgba(${colors.black}, 0.05);`,
-    dark: `box-shadow: 0px 1px 2px rgba(${colors.black}, 0.2);`,
-    bright: `box-shadow: 0px 2px 4px rgba(${colors.white}, 0.3);`,
+    default: `box-shadow: 0px 1px 2px rgba(0,0,0,0.1);`,
+    small: `box-shadow: 0px 0.5px 1px rgba(0,0,0,0.05);`,
+    dark: `box-shadow: 0px 1px 2px rgba(0,0,0,0.2);`,
+    bright: `box-shadow: 0px 2px 4px rgba(255,255,255,0.3);`,
   },
 };
 

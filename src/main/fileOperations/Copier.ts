@@ -162,8 +162,8 @@ export default class Copier {
       case CopyOptions.OnlyCopyStructure:
         return `The path of the file is: "${directoryPath}"`
       default:
-        console.error('Invalid option provided')
-        return 'Invalid option'
+        console.error('3Invalid option provided')
+        return '3Invalid option'
     }
   }
 
@@ -216,8 +216,8 @@ export default class Copier {
             ...this.ignoredFiles,
           ].join('')
         default:
-          console.error('Invalid option provided')
-          return 'Invalid option'
+          console.error('5Invalid option provided', { directoryPath, option })
+          return '5Invalid option'
       }
     } catch (error) {
       this.log(`Error getting clipboard content for folder ${directoryPath}`, {

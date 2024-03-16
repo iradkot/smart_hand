@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const Label = styled.label`
   margin-bottom: 10px;
+  display: block; // Ensure label takes its own line for better readability
   font-weight: bold;
 `;
 
@@ -11,6 +12,7 @@ export const Input = styled.input`
   border-radius: 5px;
   border: 1px solid #ddd;
   width: 100%;
+  display: block; // Input elements take the full width
 `;
 
 export const Button = styled.button`
@@ -20,6 +22,8 @@ export const Button = styled.button`
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  display: block; // Let the button take its own line
+  width: 100%; // Full-width button for better mobile responsiveness
   transition: background-color 0.3s;
 
   &:hover {
@@ -27,17 +31,21 @@ export const Button = styled.button`
   }
 `;
 
-
-export const StyledButton = styled.button`
-  background-color: ${props => props.theme.buttonBackgroundColor};
-  color: ${props => props.theme.buttonTextColor};
-  padding: 10px 15px;
-  border-radius: ${props => props.theme.borderRadius}px;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
-  &:hover {
-    background-color: ${props => props.theme.accentColor};
-  }
+export const RadioGroup = styled.div`
+  margin-bottom: 20px;
 `;
 
+export const RadioLabel = styled.label`
+  margin-right: 20px; // Space out the radio buttons
+  font-weight: normal;
+`;
+
+export const Radio = styled.input`
+  margin-right: 10px;
+`;
+
+export const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 10px; // Provide some space between form elements
+`;

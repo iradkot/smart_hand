@@ -1,15 +1,11 @@
 import React, { useEffect } from 'react';
-import { StepState } from '../../types';
-import { optionsData } from '../optionsData';
 import { Checkmark, StyledLabel } from './ChooseOptions.styles';
+import {optionsData} from "../OPTION_SHOW_REACT_NATIVE_LOGS";
+import {useStepManager} from "../../contexts/StepManagerContext";
+import {useNavigate} from "react-router-dom";
 
-const ChooseOptions = ({ stepState, setStepState }) => {
-  useEffect(() => {
-    if (!stepState.option && optionsData.length > 0) {
-      setStepState(prevState => ({ ...prevState, option: optionsData[0].value }));
-    }
-  }, [stepState, setStepState]);
-
+const ChooseOptions = () => {
+  const { setStepState, stepState } = useStepManager(); // Example of using context for state
   return (
     <>
       {optionsData.map((opt, index) => (
@@ -19,7 +15,7 @@ const ChooseOptions = ({ stepState, setStepState }) => {
             type="radio"
             value={opt.value}
             checked={stepState.option === opt.value}
-            onChange={(e) => setStepState(prevState => ({ ...prevState, option: e.target.value }))}
+            onChange={() => setStepState({...stepState, option: opt.value})}
           />
           <Checkmark />
           {opt.label}
