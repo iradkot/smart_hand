@@ -49,3 +49,7 @@ export const Form = styled.form`
   flex-direction: column;
   gap: 10px; // Provide some space between form elements
 `;
+
+export const StyledButton = styled(Button)`
+  margin-top: 20px;
+`;

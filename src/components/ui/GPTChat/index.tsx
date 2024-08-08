@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, {useEffect, useState} from 'react'
 import Prism from 'prismjs'
 import 'prismjs/themes/prism-tomorrow.css'
-import { askGPTPost, createUser } from '../../../api/requests'
-import { useChatHistory } from './hooks/useChatHistory'
+import {askGPTPost, createUser} from '../../../api/requests'
+import {useChatHistory} from './hooks/useChatHistory'
 import ChatInput from './components/ChatInput'
 import ChatHistory from './components/ChatHistory'
 import Loader from '../Loader' // Separate component for displaying chat history
@@ -32,8 +32,7 @@ function GPTChat() {
 
   const fetchGPTResponse = async (input): Promise<string> => {
     try {
-      const response = await askGPTPost(input)
-      return response
+      return await askGPTPost(input)
     } catch (error) {
       console.error('Failed to fetch GPT response:', error.message)
       throw error

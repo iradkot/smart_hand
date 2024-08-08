@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Label, Input, Button, RadioGroup, Radio, Form } from '../../../components/ui/styledComponents';
 import { useStepManager } from '../contexts/StepManagerContext';
 import { useNavigate } from 'react-router-dom';
@@ -13,16 +13,22 @@ const CopyConfigurationForm = () => {
   const [directoryPath, setDirectoryPath] = useState(stepState.directoryPath);
   const [option, setOption] = useState<OptionValue>(stepState.option || '1'); // Default to '1' if not set
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    // Use the updated setStepState with a callback
-    setStepState({ ...stepState, directoryPath, option }, () => {
-      console.log('State updated:', { directoryPath, option });
-      // Perform actions after the state update
+  const [submitClicked, setSubmitClicked] = useState(false);
+
+  useEffect(() => {
+    if (submitClicked) {
+      setSubmitClicked(false);
       copyToClipboard(directoryPath).then(() => {
         navigate('/status');
       });
-    });
+    }
+  }, [stepState.directoryPath, stepState.option, submitClicked, directoryPath, copyToClipboard, navigate]);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    // Use the updated setStepState with a callback
+    setStepState({ ...stepState, directoryPath, option });
+    setSubmitClicked(true);
   };
 
   return (
