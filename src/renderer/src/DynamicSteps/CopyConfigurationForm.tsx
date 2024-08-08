@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Label, Input, Button, RadioGroup, Radio, Form } from '../../../components/ui/styledComponents';
-import { useStepManager } from '../contexts/StepManagerContext';
 import { useNavigate } from 'react-router-dom';
-import { useCopyToClipboard } from '../contexts/CopyToClipboardContext';
+import { useCopyToClipboard, useStepManager } from '../contexts';
 import { optionsData } from './OPTION_SHOW_REACT_NATIVE_LOGS';
 import { OptionValue } from '../types'; // Assuming this is the correct import path for your types
 
