@@ -1,8 +1,7 @@
-import { clipboard } from 'electron'
-import { FileHandler } from './utils/FileHandler'
+import {clipboard, dialog} from 'electron'
+import {FileHandler} from './utils/FileHandler'
 import * as fs from 'fs'
 import * as path from 'path'
-const { dialog } = require('electron')
 
 enum CopyOptions {
   CopyFileContents = '1',
@@ -25,12 +24,12 @@ export default class Copier {
     console.log(`[Copier]: ${message}`, JSON.stringify(metadata))
   }
 
-  async ask(question: string, path: string): Promise<boolean> {
+  async ask(question: string): Promise<boolean> {
     const result = await dialog.showMessageBox({
       type: 'question',
       buttons: ['Yes', 'No'],
       title: 'Confirm',
-      message: `Do you want to copy the contents of the folder "${path}"?`,
+      message: question,
     })
     return result.response === 0
   }
@@ -59,8 +58,7 @@ export default class Copier {
         }
       } else if (itemStat.isDirectory()) {
         const answer = await this.ask(
-          `Do you want to copy the contents of the folder?`,
-          relativeItemPath,
+          `Do you want to copy the contents of the folder? ${relativeItemPath}`
         )
         if (answer) {
           await this.copyFilesToClipboard(basePath, itemPath, fileEntries, option)
@@ -68,13 +66,15 @@ export default class Copier {
           this.folderStructure.push(`${relativeItemPath}\n`)
         }
       }
-    } catch (error) {
-      this.log(`Error processing item ${item}`, {
-        dirPath,
-        item,
-        basePath,
-        error: error.message,
-      })
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.log(`Error processing item ${item}`, {
+          dirPath,
+          item,
+          basePath,
+          error: error.message,
+        })
+      }
     }
   }
 
@@ -94,7 +94,7 @@ export default class Copier {
   async copyFilesToClipboard(
     basePath: string,
     directoryPath = basePath,
-    fileEntries = [],
+    fileEntries: string[] = [],
     option: string,
   ): Promise<string[]> {
     try {
@@ -110,13 +110,15 @@ export default class Copier {
       }
 
       return fileEntries
-    } catch (error) {
-      this.log('Error during copyFilesToClipboard', {
-        directoryPath,
-        basePath,
-        option,
-        error: error.message,
-      })
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.log('Error during copyFilesToClipboard', {
+          directoryPath,
+          basePath,
+          option,
+          error: error.message,
+        })
+      }
       throw error // Rethrow the error to be caught by caller or a global error handler
     }
   }
@@ -140,8 +142,10 @@ export default class Copier {
 
       const fileEntries = await this.copyFilesToClipboard(directoryPath, directoryPath, [], option)
       return this.writeToClipboard(directoryPath, fileEntries, option)
-    } catch (error) {
-      this.log('Error during startCopyingProcess', { directoryPath, option, error: error.message })
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.log('Error during startCopyingProcess', { directoryPath, option, error: error.message })
+      }
       throw error // Rethrow the error to be caught by caller or a global error handler
     }
   }
@@ -162,35 +166,14 @@ export default class Copier {
       case CopyOptions.OnlyCopyStructure:
         return `The path of the file is: "${directoryPath}"`
       default:
-        console.error('3Invalid option provided')
-        return '3Invalid option'
+        console.error('Invalid option provided')
+        return 'Invalid option'
     }
   }
 
   writeToClipboard(directoryPath: string, fileEntries: string[], option: string): string {
-    const clipboardContent = this.getClipboardContentForFolder(directoryPath, fileEntries, option)
-    return clipboardContent;
+    return this.getClipboardContentForFolder(directoryPath, fileEntries, option);
   }
-
-  async getDirectoryStructure(dirPath: string): Promise<any[]> {
-    let structure = [];
-    const items = await this.fileHandler.readDir(dirPath);
-
-    for (const item of items) {
-      const fullPath = path.join(dirPath, item);
-      const stat = await this.fileHandler.stat(fullPath);
-
-      if (stat.isDirectory()) {
-        const children = await this.getDirectoryStructure(fullPath);
-        structure.push({ label: item, value: fullPath, children });
-      } else {
-        structure.push({ label: item, value: fullPath });
-      }
-    }
-
-    return structure;
-  }
-
 
   getClipboardContentForFolder(
     directoryPath: string,
@@ -216,18 +199,18 @@ export default class Copier {
             ...this.ignoredFiles,
           ].join('')
         default:
-          console.error('5Invalid option provided', { directoryPath, option })
-          return '5Invalid option'
+          console.error('Invalid option provided', { directoryPath, option })
+          return 'Invalid option'
       }
-    } catch (error) {
-      this.log(`Error getting clipboard content for folder ${directoryPath}`, {
-        directoryPath,
-        option,
-        error: error.message,
-      })
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.log(`Error getting clipboard content for folder ${directoryPath}`, {
+          directoryPath,
+          option,
+          error: error.message,
+        })
+      }
       return 'Error getting clipboard content'
     }
   }
 }
-
-// export const copier = new Copier(new FileHandler())

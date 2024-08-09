@@ -1,7 +1,4 @@
 import React, {createContext, useContext, useState, ReactNode} from 'react';
-import {useCopyHistory} from './CopyHistoryContext';
-// Removed unused StepState import
-import {firstStep, StatusStep} from '../constants';
 import {useStepManager} from './StepManagerContext';
 import {COPYING_PROCESS_INVOKE} from "../../../constants";
 import {useNavigate} from "react-router-dom";
@@ -25,9 +22,8 @@ interface ProviderProps {
 }
 
 export const CopyToClipboardProvider: React.FC<ProviderProps> = ({children}) => {
-  const { addToHistory } = useCopyHistory();
   const navigate = useNavigate(); // Correct use of useNavigate
-  const { currentStepId, setCurrentStepId, stepState, setStepState } = useStepManager();
+  const { stepState, setStepState } = useStepManager();
   const [step, setStep] = useState<number>(1);
   const [option, setOption] = useState<string>('');
   const [message, setMessage] = useState<string>('');
@@ -40,21 +36,21 @@ export const CopyToClipboardProvider: React.FC<ProviderProps> = ({children}) => 
       message: '',
       copiedContent: '',
     });
-    setCurrentStepId(firstStep);
   };
 
-  const copyToClipboard = (content: string) => {
+  const copyToClipboard = (content: string): Promise<{ message: string; content: string }> => {
     return new Promise((resolve, reject) => {
       setCopiedContent(content);
       window.electron.ipcRenderer
         .invoke(COPYING_PROCESS_INVOKE, stepState.directoryPath, stepState.option)
-        .then(({message, content}) => {
+        .then((response: { message: string; content: string; }) => {
+          const { message, content } = response as { message: string; content: string };
           setMessage(message);
           setCopiedContent(content);
           navigate('/status');
-          resolve({message, content});
+          resolve({ message, content });
         })
-        .catch((err) => {
+        .catch((err: { message: any; }) => {
           setMessage(`Error: ${err.message}`);
           reject(err);
         });

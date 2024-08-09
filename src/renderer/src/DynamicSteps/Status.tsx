@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Label } from '../../../components/ui/styledComponents';
 import CopySections from '../CopySections';
-import { useCopyToClipboard } from '../contexts/CopyToClipboardContext';
-import { useStepManager } from '../contexts/StepManagerContext';
+import { useCopyToClipboard, useStepManager } from '../contexts';
 
 const Status = () => {
   const { stepState } = useStepManager();
 
 
   const { isLoading, error, copiedContent } = useCopyToClipboard();
-  const [gptError, setGptError] = useState(null);
+  const [gptError] = useState(null);
 
   return (
     <>

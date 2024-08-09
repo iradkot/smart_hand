@@ -1,7 +1,7 @@
 import {app, BrowserWindow, dialog, ipcMain, shell} from 'electron'
 import {join} from 'path'
 import axios from 'axios'
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/icon.png';
 import Copier from '../main/fileOperations/Copier'
 import { FileHandler } from "./fileOperations/utils/FileHandler";
 import { COPYING_PROCESS_INVOKE } from "../constants";
@@ -27,7 +27,12 @@ class AxiosApiClient implements ApiClient {
       const response = await axios.post(url, data)
       return response.data
     } catch (error) {
-      return {error: error.message}
+      console.log('Error in AxiosApiClient', error)
+      if (error instanceof Error) {
+        return {error: error.message}
+      } else {
+        return {error: 'Unknown error'}
+      }
     }
   }
 }

@@ -1,15 +1,16 @@
-import React, { useEffect } from 'react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { useEffect } from 'react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { splitContent } from './utils/splitContent';
 import { downloadAsTextFile } from '../../components/ui/GPTChat/utils';
-import {askGPTForFileName} from "../../api/requests";
-
+import { askGPTForFileName } from "../../api/requests";
+import { useCopyHistory } from './contexts/CopyHistoryContext';
 
 const CopySections = ({ content = "" }) => {
+  const { copyToClipboardWithToast } = useCopyHistory();
+
   useEffect(() => {
     Prism.highlightAll();
   }, [content]);
@@ -25,15 +26,12 @@ const CopySections = ({ content = "" }) => {
     }
   };
 
-
   return (
     <div>
-      <ToastContainer/>
+      <ToastContainer />
       {sections.map((section, index) => (
         <div key={index}>
-          <CopyToClipboard text={section} onCopy={() => toast.success(`Section ${index + 1} copied!`)}>
-            <button>Copy</button>
-          </CopyToClipboard>
+          <button onClick={() => copyToClipboardWithToast(section, index)}>Copy</button>
           <pre>
             <code className="language-javascript">{section}</code>
           </pre>
