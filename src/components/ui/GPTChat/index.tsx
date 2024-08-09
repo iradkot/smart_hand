@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import { askGPTPost } from '../../../api/requests';
@@ -17,7 +17,11 @@ function GPTChat() {
       const response = await askGPTPost(sessionId, input);
       return response.content; // Assuming the response is structured as { content: ... }
     } catch (error) {
-      console.error('Failed to fetch GPT response:', error.message);
+      if (error instanceof Error) {
+        console.error('Failed to fetch GPT response:', error.message);
+      } else {
+        console.error('Failed to fetch GPT response:', 'An unknown error occurred');
+      }
       throw error;
     }
   };
