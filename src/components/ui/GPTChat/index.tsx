@@ -1,65 +1,45 @@
-import React, {useEffect, useState} from 'react'
-import Prism from 'prismjs'
-import 'prismjs/themes/prism-tomorrow.css'
-import {askGPTPost, createUser} from '../../../api/requests'
-import {useChatHistory} from './hooks/useChatHistory'
-import ChatInput from './components/ChatInput'
-import ChatHistory from './components/ChatHistory'
-import Loader from '../Loader' // Separate component for displaying chat history
+import React, { useEffect, useState } from 'react';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism-tomorrow.css';
+import { askGPTPost } from '../../../api/requests';
+import { useChatHistory } from './hooks/useChatHistory';
+import ChatInput from './components/ChatInput';
+import ChatHistory from './components/ChatHistory';
+import Loader from '../Loader';
 
 function GPTChat() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [userInput, setUserInput] = useState(
-    'Give 2 tables side by side, one of top earned women in basketball and one of top earned women in soccer, with how much money they earned\n',
-  )
-  const { chatHistory, addMessage } = useChatHistory()
+  const [isLoading, setIsLoading] = useState(false);
+  const [userInput, setUserInput] = useState('');
+  const { chatHistory, addMessage, sessionId } = useChatHistory();
 
-  const registerNewUser = async () => {
-    const newUserDetails = {
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      password: 'securePassword123',
-      // ... add other user fields as needed
+  const fetchGPTResponse = async (input) => {
+    try {
+      const response = await askGPTPost(sessionId, input);
+      return response.content; // Assuming the response is structured as { content: ... }
+    } catch (error) {
+      console.error('Failed to fetch GPT response:', error.message);
+      throw error;
     }
+  };
+
+  const handleSend = async () => {
+    addMessage('user', userInput);
+    setIsLoading(true);
 
     try {
-      const newUser = await createUser(newUserDetails)
-      console.log('User created:', newUser)
+      const gptResponse = await fetchGPTResponse(userInput);
+      addMessage('gpt', gptResponse);
     } catch (error) {
-      console.error('Failed to register user:', error.message)
-    }
-  }
-
-  const fetchGPTResponse = async (input): Promise<string> => {
-    try {
-      return await askGPTPost(input)
-    } catch (error) {
-      console.error('Failed to fetch GPT response:', error.message)
-      throw error
-    }
-  }
-
-  const handleSend = async (): Promise<void> => {
-    addMessage('user', userInput)
-    setIsLoading(true)
-
-    try {
-      const gptResponse = await fetchGPTResponse(userInput)
-      await registerNewUser()
-      addMessage('gpt', gptResponse)
-    } catch (error) {
-      addMessage('gpt', 'An error occurred while fetching the response.')
-      // Handle the error gracefully; Maybe show an error toast/message.
+      addMessage('gpt', 'An error occurred while fetching the response.');
     } finally {
-      setIsLoading(false)
-      setUserInput('')
+      setIsLoading(false);
+      setUserInput('');
     }
-  }
+  };
 
   useEffect(() => {
-    const highlightCode = (): void => Prism.highlightAll()
-    highlightCode()
-  }, [chatHistory])
+    Prism.highlightAll();
+  }, [chatHistory]);
 
   return (
     <div>
@@ -71,7 +51,7 @@ function GPTChat() {
         <ChatInput value={userInput} onChange={setUserInput} onSend={handleSend} />
       )}
     </div>
-  )
+  );
 }
 
-export default GPTChat
+export default GPTChat;
