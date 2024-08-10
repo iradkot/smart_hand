@@ -44,9 +44,6 @@ export default class Copier {
     try {
       const itemPath = path.join(dirPath, item)
       const relativeItemPath = path.relative(basePath, itemPath)
-      console.log('itemPath', itemPath)
-      console.log('relativeItemPath', relativeItemPath)
-      console.log('this.fileHandler', this.fileHandler)
       const itemStat = await this.fileHandler.stat(itemPath)
 
       if (ignoreList.includes(item)) {
@@ -126,7 +123,6 @@ export default class Copier {
   async startCopyingProcess(directoryPath: string, option: string): Promise<string> {
     try {
       this.log(`Starting copy process for directory: "${directoryPath}" with option: "${option}"`)
-      console.log('this.fileHandler', this.fileHandler)
       const initialStat = await this.fileHandler.stat(directoryPath)
 
       if (initialStat.isFile()) {
@@ -153,8 +149,6 @@ export default class Copier {
   async processFile(directoryPath: string, option: string) {
     const fileContent = await this.fileHandler.readFile(directoryPath)
     const clipboardContent = this.getClipboardContentForFile(directoryPath, fileContent, option)
-    console.log('Writing to clipboard (file)')
-
     clipboard.writeText(clipboardContent)
     return 'Data copied to clipboard successfully'
   }
