@@ -56,6 +56,7 @@ export const theme: DefaultTheme = {
     dark: `box-shadow: 0px 1px 2px rgba(0,0,0,0.2);`,
     bright: `box-shadow: 0px 2px 4px rgba(255,255,255,0.3);`,
   },
+  shades
 };
 
 export default theme;

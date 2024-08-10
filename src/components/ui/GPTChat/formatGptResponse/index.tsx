@@ -1,4 +1,4 @@
-import React, { HTMLAttributes } from 'react';
+import React, {HTMLAttributes, ReactElement} from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
@@ -8,9 +8,8 @@ import remarkExtendedTable from 'remark-extended-table';
 import rehypeRaw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/monokai.css'; // Import a dark theme for code blocks
-
-import './MarkdownStyles.css'; // Custom CSS for enhanced Markdown rendering
+import 'highlight.js/styles/monokai.css';
+import {CodeBlock, CodeSnippet, CopyButton, MarkdownContainer, TableCell, TableContainer, TableHeader} from "./styles"; // Import a dark theme for code blocks
 
 interface CodeProps extends HTMLAttributes<HTMLElement> {
   inline?: boolean;
@@ -24,7 +23,6 @@ export const renderGPTResponse = (gptResponse: any): JSX.Element => {
     navigator.clipboard.writeText(codeText);
     alert('Code copied to clipboard!');
   };
-
   const extractTextFromChildren = (children: React.ReactNode): string => {
     if (Array.isArray(children)) {
       return children
@@ -32,7 +30,8 @@ export const renderGPTResponse = (gptResponse: any): JSX.Element => {
           if (typeof child === 'string') {
             return child;
           } else if (React.isValidElement(child)) {
-            return extractTextFromChildren(child.props.children);
+            // Typecast child to ReactElement to access props
+            return extractTextFromChildren((child as ReactElement).props.children);
           } else {
             return '';
           }
@@ -44,9 +43,8 @@ export const renderGPTResponse = (gptResponse: any): JSX.Element => {
       return '';
     }
   };
-
   return (
-    <div className="markdown-container">
+    <MarkdownContainer>
       <ReactMarkdown
         children={gptResponse}
         remarkPlugins={[remarkGfm, remarkBreaks, remarkLint, remarkToc, remarkExtendedTable]}
@@ -54,36 +52,36 @@ export const renderGPTResponse = (gptResponse: any): JSX.Element => {
         components={{
           table({ node, ...props }) {
             return (
-              <div className="table-container">
+              <TableContainer>
                 <table {...props} />
-              </div>
+              </TableContainer>
             );
           },
           th({ node, ...props }) {
-            return <th style={{ backgroundColor: '#f0f0f0', padding: '8px' }} {...props} />;
+            return <TableHeader {...props} />;
           },
           td({ node, ...props }) {
-            return <td style={{ border: '1px solid #ddd', padding: '8px' }} {...props} />;
+            return <TableCell {...props} />;
           },
           code({ inline, className, children, ...props }: CodeProps) {
             const codeText = extractTextFromChildren(children);
             if (inline) {
-              return <code className={className} {...props}>{children}</code>;
+              return <CodeSnippet className={className} {...props}>{children}</CodeSnippet>;
             }
 
             return (
-              <div className="code-block">
-                <button className="copy-button" onClick={() => handleCopyClick(codeText)}>
+              <CodeBlock {...props as HTMLAttributes<HTMLPreElement>}>
+                <CopyButton onClick={() => handleCopyClick(codeText)}>
                   Copy
-                </button>
-                <pre {...props as HTMLAttributes<HTMLPreElement>}>
-                  <code className={`${className} dark-theme-code`} {...props}>{children}</code>
-                </pre>
-              </div>
+                </CopyButton>
+                <code className={`${className}`} {...props}>{children}</code>
+              </CodeBlock>
             );
           },
         }}
       />
-    </div>
+    </MarkdownContainer>
   );
 };
+
+export default renderGPTResponse;
