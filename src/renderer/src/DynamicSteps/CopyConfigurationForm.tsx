@@ -21,13 +21,16 @@ const CopyConfigurationForm = () => {
         navigate('/status');
       });
     }
-  }, [stepState.directoryPath, stepState.option, submitClicked, directoryPath, copyToClipboard, navigate]);
+  }, [submitClicked]);
+
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     // Use the updated setStepState with a callback
     setStepState({ ...stepState, directoryPath, option });
-    setSubmitClicked(true);
+    copyToClipboard(directoryPath).then(() => {
+      navigate('/status');
+    });
   };
 
   return (

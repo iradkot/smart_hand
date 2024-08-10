@@ -29,14 +29,15 @@ export const CopyToClipboardProvider: React.FC<ProviderProps> = ({children}) => 
   const [message, setMessage] = useState<string>('');
   const [copiedContent, setCopiedContent] = useState<string>('');
   const resetProcess = () => {
-    setStepState({
-      ...stepState,
+    setStepState((prev) => ({
+      ...prev,
       directoryPath: '',
       option: '',
       message: '',
       copiedContent: '',
-    });
+    }));
   };
+
 
   const copyToClipboard = (content: string): Promise<{ message: string; content: string }> => {
     return new Promise((resolve, reject) => {
