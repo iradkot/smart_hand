@@ -13,7 +13,8 @@ const StepManagerContext = createContext<StepManagerContextProps | undefined>(un
 export const StepManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentStepId, setCurrentStepId] = useState<string>('ChooseOptions');
   const initialStepState: StepState = {
-    directoryPath: '/Users/iradkotton/projects/smart_hand',
+    // directoryPath: '/Users/iradkotton/projects/smart_hand', // for mac
+    directoryPath: 'C:\\Users\\irad1\\projects\\smart_hand', // for windows
     option: '',
     message: '',
     copiedContent: '',
