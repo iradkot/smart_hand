@@ -1,210 +1,204 @@
-import {clipboard, dialog} from 'electron'
-import {FileHandler} from './utils/FileHandler'
-import * as fs from 'fs'
-import * as path from 'path'
-
-enum CopyOptions {
-  CopyFileContents = '1',
-  OnlyCopyStructure = '2',
-}
-
-const ignoreList = ['node_modules', '.git', 'yarn.lock', 'package-lock.json']
+import { clipboard } from 'electron';
+import { FileHandler } from './utils/FileHandler';
+import * as path from 'path';
+import { CopyOptions, CopyOptionHandler } from './utils/CopyOptionHandler';
+import { UserInterface } from './utils/UserInterface';
+import { IgnoreList } from './utils/IgnoreList';
+import { Logger } from './utils/Logger';
 
 export default class Copier {
-  folderStructure: string[] = []
-  ignoredFiles: string[] = []
-  fileHandler: FileHandler
+  private folderStructure: string[] = [];
+  private ignoredFiles: string[] = [];
+  private processedPaths: Set<string> = new Set();  // To track processed paths
+  private fileEntries: string[] = [];  // Store file content entries
 
-  constructor(fileHandler: FileHandler) {
-    this.fileHandler = fileHandler
-    this.startCopyingProcess = this.startCopyingProcess.bind(this)
-  }
+  constructor(
+    private fileHandler: FileHandler,
+    private ui: UserInterface,
+    private ignoreList: IgnoreList,
+    private logger: Logger
+  ) {}
 
-  log(message: string, metadata: Record<string, any> = {}) {
-    console.log(`[Copier]: ${message}`, JSON.stringify(metadata))
-  }
-
-  async ask(question: string): Promise<boolean> {
-    const result = await dialog.showMessageBox({
-      type: 'question',
-      buttons: ['Yes', 'No'],
-      title: 'Confirm',
-      message: question,
-    })
-    return result.response === 0
-  }
-
-  async processItem(
-    dirPath: string,
-    item: string,
-    basePath: string,
-    fileEntries: string[],
-    option: string,
+  private async processItem(
+    itemPath: string,
+    relativeItemPath: string,
+    option: CopyOptions,
+    depth: number = 0,
+    isLast: boolean = false
   ) {
-    try {
-      const itemPath = path.join(dirPath, item)
-      const relativeItemPath = path.relative(basePath, itemPath)
-      const itemStat = await this.fileHandler.stat(itemPath)
+    this.logger.debug(`Processing item: ${itemPath}, Relative path: ${relativeItemPath}`);
 
-      if (ignoreList.includes(item)) {
-        this.addToIgnore(itemStat, relativeItemPath)
-      } else if (itemStat.isFile()) {
-        this.folderStructure.push(`${relativeItemPath}\n`)
-        if (option === CopyOptions.CopyFileContents) {
-          await this.readFile(itemPath, relativeItemPath, fileEntries)
-        }
+    if (this.processedPaths.has(itemPath)) {
+      this.logger.debug(`Skipping already processed item: ${itemPath}`);
+      return;
+    }
+
+    this.processedPaths.add(itemPath);
+
+    try {
+      const itemStat = await this.fileHandler.stat(itemPath);
+      if (this.ignoreList.shouldIgnore(itemPath)) {
+        this.logger.debug(`Ignoring item: ${itemPath}`);
+        this.addToIgnoreList(itemStat, relativeItemPath, depth, isLast);
+        return;
+      }
+
+      if (itemStat.isFile()) {
+        this.logger.debug(`Processing file: ${itemPath}`);
+        await this.processFile(itemPath, relativeItemPath, option, depth, isLast);
       } else if (itemStat.isDirectory()) {
-        const answer = await this.ask(
-          `Do you want to copy the contents of the folder? ${relativeItemPath}`
-        )
-        if (answer) {
-          await this.copyFilesToClipboard(basePath, itemPath, fileEntries, option)
-        } else {
-          this.folderStructure.push(`${relativeItemPath}\n`)
-        }
+        this.logger.debug(`Processing directory: ${itemPath}`);
+        await this.processDirectory(itemPath, relativeItemPath, option, depth, isLast);
       }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        this.log(`Error processing item ${item}`, {
-          dirPath,
-          item,
-          basePath,
-          error: error.message,
-        })
-      }
+    } catch (error) {
+      this.logger.error(`Error processing item ${itemPath}: ${error.message}`);
     }
   }
 
-  addToIgnore(itemStat: fs.Stats, itemPath: string) {
-    if (itemStat.isFile()) {
-      this.ignoredFiles.push(`${itemPath}\n`)
-    } else if (itemStat.isDirectory()) {
-      this.folderStructure.push(`${itemPath}\n`)
+  private async processFile(
+    itemPath: string,
+    relativeItemPath: string,
+    option: CopyOptions,
+    depth: number,
+    isLast: boolean
+  ) {
+    const prefix = this.getPrefix(depth, isLast);
+    this.logger.debug(`Adding file to folder structure: ${relativeItemPath}`);
+    this.folderStructure.push(`${prefix}${relativeItemPath}\n`);
+
+    if (option === CopyOptions.CopyFileContents) {
+      this.logger.debug(`Reading file content: ${itemPath}`);
+      await this.readFileAndAddToEntries(itemPath, relativeItemPath);
+      this.logger.debug(`File content read: ${itemPath}`);
     }
   }
 
-  async readFile(itemPath: string, relativeItemPath: string, fileEntries: string[]) {
-    const fileContent = await this.fileHandler.readFile(itemPath)
-    fileEntries.push(`${relativeItemPath}\n${fileContent}\n`)
-  }
-
-  async copyFilesToClipboard(
-    basePath: string,
-    directoryPath = basePath,
-    fileEntries: string[] = [],
-    option: string,
-  ): Promise<string[]> {
-    try {
-      this.log(
-        `Copying files to clipboard from directory: "${directoryPath}" with base path: "${basePath}"`,
-      )
-
-      const items = await this.fileHandler.readDir(directoryPath)
-
-      for (const item of items) {
-        this.log(`Processing item: "${item}" in directory: "${directoryPath}"`)
-        await this.processItem(directoryPath, item, basePath, fileEntries, option)
-      }
-
-      return fileEntries
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        this.log('Error during copyFilesToClipboard', {
-          directoryPath,
-          basePath,
-          option,
-          error: error.message,
-        })
-      }
-      throw error // Rethrow the error to be caught by caller or a global error handler
-    }
-  }
-
-  async startCopyingProcess(directoryPath: string, option: string): Promise<string> {
-    try {
-      this.log(`Starting copy process for directory: "${directoryPath}" with option: "${option}"`)
-      const initialStat = await this.fileHandler.stat(directoryPath)
-
-      if (initialStat.isFile()) {
-        this.log(`The path "${directoryPath}" is a file. Processing file.`)
-        return this.processFile(directoryPath, option)
-      }
-
-      this.log(
-        `Resetting folder structure and ignored files lists for directory: "${directoryPath}"`,
-      )
-      this.folderStructure = []
-      this.ignoredFiles = []
-
-      const fileEntries = await this.copyFilesToClipboard(directoryPath, directoryPath, [], option)
-      return this.writeToClipboard(directoryPath, fileEntries, option)
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        this.log('Error during startCopyingProcess', { directoryPath, option, error: error.message })
-      }
-      throw error // Rethrow the error to be caught by caller or a global error handler
-    }
-  }
-
-  async processFile(directoryPath: string, option: string) {
-    const fileContent = await this.fileHandler.readFile(directoryPath)
-    const clipboardContent = this.getClipboardContentForFile(directoryPath, fileContent, option)
-    clipboard.writeText(clipboardContent)
-    return 'Data copied to clipboard successfully'
-  }
-
-  getClipboardContentForFile(directoryPath: string, fileContent: string, option: string): string {
-    switch (option) {
-      case CopyOptions.CopyFileContents:
-        return `The following is the content of the file "${directoryPath}":\n\n${fileContent}`
-      case CopyOptions.OnlyCopyStructure:
-        return `The path of the file is: "${directoryPath}"`
-      default:
-        console.error('Invalid option provided')
-        return 'Invalid option'
-    }
-  }
-
-  writeToClipboard(directoryPath: string, fileEntries: string[], option: string): string {
-    return this.getClipboardContentForFolder(directoryPath, fileEntries, option);
-  }
-
-  getClipboardContentForFolder(
+  private async processDirectory(
     directoryPath: string,
-    fileEntries: string[],
-    option: string,
-  ): string {
-    try {
-      switch (option) {
-        case CopyOptions.CopyFileContents:
-          return [
-            `The following is the structure of the folder "${directoryPath}":\n`,
-            ...this.folderStructure,
-            '\nThe following are the ignored files and folders:\n',
-            ...this.ignoredFiles,
-            '\nThe following is the content of files with their paths relative to the base folder:\n',
-            ...fileEntries,
-          ].join('')
-        case CopyOptions.OnlyCopyStructure:
-          return [
-            `The following is the structure of the folder "${directoryPath}":\n`,
-            ...this.folderStructure,
-            '\nThe following are the ignored files and folders:\n',
-            ...this.ignoredFiles,
-          ].join('')
-        default:
-          console.error('Invalid option provided', { directoryPath, option })
-          return 'Invalid option'
-      }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        this.log(`Error getting clipboard content for folder ${directoryPath}`, {
-          directoryPath,
-          option,
-          error: error.message,
-        })
-      }
-      return 'Error getting clipboard content'
+    relativeItemPath: string,
+    option: CopyOptions,
+    depth: number,
+    isLast: boolean
+  ) {
+    const prefix = this.getPrefix(depth, isLast);
+    this.logger.debug(`Adding directory to folder structure: ${relativeItemPath}`);
+    this.folderStructure.push(`${prefix}${relativeItemPath}/\n`);
+
+    const copyContents = await this.ui.confirm(`Do you want to copy the contents of the folder? ${relativeItemPath}`);
+    if (copyContents) {
+      this.logger.debug(`Copying directory contents: ${directoryPath}`);
+      await this.copyDirectoryContents(directoryPath, option, depth + 1, directoryPath);
     }
+  }
+
+  private addToIgnoreList(itemStat: fs.Stats, relativeItemPath: string, depth: number, isLast: boolean) {
+    const prefix = this.getPrefix(depth, isLast);
+    this.logger.debug(`Adding to ignore list: ${relativeItemPath}`);
+    if (itemStat.isFile()) {
+      this.ignoredFiles.push(`${prefix}${relativeItemPath}\n`);
+    } else if (itemStat.isDirectory()) {
+      this.folderStructure.push(`${prefix}${relativeItemPath}/\n`);
+    }
+  }
+
+  private async copyDirectoryContents(
+    directoryPath: string,
+    option: CopyOptions,
+    depth: number,
+    baseDirectoryPath: string
+  ): Promise<void> {
+    this.logger.debug(`Reading directory: ${directoryPath}`);
+    const items = await this.fileHandler.readDir(directoryPath);
+    this.logger.debug(`Found items in directory: ${items.join(', ')}`);
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const itemPath = path.join(directoryPath, item);
+      const relativeItemPath = path.relative(baseDirectoryPath, itemPath);
+      const isLast = i === items.length - 1;
+
+      this.logger.debug(`Processing item in directory: ${itemPath}`);
+      await this.processItem(itemPath, relativeItemPath, option, depth, isLast);
+    }
+  }
+
+  private getPrefix(depth: number, isLast: boolean): string {
+    const parts = [];
+    for (let i = 0; i < depth; i++) {
+      parts.push("│   ");
+    }
+    parts.push(isLast ? "└── " : "├── ");
+    return parts.join("");
+  }
+
+  private async readFileAndAddToEntries(
+    itemPath: string,
+    relativeItemPath: string
+  ) {
+    this.logger.debug(`Reading and adding file to entries: ${itemPath}`);
+    const fileContent = await this.fileHandler.readFile(itemPath);
+    this.fileEntries.push(`${relativeItemPath}\n${fileContent}\n`);
+    this.logger.debug(`File content added: ${fileContent}`);
+  }
+
+  private buildClipboardContent(
+    directoryPath: string,
+    option: CopyOptions
+  ): string {
+    this.logger.debug(`Building clipboard content for directory: ${directoryPath}`);
+    const content = CopyOptionHandler.buildContent(
+      directoryPath,
+      this.folderStructure,
+      this.ignoredFiles,
+      this.fileEntries,
+      option
+    );
+    this.logger.debug(`Clipboard content built successfully: ${content}`);
+    return content;
+  }
+
+  async startCopyingProcess(directoryPath: string, option: CopyOptions): Promise<string> {
+    this.logger.info(`Starting copy process for directory: "${directoryPath}" with option: "${option}"`);
+
+    const initialStat = await this.fileHandler.stat(directoryPath);
+    if (initialStat.isFile()) {
+      this.logger.debug(`Directory path is a file, processing single file: ${directoryPath}`);
+      return this.processSingleFile(directoryPath, option);
+    }
+
+    this.logger.debug(`Resetting copy state for new directory`);
+    this.resetCopyState();
+
+    await this.copyDirectoryContents(directoryPath, option, 0, directoryPath);
+
+    const content = this.buildContentForReturn(directoryPath, option);
+    this.logger.debug(`Final content to return: ${content}`);
+
+    return content; // Return the content instead of copying it
+  }
+
+  private async processSingleFile(filePath: string, option: CopyOptions): Promise<string> {
+    this.logger.debug(`Processing single file: ${filePath}`);
+    const fileContent = await this.fileHandler.readFile(filePath);
+    const clipboardContent = CopyOptionHandler.buildContentForFile(filePath, fileContent, option);
+    this.logger.debug(`Copying single file content to clipboard: ${clipboardContent}`);
+    clipboard.writeText(clipboardContent);
+    this.logger.debug(`Single file copied to clipboard successfully`);
+    return 'Data copied to clipboard successfully';
+  }
+
+  private resetCopyState() {
+    this.logger.debug(`Resetting folder structure, ignored files lists, and file entries`);
+    this.folderStructure = [];
+    this.ignoredFiles = [];
+    this.fileEntries = [];  // Reset file entries
+    this.processedPaths.clear();  // Clear the set of processed paths
+  }
+
+  private buildContentForReturn(directoryPath: string, option: CopyOptions): string {
+    this.logger.debug(`Building content for directory: ${directoryPath}`);
+    const content = this.buildClipboardContent(directoryPath, option);
+    this.logger.debug(`Content built successfully: ${content}`);
+    return content;
   }
 }

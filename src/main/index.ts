@@ -5,6 +5,9 @@ import icon from '../../resources/icon.png';
 import Copier from '../main/fileOperations/Copier'
 import { FileHandler } from "./fileOperations/utils/FileHandler";
 import { COPYING_PROCESS_INVOKE } from "../constants";
+import {UserInterface} from "./fileOperations/utils/UserInterface";
+import {IgnoreList} from "./fileOperations/utils/IgnoreList";
+import {Logger} from "./fileOperations/utils/Logger";
 
 
 // Constants
@@ -38,7 +41,12 @@ class AxiosApiClient implements ApiClient {
 }
 
 const apiClient: ApiClient = new AxiosApiClient()
-const copier = new Copier(new FileHandler())
+const fileHandler = new FileHandler();
+const ui = new UserInterface();
+const ignoreList = new IgnoreList(['node_modules', '.git', 'yarn.lock', 'package-lock.json']);
+const logger = new Logger();
+
+const copier = new Copier(fileHandler, ui, ignoreList, logger);
 
 function createWindow(): void {
   createAndLoadMainWindow()
@@ -118,15 +126,17 @@ ipcMain.handle('open-file-dialog', async () => {
 
 ipcMain.handle(COPYING_PROCESS_INVOKE, async (_, directoryPath, option) => {
   try {
-    console.log('Copying process started', directoryPath, option);
-    const content = await copier.startCopyingProcess(directoryPath, option)
-    const message = `Copied ${content.length} files to clipboard`
-    return { message, content }
+    console.log('Received copying request:', directoryPath, option);
+    const content = await copier.startCopyingProcess(directoryPath, option);
+    const message = `Processed ${content.length} files and returning the content`;
+    console.log('Processed:', message);
+    return { message, content };
   } catch (err) {
-    console.error('3Failed to copy:', err)
-    return 'Error during copying'
+    console.error('Failed to process:', err);
+    return { error: 'Error during processing', details: err.message };
   }
-})
+});
+
 
 ipcMain.handle('chat-with-gpt', async (_, messages) => {
   return await apiClient.post(`${API_URL}${CHAT_ENDPOINT}`, {messages})

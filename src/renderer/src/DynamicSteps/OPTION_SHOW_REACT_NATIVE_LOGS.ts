@@ -1,5 +1,7 @@
+import {OptionValue} from "../types";
+
 export interface OptionData {
-  value: string
+  value: OptionValue
   label: string
 }
 
