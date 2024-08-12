@@ -5,6 +5,7 @@ import { CopyOptions, CopyOptionHandler } from './utils/CopyOptionHandler';
 import { UserInterface } from './utils/UserInterface';
 import { IgnoreList } from './utils/IgnoreList';
 import { Logger } from './utils/Logger';
+import fs from "fs";
 
 export default class Copier {
   private folderStructure: string[] = [];
@@ -27,14 +28,11 @@ export default class Copier {
     isLast: boolean = false
   ) {
     this.logger.debug(`Processing item: ${itemPath}, Relative path: ${relativeItemPath}`);
-
     if (this.processedPaths.has(itemPath)) {
       this.logger.debug(`Skipping already processed item: ${itemPath}`);
       return;
     }
-
     this.processedPaths.add(itemPath);
-
     try {
       const itemStat = await this.fileHandler.stat(itemPath);
       if (this.ignoreList.shouldIgnore(itemPath)) {
@@ -42,7 +40,6 @@ export default class Copier {
         this.addToIgnoreList(itemStat, relativeItemPath, depth, isLast);
         return;
       }
-
       if (itemStat.isFile()) {
         this.logger.debug(`Processing file: ${itemPath}`);
         await this.processFile(itemPath, relativeItemPath, option, depth, isLast);
@@ -51,9 +48,15 @@ export default class Copier {
         await this.processDirectory(itemPath, relativeItemPath, option, depth, isLast);
       }
     } catch (error) {
-      this.logger.error(`Error processing item ${itemPath}: ${error.message}`);
+      if (error instanceof Error) {
+        this.logger.error(`Error processing item ${itemPath}: ${error.message}`);
+      } else {
+        // Fallback to cast unknown to string or handle gracefully
+        this.logger.error(`Error processing item ${itemPath}: Unknown error occurred`, String(error));
+      }
     }
   }
+
 
   private async processFile(
     itemPath: string,
@@ -62,7 +65,7 @@ export default class Copier {
     depth: number,
     isLast: boolean
   ) {
-    const prefix = this.getPrefix(depth, isLast);
+    const prefix = this.createIndentationString(depth, isLast);
     this.logger.debug(`Adding file to folder structure: ${relativeItemPath}`);
     this.folderStructure.push(`${prefix}${relativeItemPath}\n`);
 
@@ -80,7 +83,7 @@ export default class Copier {
     depth: number,
     isLast: boolean
   ) {
-    const prefix = this.getPrefix(depth, isLast);
+    const prefix = this.createIndentationString(depth, isLast);
     this.logger.debug(`Adding directory to folder structure: ${relativeItemPath}`);
     this.folderStructure.push(`${prefix}${relativeItemPath}/\n`);
 
@@ -92,7 +95,7 @@ export default class Copier {
   }
 
   private addToIgnoreList(itemStat: fs.Stats, relativeItemPath: string, depth: number, isLast: boolean) {
-    const prefix = this.getPrefix(depth, isLast);
+    const prefix = this.createIndentationString(depth, isLast);
     this.logger.debug(`Adding to ignore list: ${relativeItemPath}`);
     if (itemStat.isFile()) {
       this.ignoredFiles.push(`${prefix}${relativeItemPath}\n`);
@@ -122,14 +125,22 @@ export default class Copier {
     }
   }
 
-  private getPrefix(depth: number, isLast: boolean): string {
-    const parts = [];
-    for (let i = 0; i < depth; i++) {
-      parts.push("│   ");
-    }
-    parts.push(isLast ? "└── " : "├── ");
-    return parts.join("");
+  private readonly branchSymbols = {
+    vertical: "│   ",
+    standard: "├── ",
+    last: "└── ",
+  };
+
+  private createIndentationString(level: number, isLastItem: boolean): string {
+    // Build an indentation string based on the item level and if it's the last item
+    const indentations = Array(level).fill(this.branchSymbols.vertical); // Fill with vertical symbols
+
+    // Append the appropriate symbol for the last item or standard item
+    indentations.push(isLastItem ? this.branchSymbols.last : this.branchSymbols.standard);
+
+    return indentations.join(""); // Join the symbols into a single string
   }
+
 
   private async readFileAndAddToEntries(
     itemPath: string,

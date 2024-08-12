@@ -1,13 +1,20 @@
+import { inspect } from 'util';
+
 export class Logger {
   info(message: string, metadata: Record<string, any> = {}) {
-    console.log(`[INFO]: ${message}`, JSON.stringify(metadata));
+    console.log(`[INFO]: ${message}`, inspect(metadata, { depth: null, colors: true }));
   }
 
-  error(message: string, metadata: Record<string, any> = {}) {
-    console.error(`[ERROR]: ${message}`, JSON.stringify(metadata));
+  error(message: string, error?: unknown) {
+    if (error instanceof Error) {
+      console.error(`${message}: ${error.message}`);
+    } else {
+      console.error(`${message}: ${String(error)}`);
+    }
   }
+
 
   debug(message: string, metadata: Record<string, any> = {}) {
-    console.debug(`[DEBUG]: ${message}`, JSON.stringify(metadata));
+    console.debug(`[DEBUG]: ${message}`, inspect(metadata, { depth: null, colors: true }));
   }
 }
