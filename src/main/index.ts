@@ -43,7 +43,7 @@ class AxiosApiClient implements ApiClient {
 const apiClient: ApiClient = new AxiosApiClient()
 const fileHandler = new FileHandler();
 const ui = new UserInterface();
-const ignoreList = new IgnoreList(['node_modules', '.git', 'yarn.lock', 'package-lock.json']);
+const ignoreList = new IgnoreList(['node_modules', '.git', 'yarn.lock', 'package-lock.json', '.idea', '.vscode', 'build', 'out', 'resources']);
 const logger = new Logger();
 
 const copier = new Copier(fileHandler, ui, ignoreList, logger);

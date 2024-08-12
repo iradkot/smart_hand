@@ -1,3 +1,5 @@
+import path from "node:path";
+
 export class IgnoreList {
   private readonly ignoreList: Set<string>;
 
@@ -6,6 +8,7 @@ export class IgnoreList {
   }
 
   shouldIgnore(itemPath: string): boolean {
-    return this.ignoreList.has(itemPath);
+    const baseName = path.basename(itemPath);
+    return this.ignoreList.has(baseName);
   }
 }
