@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Label } from '../../../components/ui/styledComponents';
 import CopySections from '../CopySections';
-import { useCopyToClipboard, useStepManager } from '../contexts';
+import { useStore } from '../contexts/useStore';
 
 const Status = () => {
-  const { stepState } = useStepManager();
-
-
-  const { isLoading, error, copiedContent } = useCopyToClipboard();
+  const stepState = useStore((state) => state.stepState);
+  const isLoading = useStore((state) => state.isLoading);
+  const error = useStore((state) => state.error);
+  const copiedContent = stepState.copiedContent;
   const [gptError] = useState(null);
 
   return (
@@ -17,7 +17,7 @@ const Status = () => {
       {error && <p>Error: {error}</p>}
       {gptError && <p>GPT Error: {gptError}</p>}
       {stepState.option === '3' && stepState.gptAnswer && !isLoading && !error && (
-        <div>Ï
+        <div>
           <h2>GPT Answer</h2>
           <p>{stepState.gptAnswer}</p>
         </div>
