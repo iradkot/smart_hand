@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { StepState } from '../types';
+import {invokeCopyingProcess} from "../../../invokers/ipcInvokers";
 
 interface StoreState {
   currentStepId: string;
@@ -49,8 +50,7 @@ export const useStore = create<StoreState>()(
     copyToClipboard: (directoryPath: string, option: string) =>
       new Promise((resolve, reject) => {
         set({ isLoading: true, error: null });
-        window.electron.ipcRenderer
-          .invoke('invoke-copying-process', directoryPath, option)
+        invokeCopyingProcess({ directoryPath, option })
           .then((response: { message: string; content: string }) => {
             set((state) => ({
               stepState: {

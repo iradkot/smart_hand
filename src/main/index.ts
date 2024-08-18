@@ -3,8 +3,8 @@ import {join} from 'path'
 import axios from 'axios'
 import icon from '../../resources/icon.png';
 import Copier from '../main/fileOperations/Copier'
-import { FileHandler } from "./fileOperations/utils/FileHandler";
-import { COPYING_PROCESS_INVOKE } from "../constants";
+import {FileHandler} from "./fileOperations/utils/FileHandler";
+import {COPYING_PROCESS_INVOKE} from "../invokers/constants";
 import {UserInterface} from "./fileOperations/utils/UserInterface";
 import {IgnoreList} from "./fileOperations/utils/IgnoreList";
 import {Logger} from "./fileOperations/utils/Logger";
@@ -43,7 +43,18 @@ class AxiosApiClient implements ApiClient {
 const apiClient: ApiClient = new AxiosApiClient()
 const fileHandler = new FileHandler();
 const ui = new UserInterface();
-const ignoreList = new IgnoreList(['node_modules', '.git', 'yarn.lock', 'package-lock.json', '.idea', '.vscode', 'build', 'out', 'resources']);
+const ignoreList = new IgnoreList([
+  'node_modules',
+  '.git',
+  'yarn.lock',
+  'package-lock.json',
+  '.idea',
+  '.vscode',
+  'build',
+  'out',
+  'resources',
+
+]);
 const logger = new Logger();
 
 const copier = new Copier(fileHandler, ui, ignoreList, logger);
@@ -129,11 +140,10 @@ ipcMain.handle(COPYING_PROCESS_INVOKE, async (_, directoryPath, option) => {
     console.log('Received copying request:', directoryPath, option);
     const content = await copier.startCopyingProcess(directoryPath, option);
     const message = `Processed ${content.length} files and returning the content`;
-    console.log('Processed:', message);
-    return { message, content };
+    return {message, content};
   } catch (err) {
     console.error('Failed to process:', err);
-    return { error: 'Error during processing', details: err.message };
+    return {error: 'Error during processing', details: err.message};
   }
 });
 
