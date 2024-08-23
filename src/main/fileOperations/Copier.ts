@@ -12,6 +12,7 @@ export default class Copier {
   private ignoredFiles: string[] = [];
   private processedPaths: Set<string> = new Set();  // To track processed paths
   private fileEntries: string[] = [];  // Store file content entries
+  private initialDirectoryPath: string = '';
 
   constructor(
     private fileHandler: FileHandler,
@@ -20,19 +21,21 @@ export default class Copier {
     private logger: Logger
   ) {}
 
+
   private async processItem(
-    itemPath: string,
-    relativeItemPath: string,
-    option: CopyOptions,
-    depth: number = 0,
-    isLast: boolean = false
+      itemPath: string,
+      relativeItemPath: string,
+      option: CopyOptions,
+      depth: number = 0,
+      isLast: boolean = false
   ) {
-    this.logger.debug(`Processing item: ${itemPath}, Relative path: ${relativeItemPath}`);
-    if (this.processedPaths.has(itemPath)) {
-      this.logger.debug(`Skipping already processed item: ${itemPath}`);
-      return;
-    }
-    this.processedPaths.add(itemPath);
+      const normalizedItemPath = path.normalize(itemPath);
+      this.logger.debug(`Processing item: ${normalizedItemPath}, Relative path: ${relativeItemPath}`);
+      if (this.processedPaths.has(normalizedItemPath)) {
+        this.logger.debug(`Skipping already processed item: ${normalizedItemPath}`);
+        return;
+      }
+      this.processedPaths.add(normalizedItemPath);
     try {
       const itemStat = await this.fileHandler.stat(itemPath);
       if (this.ignoreList.shouldIgnore(itemPath)) {
@@ -51,11 +54,11 @@ export default class Copier {
       if (error instanceof Error) {
         this.logger.error(`Error processing item ${itemPath}: ${error.message}`);
       } else {
-        // Fallback to cast unknown to string or handle gracefully
         this.logger.error(`Error processing item ${itemPath}: Unknown error occurred`, String(error));
       }
     }
   }
+
 
 
   private async processFile(
@@ -66,15 +69,18 @@ export default class Copier {
     isLast: boolean
   ) {
     const prefix = this.createIndentationString(depth, isLast);
-    this.logger.debug(`Adding file to folder structure: ${relativeItemPath}`);
-    this.folderStructure.push(`${prefix}${relativeItemPath}\n`);
+    const relativePathWithFileName = `${relativeItemPath}`;
+    const fileName = path.basename(itemPath);
+    this.logger.debug(`Adding file to folder structure: ${relativePathWithFileName}`);
+    this.folderStructure.push(`${prefix}${fileName}\n`);
 
     if (option === CopyOptions.CopyFileContents) {
       this.logger.debug(`Reading file content: ${itemPath}`);
-      await this.readFileAndAddToEntries(itemPath, relativeItemPath);
+      await this.readFileAndAddToEntries(itemPath, relativePathWithFileName);
       this.logger.debug(`File content read: ${itemPath}`);
     }
   }
+
 
   private async processDirectory(
     directoryPath: string,
@@ -85,7 +91,9 @@ export default class Copier {
   ) {
     const prefix = this.createIndentationString(depth, isLast);
     this.logger.debug(`Adding directory to folder structure: ${relativeItemPath}`);
-    this.folderStructure.push(`${prefix}${relativeItemPath}/\n`);
+    const folderName = path.basename(directoryPath);
+
+    this.folderStructure.push(`${prefix}${folderName}/\n`);
 
     const copyContents = await this.ui.confirm(`Do you want to copy the contents of the folder? ${relativeItemPath}`);
     if (copyContents) {
@@ -93,6 +101,7 @@ export default class Copier {
       await this.copyDirectoryContents(directoryPath, option, depth + 1, directoryPath);
     }
   }
+
 
   private addToIgnoreList(itemStat: fs.Stats, relativeItemPath: string, depth: number, isLast: boolean) {
     const prefix = this.createIndentationString(depth, isLast);
@@ -108,7 +117,6 @@ export default class Copier {
     directoryPath: string,
     option: CopyOptions,
     depth: number,
-    baseDirectoryPath: string
   ): Promise<void> {
     this.logger.debug(`Reading directory: ${directoryPath}`);
     const items = await this.fileHandler.readDir(directoryPath);
@@ -117,11 +125,19 @@ export default class Copier {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const itemPath = path.join(directoryPath, item);
-      const relativeItemPath = path.relative(baseDirectoryPath, itemPath);
+      const normalizedBasePath = path.normalize(this.initialDirectoryPath);
+      const normalizedItemPath = path.normalize(itemPath);
+      let relativeItemPath = path.relative(normalizedBasePath, normalizedItemPath);
+
+      // If the relative path does not include the desired root folder, prepend it manually
+      if (!relativeItemPath.startsWith(path.basename(this.initialDirectoryPath))) {
+        relativeItemPath = path.join(path.basename(this.initialDirectoryPath), relativeItemPath);
+      }
+
       const isLast = i === items.length - 1;
 
       this.logger.debug(`Processing item in directory: ${itemPath}`);
-      await this.processItem(itemPath, relativeItemPath, option, depth, isLast);
+      await this.processItem(normalizedItemPath, relativeItemPath, option, depth, isLast);
     }
   }
 
@@ -148,8 +164,9 @@ export default class Copier {
   ) {
     this.logger.debug(`Reading and adding file to entries: ${itemPath}`);
     const fileContent = await this.fileHandler.readFile(itemPath);
+    this.logger.debug(`Relative path with file name: ${relativeItemPath}`);
     this.fileEntries.push(`${relativeItemPath}\n${fileContent}\n`);
-    this.logger.debug(`File content added: ${fileContent}`);
+    this.logger.debug(`File content added`);
   }
 
   private buildClipboardContent(
@@ -169,6 +186,7 @@ export default class Copier {
   }
 
   async startCopyingProcess(directoryPath: string, option: CopyOptions): Promise<string> {
+    this.initialDirectoryPath = directoryPath;
     this.logger.info(`Starting copy process for directory: "${directoryPath}" with option: "${option}"`);
 
     const initialStat = await this.fileHandler.stat(directoryPath);
@@ -180,7 +198,7 @@ export default class Copier {
     this.logger.debug(`Resetting copy state for new directory`);
     this.resetCopyState();
 
-    await this.copyDirectoryContents(directoryPath, option, 0, directoryPath);
+    await this.copyDirectoryContents(directoryPath, option, 0);
 
     const content = this.buildContentForReturn(directoryPath, option);
     this.logger.debug(`Final content to return: ${content}`);
