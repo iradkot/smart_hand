@@ -1,6 +1,7 @@
 import { dialog } from 'electron';
+import {IUserInterface} from "../types/interfaces";
 
-export class UserInterface {
+export class UserInterface implements IUserInterface {
   async confirm(question: string): Promise<boolean> {
     const result = await dialog.showMessageBox({
       type: 'question',

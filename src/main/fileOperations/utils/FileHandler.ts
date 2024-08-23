@@ -1,7 +1,8 @@
 import fs from 'fs';
+import { IFileHandler } from '../types/interfaces';
 import { FileError, DirectoryError } from '../types/Errors';
 
-export class FileHandler {
+export class FileHandler implements IFileHandler {
   async readFile(filePath: string): Promise<string> {
     try {
       return await fs.promises.readFile(filePath, 'utf-8');

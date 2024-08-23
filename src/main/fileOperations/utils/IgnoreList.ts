@@ -1,6 +1,6 @@
 import path from "node:path";
 
-export class IgnoreList {
+export class IgnoreList implements IIgnoreList {
   private readonly ignoreList: Set<string>;
 
   constructor(ignoredItems: string[]) {

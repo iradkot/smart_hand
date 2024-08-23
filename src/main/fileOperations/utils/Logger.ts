@@ -1,6 +1,7 @@
 import { inspect } from 'util';
+import {ILogger} from "../types/interfaces";
 
-export class Logger {
+export class Logger implements ILogger {
   info(message: string, metadata: Record<string, any> = {}) {
     console.log(`[INFO]: ${message}`, inspect(metadata, { depth: null, colors: true }));
   }
@@ -12,7 +13,6 @@ export class Logger {
       console.error(`${message}: ${String(error)}`);
     }
   }
-
 
   debug(message: string, metadata: Record<string, any> = {}) {
     console.log(`[DEBUG]: ${message}`, inspect(metadata, { depth: null, colors: true }));
