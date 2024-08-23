@@ -15,6 +15,6 @@ export class Logger {
 
 
   debug(message: string, metadata: Record<string, any> = {}) {
-    console.debug(`[DEBUG]: ${message}`, inspect(metadata, { depth: null, colors: true }));
+    console.log(`[DEBUG]: ${message}`, inspect(metadata, { depth: null, colors: true }));
   }
 }
