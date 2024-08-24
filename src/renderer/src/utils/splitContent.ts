@@ -2,12 +2,12 @@ import { config } from "../config";
 
 const MAX_SECTION_LENGTH = config.maxSectionLength;
 
-export function splitContent(content: string, maxSectionLength = MAX_SECTION_LENGTH) {
+export function splitContent(content: string, maxSectionLength = MAX_SECTION_LENGTH): string[] {
   if (content.length <= maxSectionLength) {
     return [content]; // Return the entire content as a single section if it's shorter than the max length
   }
 
-  const sections = [];
+  const sections: string[] = []; // Explicitly type the sections array as string[]
   let index = 0;
 
   while (index < content.length) {
