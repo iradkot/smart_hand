@@ -1,31 +1,68 @@
+import path from 'path';
+import {BuildContentResult} from "../types/interfaces";
+
+// Enum representing the different copy options
 export enum CopyOptions {
   CopyFileContents = '1',
   OnlyCopyStructure = '2',
 }
 
-export class CopyOptionHandler {
-  static buildContentForFile(filePath: string, fileContent: string, option: CopyOptions): string {
-    return option === CopyOptions.CopyFileContents
-      ? `The following is the content of the file "${filePath}":\n\n${fileContent}`
-      : `The path of the file is: "${filePath}"`;
-  }
+// Type definition for files and folders array elements
+interface FileOrFolder {
+  relativePath: string;
+  isFile: boolean;
+  content?: string | null;
+}
 
+export class CopyOptionHandler {
+  /**
+   * Constructs a textual representation of the folder structure,
+   * ignored files, and optionally, the content of the files.
+   */
   static buildContent(
-    directoryPath: string,
     folderStructure: string[],
     ignoredFiles: string[],
     fileEntries: string[],
     option: CopyOptions
-  ): string {
-    const baseContent = [
-      `The following is the structure of the folder "${directoryPath}":\n`,
-      ...folderStructure,
-      '\nThe following are the ignored files and folders:\n',
-      ...ignoredFiles,
-    ].join('');
+  ): BuildContentResult  {
+    const result: Record<string, any> = {
+      folderStructure: folderStructure.join(''),
+      ignoredFiles: ignoredFiles.join(''),
+    };
 
-    return option === CopyOptions.CopyFileContents
-      ? [baseContent, '\nThe following is the content of files with their paths relative to the base folder:\n', ...fileEntries].join('')
-      : baseContent;
+    console.log({fileEntries})
+
+    if (option === CopyOptions.CopyFileContents && fileEntries.length > 0) {
+      result['fileContents'] = fileEntries;
+    }
+
+    return result;
+  }
+
+  /**
+   * Creates a hierarchical object representing the folder and file structure.
+   */
+  static buildStructuredOutput(
+    filesAndFolders: FileOrFolder[]
+  ): Record<string, any> {
+    const structure: Record<string, any> = {};
+
+    filesAndFolders.forEach((item) => {
+      const parts = item.relativePath.split(path.sep);
+      let current = structure;
+
+      parts.forEach((part, index) => {
+        if (!current[part]) {
+          if (index === parts.length - 1 && item.isFile) {
+            current[part] = item.content || ''; // File content or empty string
+          } else {
+            current[part] = {};
+          }
+        }
+        current = current[part];
+      });
+    });
+
+    return structure;
   }
 }

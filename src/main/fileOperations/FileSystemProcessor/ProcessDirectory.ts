@@ -1,54 +1,65 @@
-import {CopyOptions} from "../utils/CopyOptionHandler";
+import path from 'path';
+import {IFileHandler, IUserInterface, IIgnoreList, FileOrFolder} from '../types/interfaces';
 import {createIndentationString} from "./CreateIndentationString";
-import path from "path";
 import {processFile} from "./ProcessFile";
-import {IFileHandler, IIgnoreList, ILogger, IUserInterface} from "../types/interfaces";
-
+import {CopyOptions} from "../utils/CopyOptionHandler";
 
 export async function processDirectory(
-  directoryPath: string,
+  currentDirectoryPath: string,
   initialDirectoryPath: string,
   option: CopyOptions,
   depth: number,
   fileHandler: IFileHandler,
-  logger: ILogger,
   ui: IUserInterface,
   ignoreList: IIgnoreList
-): Promise<{ structure: string[], ignored: string[] }> {
-  const prefix = createIndentationString(depth, false);
-  const folderName = path.basename(directoryPath);
-  let folderStructure = [`${prefix}${folderName}/\n`];
+): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[] }> {
+  const indentation = createIndentationString(depth, false);
+  const folderName = path.basename(currentDirectoryPath);
+  let folderStructure: string[] = [];
   let ignoredFiles: string[] = [];
+  let filesAndFolders: FileOrFolder[] = [];
 
-  const copyContents = await ui.confirm(`Do you want to copy the contents of the folder? ${path.relative(initialDirectoryPath, directoryPath)}`);
+  try {
+    const copyContents = await ui.confirm(`Do you want to copy the contents of the folder? ${path.relative(initialDirectoryPath, currentDirectoryPath)}`);
 
-  if (!copyContents) {
-    return { structure: folderStructure, ignored: ignoredFiles };
-  }
-
-  const items = await fileHandler.readDir(directoryPath);
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    const itemPath = path.join(directoryPath, item);
-    const relativeItemPath = path.relative(initialDirectoryPath, itemPath);
-    const isLast = i === items.length - 1;
-
-    if (ignoreList.shouldIgnore(itemPath)) {
-      ignoredFiles.push(`${createIndentationString(depth + 1, isLast)}${relativeItemPath}/\n`);
-      continue;
+    if (!copyContents) {
+      ignoredFiles.push(`${indentation}${folderName}/\n`);
+      return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders };
     }
 
-    const itemStat = await fileHandler.stat(itemPath);
-    if (itemStat.isFile()) {
-      const { structure, ignored } = await processFile(itemPath, relativeItemPath, option, depth + 1, isLast, fileHandler, logger);
-      folderStructure = folderStructure.concat(structure);
-      ignoredFiles = ignoredFiles.concat(ignored);
-    } else if (itemStat.isDirectory()) {
-      const { structure, ignored } = await processDirectory(itemPath, initialDirectoryPath, option, depth + 1, fileHandler, logger, ui, ignoreList);
-      folderStructure = folderStructure.concat(structure);
-      ignoredFiles = ignoredFiles.concat(ignored);
-    }
-  }
+    folderStructure.push(`${indentation}${folderName}/\n`);
+    filesAndFolders.push({ relativePath: path.relative(initialDirectoryPath, currentDirectoryPath), isFile: false });
 
-  return { structure: folderStructure, ignored: ignoredFiles };
+    const items = await fileHandler.readDir(currentDirectoryPath);
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const itemPath = path.join(currentDirectoryPath, item);
+      const relativeItemPath = path.relative(initialDirectoryPath, itemPath);
+      const isLast = i === items.length - 1;
+
+      if (ignoreList.shouldIgnore(itemPath)) {
+        ignoredFiles.push(`${createIndentationString(depth + 1, isLast)}${relativeItemPath}/\n`);
+        continue;
+      }
+
+      const itemStat = await fileHandler.stat(itemPath);
+      if (itemStat.isFile()) {
+        const { structure, ignored, filesAndFolders: fileResult } = await processFile(itemPath, relativeItemPath, option, depth + 1, isLast, fileHandler);
+        folderStructure = folderStructure.concat(structure);
+        ignoredFiles = ignoredFiles.concat(ignored);
+        filesAndFolders = filesAndFolders.concat(fileResult);
+      } else if (itemStat.isDirectory()) {
+        const { structure, ignored, filesAndFolders: dirResult } = await processDirectory(itemPath, initialDirectoryPath, option, depth + 1, fileHandler, ui, ignoreList);
+        folderStructure = folderStructure.concat(structure);
+        ignoredFiles = ignoredFiles.concat(ignored);
+        filesAndFolders = filesAndFolders.concat(dirResult);
+      }
+    }
+
+    return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders };
+  } catch (error) {
+    console.error(`Error processing directory ${currentDirectoryPath}:`, error);
+    // Handle the error, possibly rethrow or return a default structure
+    return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders };
+  }
 }

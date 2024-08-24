@@ -23,7 +23,7 @@ export const useStore = create<StoreState>()(
   devtools((set) => ({
     currentStepId: 'ChooseOptions',
     stepState: {
-      directoryPath: 'C:\\Users\\irad1\\projects\\smart_hand',
+      directoryPath: 'C:\\Users\\irad1\\projects\\smart_hand\\src\\main',
       option: '',
       message: '',
       copiedContent: '',
@@ -52,6 +52,7 @@ export const useStore = create<StoreState>()(
         set({ isLoading: true, error: null });
         invokeCopyingProcess({ directoryPath, option })
           .then((response: { message: string; content: string }) => {
+            console.log({ response });
             set((state) => ({
               stepState: {
                 ...state.stepState,

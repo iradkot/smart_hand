@@ -1,11 +1,21 @@
 
+export type FileContent = {
+  isFile: boolean;
+  content: string | null;
+};
+
 export type StepState = {
-  directoryPath: string
-  option?: OptionValue
-  message?: string
-  copiedContent?: string
-  gptAnswer?: string
-}
+  directoryPath: string;
+  option?: OptionValue;
+  message?: string;
+  copiedContent?: {
+    folderStructure: string;
+    ignoredFiles: string;
+    fileContents?: FileContent[]; // Updated to reflect correct type
+  };
+  gptAnswer?: string;
+};
+
 
 export type TableRow = string[]
 

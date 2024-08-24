@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell, IpcMainInvokeEvent } from 'electron';
 import { join } from 'path';
 import axios from 'axios';
 import icon from '../../resources/icon.png';
@@ -6,8 +6,8 @@ import { FileHandler } from "./fileOperations/utils/FileHandler";
 import { COPYING_PROCESS_INVOKE } from "../invokers/constants";
 import { UserInterface } from "./fileOperations/utils/UserInterface";
 import { IgnoreList } from "./fileOperations/utils/IgnoreList";
-import { Logger } from "./fileOperations/utils/Logger";
 import {startCopyingProcess} from "./fileOperations/FileSystemProcessor/StartCopyingProcess";
+import {CopyOptions} from "./fileOperations/utils/CopyOptionHandler";
 
 // Constants
 const WINDOW_WIDTH = 900;
@@ -52,7 +52,6 @@ const ignoreList = new IgnoreList([
   'out',
   'resources',
 ]);
-const logger = new Logger();
 
 function createWindow(): void {
   createAndLoadMainWindow();
@@ -122,25 +121,33 @@ app.on('window-all-closed', () => {
   }
 });
 
-ipcMain.handle('open-file-dialog', async () => {
+ipcMain.handle('open-file-dialog', async (): Promise<string[]> => {
   const result = await dialog.showOpenDialog({
     properties: ['openFile', 'openDirectory', 'multiSelections'],
   });
   return result.filePaths;
 });
 
-ipcMain.handle(COPYING_PROCESS_INVOKE, async (_, directoryPath, option) => {
+ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string, option: string) => {
   try {
-    console.log('Received copying request:', directoryPath, option);
-    const content = await startCopyingProcess(directoryPath, option, fileHandler, ui, ignoreList, logger);
-    const message = `Processed ${content.length} files and returning the content`;
+    const content = await startCopyingProcess(directoryPath, option as CopyOptions, fileHandler, ui, ignoreList);
+    console.log('qweqeq filesAndFolders keys:', Object.keys(content));
+    const message = content.fileContents ? `Processed ${content.fileContents.length} files/folders` : 'Processed 0 files/folders';
     return { message, content };
   } catch (err) {
     console.error('Failed to process:', err);
-    return { error: 'Error during processing', details: err.message };
+    return handleProcessingError(err);
   }
 });
 
-ipcMain.handle('chat-with-gpt', async (_, messages) => {
+ipcMain.handle('chat-with-gpt', async (_: IpcMainInvokeEvent, messages: any) => {
   return await apiClient.post(`${API_URL}${CHAT_ENDPOINT}`, { messages });
 });
+
+function handleProcessingError(err: unknown) {
+  if (err instanceof Error) {
+    return { error: 'Error during processing', details: err.message };
+  } else {
+    return { error: 'Unknown error during processing', details: String(err) };
+  }
+}

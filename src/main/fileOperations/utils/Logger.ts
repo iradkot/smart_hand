@@ -1,7 +1,7 @@
+// utils/Logger.ts
 import { inspect } from 'util';
-import {ILogger} from "../types/interfaces";
 
-export class Logger implements ILogger {
+class Logger {
   info(message: string, metadata: Record<string, any> = {}) {
     console.log(`[INFO]: ${message}`, inspect(metadata, { depth: null, colors: true }));
   }
@@ -18,3 +18,5 @@ export class Logger implements ILogger {
     console.log(`[DEBUG]: ${message}`, inspect(metadata, { depth: null, colors: true }));
   }
 }
+
+export const logger = new Logger();

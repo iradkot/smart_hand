@@ -1,7 +1,8 @@
-import {CopyOptions} from "../utils/CopyOptionHandler";
-import {createIndentationString} from "./CreateIndentationString";
+import { CopyOptions } from "../utils/CopyOptionHandler";
+import { createIndentationString } from "./CreateIndentationString";
+import { logger } from "../utils/Logger"; // import logger directly
 import path from "path";
-import {IFileHandler, ILogger} from "../types/interfaces";
+import {FileOrFolder, IFileHandler} from "../types/interfaces";
 
 export async function processFile(
   itemPath: string,
@@ -9,9 +10,8 @@ export async function processFile(
   option: CopyOptions,
   depth: number,
   isLast: boolean,
-  fileHandler: IFileHandler,
-  logger: ILogger
-): Promise<{ structure: string[], ignored: string[] }> {
+  fileHandler: IFileHandler
+): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[] }> {
   const prefix = createIndentationString(depth, isLast);
   const fileName = path.basename(itemPath);
   logger.debug(`Processing file: ${itemPath}`);
@@ -21,5 +21,11 @@ export async function processFile(
     ? [`${relativeItemPath}\n${await fileHandler.readFile(itemPath)}\n`]
     : [];
 
-  return { structure: folderStructure, ignored: fileEntries };
+  const filesAndFolders: FileOrFolder[] = [{
+    relativePath: relativeItemPath,
+    isFile: true,
+    content: fileEntries.length > 0 ? fileEntries.join('') : null,
+  }];
+
+  return { structure: folderStructure, ignored: fileEntries, filesAndFolders };
 }
