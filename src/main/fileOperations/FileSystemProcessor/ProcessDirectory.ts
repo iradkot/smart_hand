@@ -1,8 +1,8 @@
 import path from 'path';
-import {IFileHandler, IUserInterface, IIgnoreList, FileOrFolder} from '../types/interfaces';
-import {createIndentationString} from "./CreateIndentationString";
-import {processFile} from "./ProcessFile";
-import {CopyOptions} from "../utils/CopyOptionHandler";
+import { IFileHandler, IUserInterface, IIgnoreList, FileOrFolder } from '../types/interfaces';
+import { createIndentationString } from "./CreateIndentationString";
+import { processFile } from "./ProcessFile";
+import { CopyOptions } from "../utils/CopyOptionHandler";
 
 export async function processDirectory(
   currentDirectoryPath: string,
@@ -20,15 +20,16 @@ export async function processDirectory(
   let filesAndFolders: FileOrFolder[] = [];
 
   try {
+    // Add the folder name to the structure regardless of copying contents
+    folderStructure.push(`${indentation}${folderName}/\n`);
+    filesAndFolders.push({ relativePath: path.relative(initialDirectoryPath, currentDirectoryPath), isFile: false });
+
     const copyContents = await ui.confirm(`Do you want to copy the contents of the folder? ${path.relative(initialDirectoryPath, currentDirectoryPath)}`);
 
     if (!copyContents) {
       ignoredFiles.push(`${indentation}${folderName}/\n`);
       return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders };
     }
-
-    folderStructure.push(`${indentation}${folderName}/\n`);
-    filesAndFolders.push({ relativePath: path.relative(initialDirectoryPath, currentDirectoryPath), isFile: false });
 
     const items = await fileHandler.readDir(currentDirectoryPath);
     for (let i = 0; i < items.length; i++) {
@@ -59,7 +60,6 @@ export async function processDirectory(
     return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders };
   } catch (error) {
     console.error(`Error processing directory ${currentDirectoryPath}:`, error);
-    // Handle the error, possibly rethrow or return a default structure
     return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders };
   }
 }
