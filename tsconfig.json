@@ -2,12 +2,25 @@
   "include": [
     "src/**/*"
   ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "out",
+    "**/*.d.ts"
+  ],
   "files": [],
   "references": [
-    { "path": "./tsconfig.node.json" },
-    { "path": "./tsconfig.web.json" }
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.web.json"
+    }
   ],
   "compilerOptions": {
+    "types": [
+      "electron"
+    ],
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",

@@ -1,8 +1,8 @@
-import { CopyOptions } from "../utils/CopyOptionHandler";
+import { CopyOptions } from "../../utils/CopyOptionHandler";
 import { createIndentationString } from "./CreateIndentationString";
-import { logger } from "../utils/Logger"; // import logger directly
+import { logger } from "../../utils/Logger"; // import logger directly
 import path from "path";
-import {FileOrFolder, IFileHandler} from "../types/interfaces";
+import {FileOrFolder, IFileHandler} from "../../types/interfaces";
 
 export async function processFile(
   itemPath: string,

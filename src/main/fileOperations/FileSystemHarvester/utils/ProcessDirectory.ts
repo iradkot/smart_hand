@@ -1,8 +1,8 @@
 import path from 'path';
-import { IFileHandler, IUserInterface, IIgnoreList, FileOrFolder } from '../types/interfaces';
+import { IFileHandler, IUserInterface, IIgnoreList, FileOrFolder } from '../../types/interfaces';
 import { createIndentationString } from "./CreateIndentationString";
 import { processFile } from "./ProcessFile";
-import { CopyOptions } from "../utils/CopyOptionHandler";
+import { CopyOptions } from "../../utils/CopyOptionHandler";
 
 export async function processDirectory(
   currentDirectoryPath: string,

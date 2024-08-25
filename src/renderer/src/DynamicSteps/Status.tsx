@@ -30,8 +30,8 @@ const Status = () => {
           <p>{stepState.gptAnswer}</p>
         </div>
       )}
-      {copiedContent?.folderStructure && <CopySections content={copiedContent.folderStructure} />}
-      {joinedContent && <CopySections content={joinedContent} />}
+      {copiedContent?.folderStructure && <CopySections content={copiedContent.folderStructure} title={'Folder Structure'} />}
+      {joinedContent && <CopySections content={joinedContent} title={'Files Content'} />}
     </>
   );
 };

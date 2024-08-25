@@ -1,4 +1,5 @@
 import path from "node:path";
+import {IIgnoreList} from "../types/interfaces";
 
 export class IgnoreList implements IIgnoreList {
   private readonly ignoreList: Set<string>;

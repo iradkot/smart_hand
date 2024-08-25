@@ -29,3 +29,9 @@ export interface StartCopyingProcessResult extends BuildContentResult {
   message: string;
 }
 
+interface IOpenAiService {
+  generateTestFileStructure(input: string): Promise<StructuredOutput>;
+  generateTerminalCommands(input: string): Promise<StructuredCommandOutput>;
+}
+
+

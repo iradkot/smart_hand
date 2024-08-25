@@ -6,7 +6,7 @@ import { FileHandler } from "./fileOperations/utils/FileHandler";
 import { COPYING_PROCESS_INVOKE } from "../invokers/constants";
 import { UserInterface } from "./fileOperations/utils/UserInterface";
 import { IgnoreList } from "./fileOperations/utils/IgnoreList";
-import {startCopyingProcess} from "./fileOperations/FileSystemProcessor/StartCopyingProcess";
+import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
 import {CopyOptions} from "./fileOperations/utils/CopyOptionHandler";
 
 // Constants
@@ -14,7 +14,7 @@ const WINDOW_WIDTH = 900;
 const WINDOW_HEIGHT = 670;
 const DEVELOPMENT_MODE = 'development';
 const ELECTRON_RENDERER_URL = 'ELECTRON_RENDERER_URL';
-const API_URL = 'http://localhost:5000';
+const API_URL = 'http://localhost:5000/api';
 const CHAT_ENDPOINT = '/chat';
 
 // Dependency inversion: abstract API client
@@ -131,7 +131,7 @@ ipcMain.handle('open-file-dialog', async (): Promise<string[]> => {
 
 ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string, option: string) => {
   try {
-    const content = await startCopyingProcess(directoryPath, option as CopyOptions, fileHandler, ui, ignoreList);
+    const content = await harvestPath(directoryPath, option as CopyOptions, fileHandler, ui, ignoreList);
     console.log('qweqeq filesAndFolders keys:', Object.keys(content));
     const message = content.fileContents ? `Processed ${content.fileContents.length} files/folders` : 'Processed 0 files/folders';
     return { message, content };
@@ -143,6 +143,16 @@ ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPa
 
 ipcMain.handle('chat-with-gpt', async (_: IpcMainInvokeEvent, messages: any) => {
   return await apiClient.post(`${API_URL}${CHAT_ENDPOINT}`, { messages });
+});
+
+ipcMain.handle('create-and-run-test', async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, instructions?: string) => {
+  try {
+    await createAndRunTest(sessionId, directoryPath, fileContent, instructions);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to create and run test:', error);
+    return { success: false, error: error.message };
+  }
 });
 
 function handleProcessingError(err: unknown) {

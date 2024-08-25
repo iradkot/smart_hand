@@ -36,7 +36,7 @@ export class CopyOptionHandler {
       result['fileContents'] = fileEntries;
     }
 
-    return result;
+    return <BuildContentResult>result;
   }
 
   /**
