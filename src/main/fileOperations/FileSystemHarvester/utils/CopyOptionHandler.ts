@@ -1,5 +1,5 @@
 import path from 'path';
-import {BuildContentResult} from "../../types/interfaces";
+import { BuildContentResult } from "../../types/interfaces";
 
 // Enum representing the different copy options
 export enum CopyOptions {

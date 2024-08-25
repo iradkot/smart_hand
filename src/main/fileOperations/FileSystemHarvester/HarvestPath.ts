@@ -4,7 +4,7 @@ import path from "path";
 import { processDirectory } from "./utils/ProcessDirectory";
 import { IFileHandler, IIgnoreList, IUserInterface, StartCopyingProcessResult } from "../types/interfaces";
 import { logger } from "../utils/Logger";
-import { FileError, DirectoryError } from "../types/Errors";  // Import custom error types
+import { FileError, DirectoryError } from "../types/Errors";
 
 /**
  * Harvests the content and structure of a specified path, either a file or directory,
