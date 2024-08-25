@@ -1,4 +1,4 @@
-import { CopyOptions } from "../../utils/CopyOptionHandler";
+import { CopyOptions } from "./CopyOptionHandler";
 import { createIndentationString } from "./CreateIndentationString";
 import { logger } from "../../utils/Logger"; // import logger directly
 import path from "path";

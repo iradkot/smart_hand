@@ -1,7 +1,4 @@
-// routeConfig.ts
-import Status from './DynamicSteps/Status';
-import {GPTChat} from "./DynamicSteps";
-import CopyConfigurationForm from "./DynamicSteps/copyConfigurationForm/CopyConfigurationForm";
+import {GPTChat, CopyConfigurationForm, Status} from "../screens";
 
 export interface RouteConfig {
   path: string;

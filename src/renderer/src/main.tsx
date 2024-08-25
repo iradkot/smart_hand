@@ -1,10 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
 import {CopyHistoryProvider} from './contexts'
 import {ThemeProvider} from 'styled-components'
 import {theme} from "./style/theme";
 import {BrowserRouter} from 'react-router-dom';
+import AppRouter from "./navigation/AppRouter";
 
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <CopyHistoryProvider>
         <ThemeProvider theme={theme}>
           <BrowserRouter>
-              <App/>
+            <AppRouter/>
           </BrowserRouter>
         </ThemeProvider>
     </CopyHistoryProvider>

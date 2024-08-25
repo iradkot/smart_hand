@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Label } from '../../../components/ui/styledComponents';
-import CopySections from '../CopySections';
+import CopySections from '../components/CopySections';
 import { useStore } from '../contexts/useStore';
 import { StepState } from '../types';
 

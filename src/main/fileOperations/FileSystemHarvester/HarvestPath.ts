@@ -1,4 +1,4 @@
-import { CopyOptionHandler, CopyOptions } from "../utils/CopyOptionHandler";
+import { CopyOptionHandler, CopyOptions } from "./utils/CopyOptionHandler";
 import { processFile } from "./utils/ProcessFile";
 import path from "path";
 import { processDirectory } from "./utils/ProcessDirectory";

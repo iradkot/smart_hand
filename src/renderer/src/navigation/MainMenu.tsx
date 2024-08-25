@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'; // Use NavLink
 import { routesConfig } from './routeConfig';
 import styled from 'styled-components';

@@ -7,7 +7,7 @@ import { COPYING_PROCESS_INVOKE } from "../invokers/constants";
 import { UserInterface } from "./fileOperations/utils/UserInterface";
 import { IgnoreList } from "./fileOperations/utils/IgnoreList";
 import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
-import {CopyOptions} from "./fileOperations/utils/CopyOptionHandler";
+import {CopyOptions} from "./fileOperations/FileSystemHarvester/utils/CopyOptionHandler";
 
 // Constants
 const WINDOW_WIDTH = 900;

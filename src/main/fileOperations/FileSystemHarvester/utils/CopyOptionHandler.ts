@@ -1,5 +1,5 @@
 import path from 'path';
-import {BuildContentResult} from "../types/interfaces";
+import {BuildContentResult} from "../../types/interfaces";
 
 // Enum representing the different copy options
 export enum CopyOptions {
@@ -29,8 +29,6 @@ export class CopyOptionHandler {
       folderStructure: folderStructure.join(''),
       ignoredFiles: ignoredFiles.join(''),
     };
-
-    console.log({fileEntries})
 
     if (option === CopyOptions.CopyFileContents && fileEntries.length > 0) {
       result['fileContents'] = fileEntries;
