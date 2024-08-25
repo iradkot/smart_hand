@@ -51,6 +51,7 @@ const ignoreList = new IgnoreList([
   'build',
   'out',
   'resources',
+  'dist',
 ]);
 
 function createWindow(): void {
