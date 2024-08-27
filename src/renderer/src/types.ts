@@ -5,13 +5,14 @@ export type FileContent = {
 };
 
 export type StepState = {
+  sessionId?: string;
   directoryPath: string;
   option?: OptionValue;
   message?: string;
-  copiedContent?: {
+  copiedContent: {
     folderStructure: string;
-    ignoredFiles: string;
-    fileContents?: FileContent[]; // Updated to reflect correct type
+    ignoredFiles: string; // Ensure this is always a string
+    fileContents?: FileContent[];
   };
   gptAnswer?: string;
 };

@@ -3,11 +3,12 @@ import { join } from 'path';
 import axios from 'axios';
 import icon from '../../resources/icon.png';
 import { FileHandler } from "./fileOperations/utils/FileHandler";
-import { COPYING_PROCESS_INVOKE } from "../invokers/constants";
+import {COPYING_PROCESS_INVOKE, CREATE_AND_RUN_TEST_INVOKE} from "../invokers/constants";
 import { UserInterface } from "./fileOperations/utils/UserInterface";
 import { IgnoreList } from "./fileOperations/utils/IgnoreList";
 import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
 import {CopyOptions} from "./fileOperations/FileSystemHarvester/utils/CopyOptionHandler";
+import {createAndRunTest} from "./smartTasks/TestTasks";
 
 // Constants
 const WINDOW_WIDTH = 900;
@@ -132,7 +133,6 @@ ipcMain.handle('open-file-dialog', async (): Promise<string[]> => {
 ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string, option: string) => {
   try {
     const content = await harvestPath(directoryPath, option as CopyOptions, fileHandler, ui, ignoreList);
-    console.log('qweqeq filesAndFolders keys:', Object.keys(content));
     const message = content.fileContents ? `Processed ${content.fileContents.length} files/folders` : 'Processed 0 files/folders';
     return { message, content };
   } catch (err) {
@@ -145,12 +145,13 @@ ipcMain.handle('chat-with-gpt', async (_: IpcMainInvokeEvent, messages: any) => 
   return await apiClient.post(`${API_URL}${CHAT_ENDPOINT}`, { messages });
 });
 
-ipcMain.handle('create-and-run-test', async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, instructions?: string) => {
+ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, instructions?: string) => {
   try {
+    console.log('createAndRunTest:', sessionId, directoryPath, fileContent.length, instructions?.length);
     await createAndRunTest(sessionId, directoryPath, fileContent, instructions);
     return { success: true };
   } catch (error) {
-    console.error('Failed to create and run test:', error);
+    console.error('Failed to create and run test:', error?.message);
     return { success: false, error: error.message };
   }
 });

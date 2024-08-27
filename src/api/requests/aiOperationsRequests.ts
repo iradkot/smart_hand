@@ -19,14 +19,14 @@ export const generateTestFile = async (
   instructions?: string
 ): Promise<any> => {
   try {
-    const response = await smartHandServer.post('/ai/generateTestFile', {
+    const response = await smartHandServer.post('/generateTestFile', {
       sessionId,
       fileContent,
       instructions,
     });
     return response.data;
   } catch (error) {
-    console.log('Error in generateTestFile:', error);
+    console.log('Error in generateTestFile:', error?.message);
     throw error;
   }
 };

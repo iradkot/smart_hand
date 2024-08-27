@@ -2,7 +2,7 @@ import { CopyOptions } from "./CopyOptionHandler";
 import { createIndentationString } from "./CreateIndentationString";
 import { logger } from "../../utils/Logger"; // import logger directly
 import path from "path";
-import {FileOrFolder, IFileHandler} from "../../types/interfaces";
+import { FileOrFolder, IFileHandler } from "../../types/interfaces";
 
 export async function processFile(
   itemPath: string,
@@ -11,21 +11,27 @@ export async function processFile(
   depth: number,
   isLast: boolean,
   fileHandler: IFileHandler
-): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[] }> {
+): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[], resultDict: Record<string, any> }> {
   const prefix = createIndentationString(depth, isLast);
   const fileName = path.basename(itemPath);
   logger.debug(`Processing file: ${itemPath}`);
 
   const folderStructure = [`${prefix}${fileName}\n`];
-  const fileEntries = option === CopyOptions.CopyFileContents
-    ? [`${relativeItemPath}\n${await fileHandler.readFile(itemPath)}\n`]
-    : [];
+  const fileContent = option === CopyOptions.CopyFileContents ? await fileHandler.readFile(itemPath) : null;
+  const fileEntries = fileContent ? [`${relativeItemPath}\n${fileContent}\n`] : [];
 
   const filesAndFolders: FileOrFolder[] = [{
     relativePath: relativeItemPath,
     isFile: true,
-    content: fileEntries.length > 0 ? fileEntries.join('') : null,
+    content: fileContent,
   }];
 
-  return { structure: folderStructure, ignored: fileEntries, filesAndFolders };
+  const resultDict: Record<string, any> = {
+    [fileName]: {
+      type: 'file',
+      content: fileContent,
+    }
+  };
+
+  return { structure: folderStructure, ignored: fileEntries, filesAndFolders, resultDict };
 }

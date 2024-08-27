@@ -12,18 +12,25 @@ export async function processDirectory(
   fileHandler: IFileHandler,
   ui: IUserInterface,
   ignoreList: IIgnoreList
-): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[] }> {
+): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[], resultDict: Record<string, any> }> {
   const isInitialDirectory = currentDirectoryPath === initialDirectoryPath;
   const indentation = createIndentationString(depth, false);
   const folderName = path.basename(currentDirectoryPath);
   let folderStructure: string[] = [];
   let ignoredFiles: string[] = [];
   let filesAndFolders: FileOrFolder[] = [];
+  let resultDict: Record<string, any> = {};
 
   try {
     // Add the folder name to the structure regardless of copying contents
     folderStructure.push(`${isInitialDirectory ? '' : indentation}${folderName}/\n`);
     filesAndFolders.push({ relativePath: path.relative(initialDirectoryPath, currentDirectoryPath), isFile: false });
+
+    // Add the directory to the result dictionary
+    resultDict[folderName] = {
+      type: 'directory',
+      children: {}
+    };
 
     // Only prompt for confirmation if it's not the initial directory
     if (!isInitialDirectory) {
@@ -31,7 +38,8 @@ export async function processDirectory(
 
       if (!copyContents) {
         ignoredFiles.push(`${indentation}${folderName}/\n`);
-        return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders };
+        resultDict[folderName].children = false; // Indicate that children were not copied
+        return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders, resultDict };
       }
     }
 
@@ -49,21 +57,23 @@ export async function processDirectory(
 
       const itemStat = await fileHandler.stat(itemPath);
       if (itemStat.isFile()) {
-        const { structure, ignored, filesAndFolders: fileResult } = await processFile(itemPath, relativeItemPath, option, depth + 1, isLast, fileHandler);
+        const { structure, ignored, filesAndFolders: fileResult, resultDict: fileDict } = await processFile(itemPath, relativeItemPath, option, depth + 1, isLast, fileHandler);
         folderStructure = folderStructure.concat(structure);
         ignoredFiles = ignoredFiles.concat(ignored);
         filesAndFolders = filesAndFolders.concat(fileResult);
+        resultDict[folderName].children[item] = fileDict[item];
       } else if (itemStat.isDirectory()) {
-        const { structure, ignored, filesAndFolders: dirResult } = await processDirectory(itemPath, initialDirectoryPath, option, depth + 1, fileHandler, ui, ignoreList);
+        const { structure, ignored, filesAndFolders: dirResult, resultDict: dirDict } = await processDirectory(itemPath, initialDirectoryPath, option, depth + 1, fileHandler, ui, ignoreList);
         folderStructure = folderStructure.concat(structure);
         ignoredFiles = ignoredFiles.concat(ignored);
         filesAndFolders = filesAndFolders.concat(dirResult);
+        resultDict[folderName].children[item] = dirDict[item];
       }
     }
 
-    return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders };
+    return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders, resultDict };
   } catch (error) {
     console.error(`Error processing directory ${currentDirectoryPath}:`, error);
-    return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders };
+    return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders, resultDict };
   }
 }

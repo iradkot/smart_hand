@@ -1,8 +1,5 @@
 import {useState} from 'react'
-
-const generateUniqueSessionId = (): string => {
-  return Math.random().toString(36).substring(2, 15)
-}
+import {generateUniqueSessionId} from "../../../../utils/generateUniqueSessionId";
 
 type Role = 'user' | 'gpt'
 

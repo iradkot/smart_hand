@@ -5,7 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { splitContent } from '../utils/splitContent';
 import { downloadAsTextFile } from '../../../components/ui/GPTChat/utils';
-import { useCopyHistory } from '../contexts/CopyHistoryContext';
+import { useCopyHistory } from '../stateManagement/contexts/CopyHistoryContext';
 import { IconButton, Button } from '@material-ui/core';
 import { ExpandMore, ExpandLess } from '@material-ui/icons';
 import styled from 'styled-components';

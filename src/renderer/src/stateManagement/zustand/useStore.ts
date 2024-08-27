@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { StepState } from '../types';
-import {invokeCopyingProcess} from "../../../invokers/ipcInvokers";
+import {OptionValue, StepState} from '../../types';
+import {invokeCopyingProcess} from "../../../../invokers/ipcInvokers";
+import {generateUniqueSessionId} from "../../../../utils/generateUniqueSessionId";
 
 interface StoreState {
   currentStepId: string;
@@ -16,17 +17,31 @@ interface StoreState {
   setError: (error: string | null) => void;
   resetProcess: () => void;
   copyToClipboard: (directoryPath: string, option: string) => Promise<{ message: string; content: string }>;
+  initializeSession: () => string;
 }
 
-// Use `create` here to define the Zustand store as a hook
 export const useStore = create<StoreState>()(
   devtools((set) => ({
     currentStepId: 'ChooseOptions',
     stepState: {
-      directoryPath: 'C:\\Users\\irad1\\projects\\smart_hand\\src\\main',
-      option: '',
+      directoryPath: 'C:\\Users\\irad1\\projects\\smart_hand\\src\\main\\fileOperations\\FileSystemHarvester',
+      option: '' as OptionValue, // Ensure this matches the expected type
       message: '',
-      copiedContent: '',
+      copiedContent: {
+        folderStructure: '', // Initialize with empty strings or appropriate default values
+        ignoredFiles: '',
+        fileContents: [], // Initialize as an empty array or undefined if not needed initially
+      },
+    },
+    initializeSession: () => {
+      const sessionId = generateUniqueSessionId(); // Generate a new sessionId
+      set((state) => ({
+        stepState: {
+          ...state.stepState,
+          sessionId, // Set the new sessionId
+        },
+      }));
+      return sessionId;
     },
     step: 1,
     isLoading: false,
@@ -37,16 +52,20 @@ export const useStore = create<StoreState>()(
     setLoading: (loading: boolean) => set({ isLoading: loading }),
     setError: (error: string | null) => set({ error }),
     resetProcess: () =>
-      set({
+      set(() => ({
         stepState: {
           directoryPath: '',
-          option: '',
+          option: '' as OptionValue, // Ensure option is properly reset
           message: '',
-          copiedContent: '',
+          copiedContent: {
+            folderStructure: '',
+            ignoredFiles: '',
+            fileContents: [], // Or undefined if not required at initialization
+          },
         },
         isLoading: false,
         error: null,
-      }),
+      })),
     copyToClipboard: (directoryPath: string, option: string) =>
       new Promise((resolve, reject) => {
         set({ isLoading: true, error: null });
@@ -73,3 +92,5 @@ export const useStore = create<StoreState>()(
       }),
   }))
 );
+
+

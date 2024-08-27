@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import {CopyHistoryProvider} from './contexts'
+import {CopyHistoryProvider} from './stateManagement/contexts'
 import {ThemeProvider} from 'styled-components'
 import {theme} from "./style/theme";
 import {BrowserRouter} from 'react-router-dom';

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { optionsData, OPTION_COPY_FILE_CONTENTS } from '../OPTION_SHOW_REACT_NATIVE_LOGS'; // Assuming OPTION_COPY_FILE_CONTENTS is a valid default
 import RadioGroup from './RadioGroup';
 import TextInput from './TextInput';
-import { useStore } from '../../contexts/useStore';
+import { useStore } from '../../stateManagement/zustand/useStore';
 import { OptionValue } from '../../types';
 
 const CopyConfigurationForm: React.FC = () => {
