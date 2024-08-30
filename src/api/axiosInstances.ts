@@ -6,3 +6,4 @@ export const smartHandServer = axios.create({
     'Content-Type': 'application/json',
   },
 })
+

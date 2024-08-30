@@ -8,20 +8,22 @@ export async function createAndRunTest(
   fileContent: string,
   instructions?: string
 ): Promise<void> {
-  console.log('Creating and running test...');
+  console.log('Sending request to generate test file');
   // Step 1: Generate the test file content
   const testResponse = await generateTestFile(sessionId, fileContent, instructions);
-  const { content, filename } = testResponse;
 
-  console.log('Generated test file:', filename);
+  const { content } = testResponse;
+
+  console.log('Generated test file:', content.testFileName);
   // Step 2: Create the test file in the specified directory
   const fileHandler = new FileHandler();
   console.log('Creating test file at:', directoryPath);
-  await fileHandler.writeFile(`${directoryPath}/${filename}`, content);
+  await fileHandler.writeFile(`${directoryPath}/${content.testFileName}`, content.testCode);
 
-  console.log('Test file created:', filename);
+  console.log('Test file created:', content.testFileName);
   // Step 3: Execute any commands if necessary
   // const commandExecutor = new CommandExecutor();
-  // const commandResponse = await commandExecutor.executeCommand(`run ${directoryPath}/${filename}`);
+  console.log('Executing command:', content.runCommand);
+  // const commandResponse = await commandExecutor.executeCommand(content.runCommand);
   // console.log(commandResponse);
 }
