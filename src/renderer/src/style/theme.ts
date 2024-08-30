@@ -48,7 +48,7 @@ export const theme: DefaultTheme = {
   },
   getShadowStyles: (elevation: number, color = 'rgba(0,0,0,0.1)') => {
     const opacity = elevation * 0.1;
-    return `box-shadow: 0px ${elevation}px ${elevation * 2}px ${color};`;
+    return `box-shadow: 0px ${elevation}px ${elevation * 2}px ${color}, 0px ${elevation / 2}px ${elevation}px rgba(0,0,0,${opacity});`;
   },
   shadow: {
     default: `box-shadow: 0px 1px 2px rgba(0,0,0,0.1);`,

@@ -19,12 +19,6 @@ export const Section = styled.div`
   margin-bottom: 30px;
 `;
 
-export const SectionTitle = styled.h3`
-  font-size: 1.25rem;
-  margin-bottom: 10px;
-  color: ${({ theme }) => theme.textColor};
-`;
-
 export const FolderStructure = styled.div`
   padding: 10px;
   background-color: ${({ theme }) => theme.shades.light};

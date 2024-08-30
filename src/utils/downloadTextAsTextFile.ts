@@ -1,5 +1,4 @@
-
-export const downloadAsTextFile = (filename: string, text: string) => {
+export const downloadTextAsTextFile = (filename: string, text: string) => {
   const element = document.createElement('a');
   const file = new Blob([text], {type: 'text/plain'});
   element.href = URL.createObjectURL(file);

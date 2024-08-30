@@ -1,6 +1,6 @@
 import React from 'react';
-import { Container, Header, Section, SectionTitle, FolderStructure, FileContent, Actions, Label } from './Status.styles';
-import CopySections from '../../components/CopySections';
+import { Container, Header, Section, FolderStructure, FileContent, Actions, Label } from './Status.styles';
+import CopySections from '../../components/CopySections/CopySections';
 import { useStepState } from "../../stateManagement/zustand/selectors/createTest.selectors";
 import { useError, useIsLoading } from "../../stateManagement/zustand/selectors/createTest.selectors";
 import LoadingError from "./components/LoadingError";
