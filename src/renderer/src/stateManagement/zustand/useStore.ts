@@ -3,6 +3,7 @@ import { devtools } from 'zustand/middleware';
 import {OptionValue, StepState} from '../../types';
 import {invokeCopyingProcess} from "../../../../invokers/ipcInvokers";
 import {generateUniqueSessionId} from "../../../../utils/generateUniqueSessionId";
+import {copiedContent} from "../../../../types/pathHarvester.types";
 
 interface StoreState {
   currentStepId: string;
@@ -16,7 +17,7 @@ interface StoreState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   resetProcess: () => void;
-  copyToClipboard: (directoryPath: string, option: string) => Promise<{ message: string; content: string }>;
+  copyToClipboard: (directoryPath: string, option: string) => Promise<{ message: string; content: copiedContent }>;
   initializeSession: () => string;
 }
 
@@ -30,7 +31,7 @@ export const useStore = create<StoreState>()(
       copiedContent: {
         folderStructure: '', // Initialize with empty strings or appropriate default values
         ignoredFiles: '',
-        fileContents: [], // Initialize as an empty array or undefined if not needed initially
+        contentTree: {}, // Initialize as an empty array or undefined if not needed initially
       },
     },
     initializeSession: () => {
@@ -60,7 +61,7 @@ export const useStore = create<StoreState>()(
           copiedContent: {
             folderStructure: '',
             ignoredFiles: '',
-            fileContents: [], // Or undefined if not required at initialization
+            contentTree: {} // Or undefined if not required at initialization
           },
         },
         isLoading: false,
@@ -70,7 +71,7 @@ export const useStore = create<StoreState>()(
       new Promise((resolve, reject) => {
         set({ isLoading: true, error: null });
         invokeCopyingProcess({ directoryPath, option })
-          .then((response: { message: string; content: string }) => {
+          .then((response: { message: string; content: copiedContent }) => {
             console.log({ response });
             set((state) => ({
               stepState: {

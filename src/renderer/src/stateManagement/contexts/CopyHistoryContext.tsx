@@ -31,15 +31,17 @@ export const CopyHistoryProvider: FC<CopyHistoryProviderProps> = ({ children }) 
     setHistory((prevHistory) => [...prevHistory, newItem]);
   };
 
-  const copyToClipboardWithToast = (content: string, sectionIndex: number) => {
-    navigator.clipboard.writeText(content).then(() => {
+  const copyToClipboardWithToast = async (content: string, sectionIndex: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
       toast.success(`Section ${sectionIndex + 1} copied!`);
       addToHistory(`Section ${sectionIndex + 1}`, content);
-    }).catch((err) => {
+    } catch (err) {
       toast.error(`Failed to copy Section ${sectionIndex + 1}`);
-      console.log('Failed to copy content to clipboard:', err);
-    });
+      console.error('Failed to copy content to clipboard:', err);
+    }
   };
+
 
   return (
     <CopyHistoryContext.Provider value={{ history, addToHistory, copyToClipboardWithToast }}>

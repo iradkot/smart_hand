@@ -1,8 +1,7 @@
-import { CopyOptionHandler, CopyOptions } from "./utils/CopyOptionHandler";
+import { CopyOptionHandler } from "./utils/CopyOptionHandler";
 import { processFile } from "./utils/ProcessFile";
-import path from "path";
 import { processDirectory } from "./utils/ProcessDirectory";
-import { IFileHandler, IIgnoreList, IUserInterface, StartCopyingProcessResult } from "../types/interfaces";
+import {CopyOptions, IFileHandler, IIgnoreList, IUserInterface, StartCopyingProcessResult} from "../types/interfaces";
 import { logger } from "../utils/Logger";
 import { FileError, DirectoryError } from "../types/Errors";
 
@@ -26,32 +25,23 @@ export async function harvestPath(
   ignoreList: IIgnoreList,
 ): Promise<StartCopyingProcessResult> {
   try {
-    // Log the start of the process, specifying the directory and option chosen
-    logger.info(`Starting copy process for directory: "${directoryPath}" with option: "${option}"`);
+    logger.info(`Starting harvesting process for directory: "${directoryPath}"`);
 
-    // Get the initial stats for the provided path (whether it's a file or directory)
     const initialStat = await fileHandler.stat(directoryPath);
     let result;
 
-    // Check if the path is a file
     if (initialStat.isFile()) {
-      // Process the file and return the result
-      result = await processFile(directoryPath, path.basename(directoryPath), option, 0, true, fileHandler);
+      result = await processFile(directoryPath, directoryPath, option, 0, true, fileHandler);  // Pass full path
     } else {
-      // If it's a directory, recursively process the directory and return the result
-      result = await processDirectory(directoryPath, directoryPath, option, 0, fileHandler, ui, ignoreList);
-      console.log('result keys:', Object.keys(result));  // Debugging: Log the keys of the result object
+      result = await processDirectory(directoryPath, directoryPath, option, 0, fileHandler, ui, ignoreList);  // Pass full path
     }
 
-    // Build the content output based on the processed data and selected option
     const content = CopyOptionHandler.buildContent(
       result.structure,
       result.ignored,
-      result.filesAndFolders,
-      option
+      result.resultDict
     );
 
-    // Return the final structured result including a message
     return { message: `Processed ${result.filesAndFolders.length} files/folders`, ...content };
   } catch (err) {
     if (err instanceof FileError || err instanceof DirectoryError) {

@@ -1,8 +1,8 @@
 import path from 'path';
-import { IFileHandler, IUserInterface, IIgnoreList, FileOrFolder } from '../../types/interfaces';
+import {IFileHandler, IUserInterface, IIgnoreList, FileOrFolder, CopyOptions} from '../../types/interfaces';
 import { createIndentationString } from "./CreateIndentationString";
 import { processFile } from "./ProcessFile";
-import { CopyOptions } from "./CopyOptionHandler";
+import {contentTree} from "../../../../types/pathHarvester.types";
 
 export async function processDirectory(
   currentDirectoryPath: string,
@@ -12,7 +12,7 @@ export async function processDirectory(
   fileHandler: IFileHandler,
   ui: IUserInterface,
   ignoreList: IIgnoreList
-): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[], resultDict: Record<string, any> }> {
+): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[], resultDict: contentTree }> {
   const isInitialDirectory = currentDirectoryPath === initialDirectoryPath;
   const indentation = createIndentationString(depth, false);
   const folderName = path.basename(currentDirectoryPath);
@@ -26,10 +26,10 @@ export async function processDirectory(
     folderStructure.push(`${isInitialDirectory ? '' : indentation}${folderName}/\n`);
     filesAndFolders.push({ relativePath: path.relative(initialDirectoryPath, currentDirectoryPath), isFile: false });
 
-    // Add the directory to the result dictionary
     resultDict[folderName] = {
       type: 'directory',
-      children: {}
+      children: {},
+      localPath: currentDirectoryPath, // Assign the full local path here
     };
 
     // Only prompt for confirmation if it's not the initial directory
@@ -70,7 +70,6 @@ export async function processDirectory(
         resultDict[folderName].children[item] = dirDict[item];
       }
     }
-
     return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders, resultDict };
   } catch (error) {
     console.error(`Error processing directory ${currentDirectoryPath}:`, error);

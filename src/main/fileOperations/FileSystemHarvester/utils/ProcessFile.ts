@@ -1,8 +1,7 @@
-import { CopyOptions } from "./CopyOptionHandler";
 import { createIndentationString } from "./CreateIndentationString";
-import { logger } from "../../utils/Logger"; // import logger directly
+import { logger } from "../../utils/Logger";
 import path from "path";
-import { FileOrFolder, IFileHandler } from "../../types/interfaces";
+import {CopyOptions, FileOrFolder, IFileHandler} from "../../types/interfaces";
 
 export async function processFile(
   itemPath: string,
@@ -17,7 +16,7 @@ export async function processFile(
   logger.debug(`Processing file: ${itemPath}`);
 
   const folderStructure = [`${prefix}${fileName}\n`];
-  const fileContent = option === CopyOptions.CopyFileContents ? await fileHandler.readFile(itemPath) : null;
+  const fileContent = option === CopyOptions.CopycontentTree ? await fileHandler.readFile(itemPath) : null;
   const fileEntries = fileContent ? [`${relativeItemPath}\n${fileContent}\n`] : [];
 
   const filesAndFolders: FileOrFolder[] = [{
@@ -30,6 +29,7 @@ export async function processFile(
     [fileName]: {
       type: 'file',
       content: fileContent,
+      localPath: itemPath, // Assign the full local path here
     }
   };
 

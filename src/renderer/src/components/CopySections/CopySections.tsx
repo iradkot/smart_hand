@@ -49,7 +49,6 @@ const CopySections: React.FC<CopySectionsProps> = ({
 
   return (
     <div>
-      <ToastContainer />
       {sections.map((section, index) => (
         <SectionContainer key={index} ref={(el) => (sectionRefs.current[index] = el)}>
           <SectionHeader

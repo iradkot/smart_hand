@@ -1,18 +1,5 @@
-import path from 'path';
-import { BuildContentResult } from "../../types/interfaces";
-
-// Enum representing the different copy options
-export enum CopyOptions {
-  CopyFileContents = '1',
-  OnlyCopyStructure = '2',
-}
-
-// Type definition for files and folders array elements
-interface FileOrFolder {
-  relativePath: string;
-  isFile: boolean;
-  content?: string | null;
-}
+import {BuildContentResult} from "../../types/interfaces";
+import {contentTree} from "../../../../types/pathHarvester.types";
 
 export class CopyOptionHandler {
   /**
@@ -22,45 +9,13 @@ export class CopyOptionHandler {
   static buildContent(
     folderStructure: string[],
     ignoredFiles: string[],
-    fileEntries: string[],
-    option: CopyOptions
-  ): BuildContentResult  {
+    resultDict: contentTree,
+  ): BuildContentResult {
     const result: Record<string, any> = {
       folderStructure: folderStructure.join(''),
       ignoredFiles: ignoredFiles.join(''),
+      contentTree: Object.values(resultDict)[0]
     };
-
-    if (option === CopyOptions.CopyFileContents && fileEntries.length > 0) {
-      result['fileContents'] = fileEntries;
-    }
-
-    return <BuildContentResult>result;
-  }
-
-  /**
-   * Creates a hierarchical object representing the folder and file structure.
-   */
-  static buildStructuredOutput(
-    filesAndFolders: FileOrFolder[]
-  ): Record<string, any> {
-    const structure: Record<string, any> = {};
-
-    filesAndFolders.forEach((item) => {
-      const parts = item.relativePath.split(path.sep);
-      let current = structure;
-
-      parts.forEach((part, index) => {
-        if (!current[part]) {
-          if (index === parts.length - 1 && item.isFile) {
-            current[part] = item.content || ''; // File content or empty string
-          } else {
-            current[part] = {};
-          }
-        }
-        current = current[part];
-      });
-    });
-
-    return structure;
+    return result as BuildContentResult;
   }
 }

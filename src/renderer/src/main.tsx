@@ -5,6 +5,7 @@ import {ThemeProvider} from 'styled-components'
 import {theme} from "./style/theme";
 import {BrowserRouter} from 'react-router-dom';
 import AppRouter from "./navigation/AppRouter";
+import {ToastContainer} from "react-toastify";
 
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
@@ -12,6 +13,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <CopyHistoryProvider>
         <ThemeProvider theme={theme}>
           <BrowserRouter>
+            <ToastContainer />
             <AppRouter/>
           </BrowserRouter>
         </ThemeProvider>

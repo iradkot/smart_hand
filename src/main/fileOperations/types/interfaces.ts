@@ -1,4 +1,5 @@
 import fs from "fs";
+import {ContentNode} from "../../../types/pathHarvester.types";
 
 export interface IFileHandler {
   readFile(filePath: string): Promise<string>;
@@ -22,16 +23,21 @@ export interface FileOrFolder {
 export interface BuildContentResult {
   folderStructure: string;
   ignoredFiles: string;
-  fileContents?: string[];
+  contentTree?: ContentNode;
 }
 
 export interface StartCopyingProcessResult extends BuildContentResult {
   message: string;
 }
+//
+// interface IOpenAiService {
+//   generateTestFileStructure(input: string): Promise<StructuredOutput>;
+//   generateTerminalCommands(input: string): Promise<StructuredCommandOutput>;
+// }
 
-interface IOpenAiService {
-  generateTestFileStructure(input: string): Promise<StructuredOutput>;
-  generateTerminalCommands(input: string): Promise<StructuredCommandOutput>;
+
+// Enum representing the different copy options
+export enum CopyOptions {
+  CopycontentTree = '1',
+  OnlyCopyStructure = '2',
 }
-
-

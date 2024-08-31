@@ -5,18 +5,15 @@ import { useStepState } from "../../stateManagement/zustand/selectors/createTest
 import { useError, useIsLoading } from "../../stateManagement/zustand/selectors/createTest.selectors";
 import LoadingError from "./components/LoadingError";
 import CreateTestSection from "./components/CreateTestSection";
+import { formatFileContents } from '../../../../utils/harvesterUtils';
 
 const FolderContextManager: React.FC = () => {
   const stepState = useStepState();
   const isLoading = useIsLoading();
   const error = useError();
   const copiedContent = stepState?.copiedContent;
-
-  const joinedContent = Array.isArray(copiedContent?.fileContents)
-    ? copiedContent.fileContents
-      .filter(item => item.isFile && item.content)
-      .map(item => item.content)
-      .join('\n')
+  const joinedContent = copiedContent?.contentTree
+    ? formatFileContents(copiedContent.contentTree) // Accessing the root node
     : '';
 
   return (

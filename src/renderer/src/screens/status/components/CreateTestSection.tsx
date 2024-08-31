@@ -10,8 +10,8 @@ const CreateTestSection: React.FC = () => {
   const [testStatus, setTestStatus] = useState<string | null>(null);
 
   const copiedContent = stepState?.copiedContent;
-  const joinedContent = Array.isArray(copiedContent?.fileContents)
-    ? copiedContent.fileContents
+  const joinedContent = Array.isArray(copiedContent?.contentTree)
+    ? copiedContent.contentTree
       .filter(item => item.isFile && item.content)
       .map(item => item.content)
       .join('\n')

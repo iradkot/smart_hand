@@ -7,8 +7,8 @@ import {COPYING_PROCESS_INVOKE, CREATE_AND_RUN_TEST_INVOKE} from "../invokers/co
 import { UserInterface } from "./fileOperations/utils/UserInterface";
 import { IgnoreList } from "./fileOperations/utils/IgnoreList";
 import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
-import {CopyOptions} from "./fileOperations/FileSystemHarvester/utils/CopyOptionHandler";
 import {createAndRunTest} from "./smartTasks/TestTasks";
+import {CopyOptions} from "./fileOperations/types/interfaces";
 
 // Constants
 const WINDOW_WIDTH = 900;
@@ -133,7 +133,7 @@ ipcMain.handle('open-file-dialog', async (): Promise<string[]> => {
 ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string, option: string) => {
   try {
     const content = await harvestPath(directoryPath, option as CopyOptions, fileHandler, ui, ignoreList);
-    const message = content.fileContents ? `Processed ${content.fileContents.length} files/folders` : 'Processed 0 files/folders';
+    const message = content.contentTree ? `Processed ${content.contentTree.length} files/folders` : 'Processed 0 files/folders';
     return { message, content };
   } catch (err) {
     console.error('Failed to process:', err);
