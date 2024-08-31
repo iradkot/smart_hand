@@ -21,5 +21,5 @@ export type ContentNode = {
 export type copiedContent = {
   folderStructure: string;
   ignoredFiles: string;
-  contentTree?: contentTree;
+  contentTree?: ContentNode;
 };

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SectionContainer from './components/SectionContainer';
 import SectionHeader from './components/SectionHeader/SectionHeader';
