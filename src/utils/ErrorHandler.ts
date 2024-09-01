@@ -1,7 +1,10 @@
-export function handleError(error: unknown, context: string): void {
+export function handleError(error: unknown, context: string): string {
+  let errorMessage: string;
   if (error instanceof Error) {
-    console.error(`${context}: ${error.message}`);
+    errorMessage = `${context}: ${error.message}`;
   } else {
-    console.error(`${context}: ${String(error)}`);
+    errorMessage = `${context}: ${String(error)}`;
   }
+  console.error(errorMessage);
+  return errorMessage;
 }

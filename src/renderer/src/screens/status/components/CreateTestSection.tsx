@@ -1,4 +1,3 @@
-// components/CreateTestSection.tsx
 import React, { useState } from 'react';
 import {useStore} from "../../../stateManagement/zustand/useStore";
 import {StepState} from "../../../types";

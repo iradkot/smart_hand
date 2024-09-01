@@ -41,7 +41,6 @@ export async function harvestPath(
       result.ignored,
       result.resultDict
     );
-
     return { message: `Processed ${result.filesAndFolders.length} files/folders`, ...content };
   } catch (err) {
     if (err instanceof FileError || err instanceof DirectoryError) {

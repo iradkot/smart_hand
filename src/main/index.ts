@@ -1,6 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, shell, IpcMainInvokeEvent } from 'electron';
 import { join } from 'path';
-import axios from 'axios';
 import icon from '../../resources/icon.png';
 import { FileHandler } from "./fileOperations/utils/FileHandler";
 import {COPYING_PROCESS_INVOKE, CREATE_AND_RUN_TEST_INVOKE} from "../invokers/constants";
@@ -9,37 +8,15 @@ import { IgnoreList } from "./fileOperations/utils/IgnoreList";
 import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
 import {createAndRunTest} from "./smartTasks/TestTasks";
 import {CopyOptions} from "./fileOperations/types/interfaces";
+import {handleError} from "../utils/ErrorHandler";
+import countNestedValues from "../utils/countNestedValues";
 
 // Constants
 const WINDOW_WIDTH = 900;
 const WINDOW_HEIGHT = 670;
 const DEVELOPMENT_MODE = 'development';
 const ELECTRON_RENDERER_URL = 'ELECTRON_RENDERER_URL';
-const API_URL = 'http://localhost:5000/api';
-const CHAT_ENDPOINT = '/chat';
 
-// Dependency inversion: abstract API client
-interface ApiClient {
-  post(url: string, data: any): Promise<any>;
-}
-
-class AxiosApiClient implements ApiClient {
-  async post(url: string, data: any): Promise<any> {
-    try {
-      const response = await axios.post(url, data);
-      return response.data;
-    } catch (error) {
-      console.log('Error in AxiosApiClient', error);
-      if (error instanceof Error) {
-        return { error: error.message };
-      } else {
-        return { error: 'Unknown error' };
-      }
-    }
-  }
-}
-
-const apiClient: ApiClient = new AxiosApiClient();
 const fileHandler = new FileHandler();
 const ui = new UserInterface();
 const ignoreList = new IgnoreList([
@@ -132,17 +109,17 @@ ipcMain.handle('open-file-dialog', async (): Promise<string[]> => {
 
 ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string, option: string) => {
   try {
+    console.log('1')
     const content = await harvestPath(directoryPath, option as CopyOptions, fileHandler, ui, ignoreList);
-    const message = content.contentTree ? `Processed ${content.contentTree.length} files/folders` : 'Processed 0 files/folders';
+    console.log('2')
+
+    const message = content.contentTree ? `Processed ${countNestedValues(content.contentTree, 'directory')} directories and ${countNestedValues(content.contentTree, 'file')} files` : 'No content to process';
+    console.log({message});
     return { message, content };
   } catch (err) {
     console.error('Failed to process:', err);
     return handleProcessingError(err);
   }
-});
-
-ipcMain.handle('chat-with-gpt', async (_: IpcMainInvokeEvent, messages: any) => {
-  return await apiClient.post(`${API_URL}${CHAT_ENDPOINT}`, { messages });
 });
 
 ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, instructions?: string) => {
@@ -151,8 +128,8 @@ ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, session
     await createAndRunTest(sessionId, directoryPath, fileContent, instructions);
     return { success: true };
   } catch (error) {
-    console.error('Failed to create and run test:', error?.message);
-    return { success: false, error: error.message };
+    const errorMessage = handleError(error, 'Error in createAndRunTest');
+    return { success: false, error: errorMessage };
   }
 });
 
