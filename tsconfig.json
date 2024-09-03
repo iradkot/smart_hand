@@ -19,7 +19,9 @@
   ],
   "compilerOptions": {
     "types": [
-      "electron"
+      "electron",
+      "jest",
+      "@testing-library/react",
     ],
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,

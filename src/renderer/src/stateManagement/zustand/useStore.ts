@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import {OptionValue, StepState} from '../../types';
-import {invokeCopyingProcess} from "../../../../invokers/ipcInvokers";
-import {generateUniqueSessionId} from "../../../../utils/generateUniqueSessionId";
-import {copiedContent} from "../../../../types/pathHarvester.types";
+import { OptionValue, StepState } from '../../types';
+import { invokeCopyingProcess } from "../../../../invokers/ipcInvokers";
+import { generateUniqueSessionId } from "../../../../utils/generateUniqueSessionId";
+import { contentTree, copiedContent } from "../../../../types/pathHarvester.types";
+import {handleError} from "../../../../utils/ErrorHandler";
 
 interface StoreState {
   currentStepId: string;
@@ -25,21 +26,23 @@ export const useStore = create<StoreState>()(
   devtools((set) => ({
     currentStepId: 'ChooseOptions',
     stepState: {
-      directoryPath: 'C:\\Users\\irad1\\projects\\smart_hand\\src\\main\\fileOperations\\FileSystemHarvester',
-      option: '' as OptionValue, // Ensure this matches the expected type
+      directoryPath: 'C:\\Users\\irad1\\projects\\smart_hand\\src\\renderer\\src\\screens\\status',
+      option: '' as OptionValue,
       message: '',
       copiedContent: {
-        folderStructure: '', // Initialize with empty strings or appropriate default values
+        folderStructure: '',
         ignoredFiles: '',
-        contentTree: {}, // Initialize as an empty array or undefined if not needed initially
+        type: 'directory',
+        localPath: '',
+        children: {} as contentTree,
       },
     },
     initializeSession: () => {
-      const sessionId = generateUniqueSessionId(); // Generate a new sessionId
+      const sessionId = generateUniqueSessionId();
       set((state) => ({
         stepState: {
           ...state.stepState,
-          sessionId, // Set the new sessionId
+          sessionId,
         },
       }));
       return sessionId;
@@ -47,51 +50,56 @@ export const useStore = create<StoreState>()(
     step: 1,
     isLoading: false,
     error: null,
-    setStep: (step: number) => set({ step }),
-    setCurrentStepId: (stepId: string) => set({ currentStepId: stepId }),
-    setStepState: (stateAction: StepState) => set({ stepState: stateAction }),
-    setLoading: (loading: boolean) => set({ isLoading: loading }),
-    setError: (error: string | null) => set({ error }),
+
+    setStep: (step) => set({ step }),
+    setCurrentStepId: (stepId) => set({ currentStepId: stepId }),
+    setStepState: (stepState) => set({ stepState }),
+    setLoading: (isLoading) => set({ isLoading }),
+    setError: (error) => set({ error }),
+
     resetProcess: () =>
       set(() => ({
         stepState: {
           directoryPath: '',
-          option: '' as OptionValue, // Ensure option is properly reset
+          option: '' as OptionValue,
           message: '',
           copiedContent: {
             folderStructure: '',
             ignoredFiles: '',
-            contentTree: {} // Or undefined if not required at initialization
+            type: 'directory',
+            localPath: '',
+            children: {} as contentTree,
           },
         },
         isLoading: false,
         error: null,
       })),
-    copyToClipboard: (directoryPath: string, option: string) =>
-      new Promise((resolve, reject) => {
-        set({ isLoading: true, error: null });
-        invokeCopyingProcess({ directoryPath, option })
-          .then((response: { message: string; content: copiedContent }) => {
-            console.log({ response });
-            set((state) => ({
-              stepState: {
-                ...state.stepState,
-                message: response.message,
-                copiedContent: response.content,
-              },
-              isLoading: false,
-            }));
-            resolve(response);
-          })
-          .catch((err: { message: any }) => {
-            set({
-              isLoading: false,
-              error: `Error: ${err.message}`,
-            });
-            reject(err);
-          });
-      }),
+
+    copyToClipboard: async (directoryPath, option) => {
+      set({ isLoading: true, error: null });
+
+      try {
+        const response = await invokeCopyingProcess({ directoryPath, option });
+        console.log({ response });
+
+        set((state) => ({
+          stepState: {
+            ...state.stepState,
+            message: response.message,
+            copiedContent: response.content,
+          },
+          isLoading: false,
+        }));
+
+        return response;
+      } catch (err) {
+        set({
+          isLoading: false,
+          error: `Error: ${handleError(err, 'Error in copyToClipboard')}`,
+        });
+
+        throw err;
+      }
+    },
   }))
 );
-
-

@@ -3,20 +3,26 @@ import { ContentNode } from "../../../types/pathHarvester.types";
 
 interface FolderFileSelectorProps {
   contentTree: ContentNode;
-  onFileSelect: (selectedFiles: string[]) => void;
+  selected: string[];
+  setSelected: (files: string[]) => void;
+  allowMultiple?: boolean; // Optional prop to specify if multiple selection is allowed
 }
 
-const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = ({ contentTree, onFileSelect }) => {
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = ({ contentTree, selected, setSelected, allowMultiple = true }) => {
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
 
   const handleFileToggle = (filePath: string) => {
-    const updatedSelectedFiles = selectedFiles.includes(filePath)
-      ? selectedFiles.filter((file) => file !== filePath)
-      : [...selectedFiles, filePath];
+    let updatedSelectedFiles;
 
-    setSelectedFiles(updatedSelectedFiles);
-    onFileSelect(updatedSelectedFiles);
+    if (allowMultiple) {
+      updatedSelectedFiles = selected.includes(filePath)
+        ? selected.filter((file) => file !== filePath)
+        : [...selected, filePath];
+    } else {
+      updatedSelectedFiles = selected.includes(filePath) ? [] : [filePath];
+    }
+
+    setSelected(updatedSelectedFiles);
   };
 
   const handleFolderToggle = (folderPath: string) => {
@@ -28,15 +34,20 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = ({ contentTre
   };
 
   const renderContentTree = (node: ContentNode, parentPath: string = '') => {
-    const name = node.localPath.split('\\').pop(); // Extract the name from the localPath
+    const name = node.localPath?.split('\\').pop(); // Extract the name from the localPath
+
+    if (!name) {
+      console.error("Encountered a node with an undefined 'localPath'.", node);
+      return null; // Safely handle the case where localPath is undefined
+    }
 
     if (node.type === 'file') {
       return (
         <li key={node.localPath}>
           <label>
             <input
-              type="checkbox"
-              checked={selectedFiles.includes(node.localPath)}
+              type={allowMultiple ? "checkbox" : "radio"}
+              checked={selected.includes(node.localPath)}
               onChange={() => handleFileToggle(node.localPath)}
             />
             📄 {name}
