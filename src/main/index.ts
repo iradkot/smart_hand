@@ -1,15 +1,16 @@
-import { app, BrowserWindow, dialog, ipcMain, shell, IpcMainInvokeEvent } from 'electron';
-import { join } from 'path';
+import {app, BrowserWindow, dialog, ipcMain, IpcMainInvokeEvent, shell} from 'electron';
+import {join} from 'path';
 import icon from '../../resources/icon.png';
-import { FileHandler } from "./fileOperations/utils/FileHandler";
-import {COPYING_PROCESS_INVOKE, CREATE_AND_RUN_TEST_INVOKE} from "../invokers/constants";
-import { UserInterface } from "./fileOperations/utils/UserInterface";
-import { IgnoreList } from "./fileOperations/utils/IgnoreList";
+import {FileHandler} from "./fileOperations/utils/FileHandler";
+import {COPYING_PROCESS_INVOKE, CREATE_AND_RUN_TEST_INVOKE, READ_PACKAGE_JSON_INVOKE} from "../invokers/constants";
+import {UserInterface} from "./fileOperations/utils/UserInterface";
+import {IgnoreList} from "./fileOperations/utils/IgnoreList";
 import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
 import {createAndRunTest} from "./smartTasks/TestTasks";
 import {CopyOptions} from "./fileOperations/types/interfaces";
 import {handleError} from "../utils/ErrorHandler";
 import countNestedValues from "../utils/countNestedValues";
+import findPackageJson from "./utils/findPackageJson";
 
 // Constants
 const WINDOW_WIDTH = 900;
@@ -132,6 +133,42 @@ ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, session
     return { success: false, error: errorMessage };
   }
 });
+
+ipcMain.handle(READ_PACKAGE_JSON_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string) => {
+  try {
+
+    // Search for package.json in up to 7 parent directories
+    const packageJsonPath = findPackageJson(directoryPath);
+
+    if (packageJsonPath) {
+      const usePackageJson = await dialog.showMessageBox({
+        message: `Found package.json at ${packageJsonPath}. Do you want to use it?`,
+        buttons: ['Yes', 'No'],
+        defaultId: 0, // "Yes" is the default
+        cancelId: 1,
+      });
+
+      if (usePackageJson.response === 0) { // User chose "Yes"
+        const content = await fileHandler.readFile(packageJsonPath);
+        return content;
+      }
+    }
+
+    // If no package.json was found, or user chose "No", open file dialog
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      defaultPath: directoryPath,
+      filters: [{ name: 'JSON Files', extensions: ['json'] }] // Restrict to JSON files
+    });
+
+    const content = result.filePaths.length > 0 ? await fileHandler.readFile(result.filePaths[0]) : null;
+    return content;
+  } catch (error) {
+    console.error('Failed to read package.json:', error);
+    return handleProcessingError(error);
+  }
+});
+
 
 function handleProcessingError(err: unknown) {
   if (err instanceof Error) {

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useStore } from "../../../stateManagement/zustand/useStore";
 import { StepState } from "../../../types";
-import { invokeCreateAndRunTest } from "../../../../../invokers/ipcInvokers";
+import { invokeCreateAndRunTest, invokeReadPackageJson } from "../../../../../invokers/ipcInvokers"; // Add new invoker
 import ContentTreeFileSelector from "../../../components/FileSelector";
-import { Button, FormControl, InputLabel, MenuItem, Select, Typography, CircularProgress } from '@mui/material';
+import { Button, Typography, CircularProgress } from '@mui/material';
 import styled from 'styled-components';
 
 const getDirectoryPath = (filePath: string) => {
@@ -16,6 +16,10 @@ const Wrapper = styled.div`
   padding: 16px;
   background-color: #f5f5f5;
   border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 `;
 
 // Styled-components for the form control
@@ -23,6 +27,7 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
 `;
 
 const CreateTestSection: React.FC = () => {
@@ -30,13 +35,27 @@ const CreateTestSection: React.FC = () => {
   const initializeSession = useStore((state) => state.initializeSession);
   const [testStatus, setTestStatus] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string[]>([]);
-  const [selectedFramework, setSelectedFramework] = useState<string>('jest');
   const [isPending, setIsPending] = useState<boolean>(false); // New pending state
+  const [packageJsonContent, setPackageJsonContent] = useState<string | null>(null); // To hold the content of package.json
 
   const copiedContent = stepState?.copiedContent;
 
+  const handlePackageJsonUpload = async () => {
+    try {
+      // Open the dialog to select the file and get the file path
+      const content = await invokeReadPackageJson(stepState.directoryPath); // This is an IPC call to the main process
+      if (content) {
+        setPackageJsonContent(content);
+      } else {
+        setTestStatus('No file selected.');
+      }
+    } catch (err) {
+      setTestStatus('Failed to read package.json');
+    }
+  };
+
   const handleCreateTest = async () => {
-    if (selectedFile.length > 0 && stepState) {
+    if (!!packageJsonContent?.length && stepState) {
       let sessionId = stepState.sessionId;
       if (!sessionId) {
         sessionId = initializeSession();
@@ -44,7 +63,18 @@ const CreateTestSection: React.FC = () => {
       const filePath = selectedFile[0];
       const directoryPath = getDirectoryPath(filePath);
       const fileContent = JSON.stringify(selectedFile, null, 2);
-      const instructions = `Create unit test using ${selectedFramework} for the attached file. The test should cover all the edge cases and scenarios, and it should be placed in the same directory as the file. Make sure you understand how the file exports its functions and classes.`;
+
+      const frameworkFromPackageJson = packageJsonContent
+        ? JSON.parse(packageJsonContent)?.scripts?.test
+        : null;
+
+      // if (!frameworkFromPackageJson) {
+      //   setTestStatus('No test framework found in package.json');
+      //   return;
+      // }
+
+      const instructions = `Create unit test using based on the following package.json ${packageJsonContent}, verify use only known utils from version of the unit test framework you see in this package.json. \n the test should be for the attached file. The test should cover all the edge cases and scenarios, and it should be placed in the same directory as the file. Make sure you understand how the file exports its functions and classes.`;
+      console.log('Instructions:', instructions);
 
       try {
         setIsPending(true); // Start pending state
@@ -75,22 +105,11 @@ const CreateTestSection: React.FC = () => {
           allowMultiple={false} // Only allow single file selection
         />
       )}
+      <Button onClick={handlePackageJsonUpload} variant="contained" color="primary">
+        Upload package.json
+      </Button>
       <Form onSubmit={(e) => { e.preventDefault(); handleCreateTest(); }}>
-        <FormControl fullWidth variant="outlined">
-          <InputLabel>Select Test Framework</InputLabel>
-          <Select
-            value={selectedFramework}
-            onChange={(e) => setSelectedFramework(e.target.value)}
-            label="Select Test Framework"
-          >
-            <MenuItem value="jest">Jest</MenuItem>
-            <MenuItem value="jest-rtl">Jest with React Testing Library</MenuItem>
-            <MenuItem value="mocha-chai">Mocha with Chai</MenuItem>
-            <MenuItem value="mocha-enzyme">Mocha with Enzyme</MenuItem>
-            <MenuItem value="jasmine">Jasmine</MenuItem>
-          </Select>
-        </FormControl>
-        <Button type="submit" variant="contained" color="primary" disabled={selectedFile.length === 0 || isPending}>
+        <Button type="submit" variant="contained" color="primary" disabled={!selectedFile.length || !packageJsonContent || isPending}>
           {isPending ? <CircularProgress size={24} /> : 'Create Test'}
         </Button>
         {testStatus && <Typography variant="body1" color={testStatus.startsWith('Error') ? 'error' : 'success'}>{testStatus}</Typography>}
