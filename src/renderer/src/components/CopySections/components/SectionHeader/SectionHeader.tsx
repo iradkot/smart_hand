@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Button, IconButton } from '@material-ui/core';
 import { ExpandMore, ExpandLess, FileCopyOutlined, CloudDownloadOutlined } from '@material-ui/icons';
 import ThemeSelector from './ThemeSelector';
+import {PrismThemeName} from "../../../../../../types/libs.types";
 
 const HeaderContainer = styled.div`
   display: flex;
@@ -45,7 +46,7 @@ interface SectionHeaderProps {
   onDownload: () => void; // Added prop for download
   onToggleCollapse: () => void;
   selectedTheme: string;
-  onThemeChange: (themeName: string) => void;
+  onThemeChange: (themeName: PrismThemeName ) => void;
 }
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({

@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, {createContext, ReactNode, useContext, useState} from 'react';
 
 export interface HistoryItem {
   timestamp: number;
   path: string;
   content: string;
   type: 'copy' | 'gpt-chat';
-  discussion?: ChatEntry[];  // Optional array to store GPT chat history if 'type' is 'gpt-chat'
+  discussion?: ChatEntry[];
 }
 
 type ChatEntry = {
@@ -18,9 +18,13 @@ interface HistoryContextProps {
   addToHistory: (path: string, content: string, type: 'copy' | 'gpt-chat') => void;
 }
 
+interface HistoryProviderProps {
+  children: ReactNode;  // Specify that children is expected
+}
+
 const HistoryContext = createContext<HistoryContextProps | undefined>(undefined);
 
-export const HistoryProvider: React.FC = ({ children }) => {
+export const HistoryProvider: React.FC<HistoryProviderProps> = ({ children }) => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
   const addToHistory = (path: string, content: string, type: 'copy' | 'gpt-chat') => {

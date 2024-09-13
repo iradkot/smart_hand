@@ -5,7 +5,6 @@ declare global {
   interface Window {
     electron: {
       ipcRenderer: IpcRenderer;
-      // You can add more methods or properties as needed
     };
   }
 }

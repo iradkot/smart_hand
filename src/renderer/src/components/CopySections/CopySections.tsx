@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import SectionContainer from './components/SectionContainer';
 import SectionHeader from './components/SectionHeader/SectionHeader';
 import SectionContent from './components/SectionContent';
 import * as themes from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { useCopyHistory } from '../../stateManagement/contexts';
-import { splitContent } from '../../utils/splitContent';
-import { downloadTextAsTextFile } from '../../../../utils/downloadTextAsTextFile';
+import {useCopyHistory} from '../../stateManagement/contexts';
+import {splitContent} from '../../utils/splitContent';
+import {downloadTextAsTextFile} from '../../../../utils/downloadTextAsTextFile';
+import {PrismThemeName} from "../../../../types/libs.types";
 
 interface CopySectionsProps {
   content?: string;
@@ -21,7 +22,7 @@ const CopySections: React.FC<CopySectionsProps> = ({
                                                    }) => {
   const { copyToClipboardWithToast } = useCopyHistory();
   const [collapsed, setCollapsed] = useState<boolean[]>([]);
-  const [selectedTheme, setSelectedTheme] = useState<string>('dracula'); // Store theme name
+  const [selectedTheme, setSelectedTheme] = useState<PrismThemeName>('dracula'); // Store theme name
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]); // References to sections
 
   const sections = splitContent(content);
@@ -42,7 +43,7 @@ const CopySections: React.FC<CopySectionsProps> = ({
     downloadTextAsTextFile(`${title}.txt`, content);
   };
 
-  const handleThemeChange = (themeName: string) => {
+  const handleThemeChange = (themeName: PrismThemeName ) => {
     setSelectedTheme(themeName);
   };
 

@@ -1,0 +1,27 @@
+Tasks
+1. We should force the user to also add all test utils files.
+2. Add the relevant types for the file we wish to create the tests for
+
+
+My goal currently is to achieve a circle of development with gpt, meaning :
+1. I provide gpt with test types, app types (maybe names ony), test utils, and the file I wish to test.
+2. Gpt will return a response of whether he has all the necessary files to create the tests.
+  a. If he does, he will create the tests and return them to me. and with a response of ready: true
+  b. If he doesn't, he will return a response of `ready: false`, and what he need next:
+    1. If current test utils are not enough, he will ask for adding new test utils to which files and where, an
+      1.a. if he has all that is required for creating the testUtils, he will return a response of the following format:
+        {
+          action: 'create file'/ 'add to file'/'replace file'/'replace in file', // this is a general action which can be perform to anything
+          type: 'testUtils', // this is the type of file we are going to create
+          file: 'path/to/file', // this is the path to the file we are going to create
+          content: 'content of the file' // this is the content of the file we are going to create
+          line?: 1, // this is the line number where we are going to add the content, not sure if we need it
+        }
+      1.b. if he doesn't have all that is required for creating the testUtils, he will return a response of the following format:
+        {
+          action: 'get file'(if he knows path to file he needs) / 'ask for file'(if he doesn't know the path to file he needs, this should open a prompt for the user to provide the path to the file),
+          type: 'testUtils',
+          file: 'path/to/file',
+          content: 'content of the file'
+          line?: 1,
+        }

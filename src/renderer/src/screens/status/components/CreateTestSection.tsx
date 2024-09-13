@@ -5,6 +5,7 @@ import { invokeCreateAndRunTest, invokeReadPackageJson } from "../../../../../in
 import ContentTreeFileSelector from "../../../components/FileSelector";
 import { Button, Typography, CircularProgress } from '@mui/material';
 import styled from 'styled-components';
+import {getFileContentFromPath} from "../../../../../utils/harvesterUtils";
 
 const getDirectoryPath = (filePath: string) => {
   const lastSlashIndex = filePath.lastIndexOf('\\');
@@ -37,15 +38,17 @@ const CreateTestSection: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<string[]>([]);
   const [isPending, setIsPending] = useState<boolean>(false); // New pending state
   const [packageJsonContent, setPackageJsonContent] = useState<string | null>(null); // To hold the content of package.json
+  const [packageJsonPath, setPackageJsonPath] = useState<string | null>(null); // To hold the content of package.json
 
   const copiedContent = stepState?.copiedContent;
 
   const handlePackageJsonUpload = async () => {
     try {
       // Open the dialog to select the file and get the file path
-      const content = await invokeReadPackageJson(stepState.directoryPath); // This is an IPC call to the main process
+      const { content, packageJsonPath: packageJsonPathResponse  } = await invokeReadPackageJson(stepState.directoryPath); // This is an IPC call to the main process
       if (content) {
         setPackageJsonContent(content);
+        setPackageJsonPath(packageJsonPathResponse);
       } else {
         setTestStatus('No file selected.');
       }
@@ -62,7 +65,8 @@ const CreateTestSection: React.FC = () => {
       }
       const filePath = selectedFile[0];
       const directoryPath = getDirectoryPath(filePath);
-      const fileContent = JSON.stringify(selectedFile, null, 2);
+      const fileContent = `${filePath}: \n ${getFileContentFromPath(copiedContent?.contentTree, filePath)}`;
+      const fileName = filePath.substring(filePath.lastIndexOf('\\') + 1);
 
       const frameworkFromPackageJson = packageJsonContent
         ? JSON.parse(packageJsonContent)?.scripts?.test
@@ -72,13 +76,19 @@ const CreateTestSection: React.FC = () => {
       //   setTestStatus('No test framework found in package.json');
       //   return;
       // }
-
-      const instructions = `Create unit test using based on the following package.json ${packageJsonContent}, verify use only known utils from version of the unit test framework you see in this package.json. \n the test should be for the attached file. The test should cover all the edge cases and scenarios, and it should be placed in the same directory as the file. Make sure you understand how the file exports its functions and classes.`;
-      console.log('Instructions:', instructions);
+      // TODO this is for future implementation when we want to allow user add more instructions
+      const instructions = ``;
 
       try {
-        setIsPending(true); // Start pending state
-        const result = await invokeCreateAndRunTest({ sessionId, directoryPath, fileContent, instructions });
+        setIsPending(true);
+        const result = await invokeCreateAndRunTest({
+          sessionId,
+          directoryPath,
+          fileContent,
+          fileName,
+          instructions,
+          packageJsonContent
+        });
         setTestStatus(result.success ? 'Test created and run successfully.' : `Error: ${result.error}`);
       } catch (err) {
         setTestStatus(
@@ -108,6 +118,11 @@ const CreateTestSection: React.FC = () => {
       <Button onClick={handlePackageJsonUpload} variant="contained" color="primary">
         Upload package.json
       </Button>
+      {packageJsonPath && (
+        <Typography variant="body1" color="textSecondary">
+          package.json path: {packageJsonPath}
+        </Typography>
+      )}
       <Form onSubmit={(e) => { e.preventDefault(); handleCreateTest(); }}>
         <Button type="submit" variant="contained" color="primary" disabled={!selectedFile.length || !packageJsonContent || isPending}>
           {isPending ? <CircularProgress size={24} /> : 'Create Test'}

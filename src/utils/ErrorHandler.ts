@@ -1,9 +1,9 @@
 export function handleError(error: unknown, context: string): string {
   let errorMessage: string;
   if (error instanceof Error) {
-    errorMessage = `${context}: ${error.message}`;
+    errorMessage = `1${context}: ${error.message}`;
   } else {
-    errorMessage = `${context}: ${String(error)}`;
+    errorMessage = `2${context}: ${String(error)}`;
   }
   console.error(errorMessage);
   return errorMessage;

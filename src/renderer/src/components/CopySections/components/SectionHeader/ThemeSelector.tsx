@@ -4,6 +4,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Select, MenuItem } from '@material-ui/core';
 import * as themes from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {PrismThemeName} from "../../../../../../types/libs.types";
 
 const StyledSelect = styled(Select)`
   margin-left: 10px;
@@ -18,7 +19,7 @@ const StyledSelect = styled(Select)`
 
 interface ThemeSelectorProps {
   selectedTheme: string;
-  onThemeChange: (themeName: string) => void;
+  onThemeChange: (themeName: PrismThemeName) => void;
 }
 
 const ThemeSelector: React.FC<ThemeSelectorProps> = ({
@@ -28,7 +29,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   return (
     <StyledSelect
       value={selectedTheme}
-      onChange={(e) => onThemeChange(e.target.value as string)}
+      onChange={(e) => onThemeChange(e.target.value as PrismThemeName)}
       variant="outlined"
       onClick={(e) => e.stopPropagation()} // Prevent header toggle when interacting with selector
     >

@@ -3,17 +3,31 @@ import {
   CREATE_AND_RUN_TEST_INVOKE,
   READ_PACKAGE_JSON_INVOKE
 } from "./constants";
+import { PackageJsonReadResult } from "../main/interfaces";
 
-
-export const invokeCopyingProcess = async ({ directoryPath, option }) => {
-  return window.electron.ipcRenderer
-    .invoke(COPYING_PROCESS_INVOKE, directoryPath, option);
+// Define the argument types
+interface CopyingProcessArgs {
+  directoryPath: string;
+  option: string; // Define the correct type for 'option'
 }
 
-export const invokeCreateAndRunTest = async ({ sessionId, directoryPath, fileContent, instructions }) => {
-  return window.electron.ipcRenderer.invoke(CREATE_AND_RUN_TEST_INVOKE, sessionId, directoryPath, fileContent, instructions);
+interface TestCreationArgs {
+  sessionId: string;
+  directoryPath: string;
+  fileContent: string;
+  fileName: string;
+  instructions: string;
+  packageJsonContent: string;
+}
+
+export const invokeCopyingProcess = async ({ directoryPath, option }: CopyingProcessArgs) => {
+  return window.electron.ipcRenderer.invoke(COPYING_PROCESS_INVOKE, directoryPath, option);
 };
 
-export const invokeReadPackageJson = (directoryPath: string) => {
+export const invokeCreateAndRunTest = async ({ sessionId, directoryPath, fileContent, fileName, instructions, packageJsonContent }: TestCreationArgs) => {
+  return window.electron.ipcRenderer.invoke(CREATE_AND_RUN_TEST_INVOKE, sessionId, directoryPath, fileContent, fileName, instructions, packageJsonContent);
+};
+
+export const invokeReadPackageJson = (directoryPath: string): Promise<PackageJsonReadResult> => {
   return window.electron.ipcRenderer.invoke(READ_PACKAGE_JSON_INVOKE, directoryPath);
 };

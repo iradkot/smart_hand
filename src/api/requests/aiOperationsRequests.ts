@@ -18,6 +18,10 @@ interface APIResponse<T> {
   content: T;
 }
 
+interface TestLibrary extends APIResponse<any> {
+  libraries: any[];
+}
+
 
 export const askGPTPost = async (sessionId: string, input: string): Promise<APIResponse<any>> => {
   try {
@@ -61,6 +65,23 @@ export const generateTerminalCommands = async (sessionId: string, input: string)
     return response.data;
   } catch (error) {
     console.log('Error in generateTerminalCommands:', error);
+    throw error;
+  }
+};
+
+export const getTestLibraries = async (sessionId: string, packageJson?: string): Promise<TestLibrary> => {
+  try {
+    if (!packageJson) {
+      throw new Error('Package.json not found');
+    }
+    const response = await smartHandServer.post('/getTestLibraries', {
+      sessionId,
+      packageJson, // Send package.json from the client
+    });
+    console.log('Response from getTestLibraries:', response.data);
+    return response.data;
+  } catch (error) {
+    console.log('Error in getTestLibraries:', error);
     throw error;
   }
 };

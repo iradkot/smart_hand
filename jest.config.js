@@ -1,10 +1,15 @@
 module.exports = {
-  testEnvironment: 'jsdom', // jsdom simulates a browser environment for testing
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'], // optional: for setting up additional configurations
-  moduleNameMapper: {
-    '\\.(css|scss)$': 'identity-obj-proxy',
-  },
+  testEnvironment: 'jsdom', // Simulates a browser environment for testing
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest', // Transpile JavaScript and TypeScript files using Babel
+    '^.+\\.(ts|tsx)$': 'ts-jest', // Use ts-jest for TypeScript and JSX
+    '^.+\\.(js|jsx)$': 'babel-jest', // Use babel-jest for JavaScript files
   },
+  moduleNameMapper: {
+    '\\.(css|scss)$': 'identity-obj-proxy', // Mock CSS files
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-syntax-highlighter)/)', // Allow transformation of 'react-syntax-highlighter'
+  ],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.tsx'], // Point to the setup file
 };

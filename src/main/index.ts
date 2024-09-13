@@ -4,13 +4,20 @@ import icon from '../../resources/icon.png';
 import {FileHandler} from "./fileOperations/utils/FileHandler";
 import {COPYING_PROCESS_INVOKE, CREATE_AND_RUN_TEST_INVOKE, READ_PACKAGE_JSON_INVOKE} from "../invokers/constants";
 import {UserInterface} from "./fileOperations/utils/UserInterface";
-import {IgnoreList} from "./fileOperations/utils/IgnoreList";
-import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
-import {createAndRunTest} from "./smartTasks/TestTasks";
-import {CopyOptions} from "./fileOperations/types/interfaces";
-import {handleError} from "../utils/ErrorHandler";
+import {
+  CopyingProcessArgs,
+  TestCreationArgs,
+  PackageJsonReadResult,
+  ErrorResult
+} from './interfaces';
 import countNestedValues from "../utils/countNestedValues";
 import findPackageJson from "./utils/findPackageJson";
+import {createAndRunTest} from "./smartTasks/TestTasks";
+import {handleError} from "../utils/ErrorHandler";
+import {IgnoreList} from "./fileOperations/utils/IgnoreList";
+import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
+import {CopyOptions} from "./fileOperations/types/interfaces";
+import {IGNORE_LIST} from "../constants/ignoreList";
 
 // Constants
 const WINDOW_WIDTH = 900;
@@ -20,18 +27,7 @@ const ELECTRON_RENDERER_URL = 'ELECTRON_RENDERER_URL';
 
 const fileHandler = new FileHandler();
 const ui = new UserInterface();
-const ignoreList = new IgnoreList([
-  'node_modules',
-  '.git',
-  'yarn.lock',
-  'package-lock.json',
-  '.idea',
-  '.vscode',
-  'build',
-  'out',
-  'resources',
-  'dist',
-]);
+const ignoreList = new IgnoreList(IGNORE_LIST);
 
 function createWindow(): void {
   createAndLoadMainWindow();
@@ -108,14 +104,11 @@ ipcMain.handle('open-file-dialog', async (): Promise<string[]> => {
   return result.filePaths;
 });
 
-ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string, option: string) => {
+ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string, option: string): Promise<CopyingProcessArgs | ErrorResult> => {
   try {
-    console.log('1')
     const content = await harvestPath(directoryPath, option as CopyOptions, fileHandler, ui, ignoreList);
-    console.log('2')
 
     const message = content.contentTree ? `Processed ${countNestedValues(content.contentTree, 'directory')} directories and ${countNestedValues(content.contentTree, 'file')} files` : 'No content to process';
-    console.log({message});
     return { message, content };
   } catch (err) {
     console.error('Failed to process:', err);
@@ -123,10 +116,9 @@ ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPa
   }
 });
 
-ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, instructions?: string) => {
+ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, fileName: string, instructions?: string, packageJsonContent?: string): Promise<TestCreationArgs> => {
   try {
-    console.log('createAndRunTest:', sessionId, directoryPath, fileContent.length, instructions?.length);
-    await createAndRunTest(sessionId, directoryPath, fileContent, instructions);
+    await createAndRunTest(sessionId, directoryPath, fileContent, fileName, instructions, packageJsonContent);
     return { success: true };
   } catch (error) {
     const errorMessage = handleError(error, 'Error in createAndRunTest');
@@ -134,9 +126,8 @@ ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, session
   }
 });
 
-ipcMain.handle(READ_PACKAGE_JSON_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string) => {
+ipcMain.handle(READ_PACKAGE_JSON_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string): Promise<PackageJsonReadResult | ErrorResult | null> => {
   try {
-
     // Search for package.json in up to 7 parent directories
     const packageJsonPath = findPackageJson(directoryPath);
 
@@ -150,7 +141,7 @@ ipcMain.handle(READ_PACKAGE_JSON_INVOKE, async (_: IpcMainInvokeEvent, directory
 
       if (usePackageJson.response === 0) { // User chose "Yes"
         const content = await fileHandler.readFile(packageJsonPath);
-        return content;
+        return { content, packageJsonPath };
       }
     }
 
@@ -162,13 +153,12 @@ ipcMain.handle(READ_PACKAGE_JSON_INVOKE, async (_: IpcMainInvokeEvent, directory
     });
 
     const content = result.filePaths.length > 0 ? await fileHandler.readFile(result.filePaths[0]) : null;
-    return content;
+    return content ? { content, packageJsonPath: result.filePaths[0] } : null;
   } catch (error) {
     console.error('Failed to read package.json:', error);
     return handleProcessingError(error);
   }
 });
-
 
 function handleProcessingError(err: unknown) {
   if (err instanceof Error) {

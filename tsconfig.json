@@ -1,6 +1,7 @@
 {
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "electron.d.ts"  // Ensure this file is included
   ],
   "exclude": [
     "node_modules",
