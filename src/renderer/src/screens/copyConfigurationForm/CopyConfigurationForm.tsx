@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Button, Form } from '../../../../components/ui/styledComponents';
-import { useNavigate } from 'react-router-dom';
 import { optionsData, OPTION_COPY_FILE_CONTENTS } from '../OPTION_SHOW_REACT_NATIVE_LOGS';
 import RadioGroup from './RadioGroup';
 import TextInput from './TextInput';
 import { useStore } from '../../stateManagement/zustand/useStore';
 import { OptionValue } from '../../types';
+import {useAppNavigation} from "../../hooks/useAppNavigation";
 
 const CopyConfigurationForm: React.FC = () => {
-  const navigate = useNavigate();
   const copyToClipboard = useStore((state) => state.copyToClipboard);
   const setStepState = useStore((state) => state.setStepState);
   const stepState = useStore((state) => state.stepState);
+  const navigateTo = useAppNavigation();
   const directoryPath = stepState.directoryPath;
   const option: OptionValue = stepState.option || OPTION_COPY_FILE_CONTENTS;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +27,7 @@ const CopyConfigurationForm: React.FC = () => {
           option,
         });
         await copyToClipboard(directoryPath, option);
-        navigate('/status');
+        navigateTo('/status'); // Update the route in the store
       } catch (error) {
         console.error('Failed to process submission:', error);
       } finally {
@@ -35,6 +35,7 @@ const CopyConfigurationForm: React.FC = () => {
       }
     }
   };
+
 
   const handleOptionChange = (newOption: OptionValue) => {
     setStepState({

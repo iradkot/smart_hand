@@ -23,4 +23,14 @@ export interface ProcessSlice {
   initializeSession: () => string;
 }
 
-export type StoreState = UISlice & ProcessSlice;
+export interface NavigationSlice {
+  currentRoute: string;
+  setCurrentRoute: (route: string) => void;
+}
+
+export interface RehydrationSlice {
+  rehydrated: boolean;
+  setRehydrated: (rehydrated: boolean) => void;
+}
+
+export type StoreState = UISlice & ProcessSlice & NavigationSlice &RehydrationSlice;

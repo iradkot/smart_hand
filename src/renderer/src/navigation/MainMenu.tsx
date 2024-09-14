@@ -1,7 +1,8 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'; // Use NavLink
+import { NavLink, Outlet } from 'react-router-dom'; // Use NavLink
 import { routesConfig } from './routeConfig';
 import styled from 'styled-components';
 import { useSpring, animated } from 'react-spring';
+import {useAppNavigation} from "../hooks/useAppNavigation";
 
 const Container = styled.div`
   min-height: 100vh;
@@ -59,7 +60,7 @@ const AnimatedButton = styled(animated.button)`
 `;
 
 const MainMenu = () => {
-  const navigate = useNavigate();
+  const navigateTo = useAppNavigation();
 
   const linkAnimation = useSpring({
     from: { transform: 'scale(1)', opacity: 0.8 },
@@ -88,8 +89,8 @@ const MainMenu = () => {
           ))}
         </StyledUl>
         <div>
-          <AnimatedButton style={buttonAnimation} onClick={() => navigate(-1)}>Back</AnimatedButton>
-          <AnimatedButton style={buttonAnimation} onClick={() => navigate('/')}>Home</AnimatedButton>
+          <AnimatedButton style={buttonAnimation} onClick={() => navigateTo(-1)}>Back</AnimatedButton>
+          <AnimatedButton style={buttonAnimation} onClick={() => navigateTo('/status')}>Home</AnimatedButton>
         </div>
       </StyledNav>
       <Outlet />
