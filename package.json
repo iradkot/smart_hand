@@ -55,7 +55,7 @@
     "remark-lint": "10.0.0",
     "remark-toc": "^9.0.0",
     "styled-components": "^6.0.7",
-    "zustand": "^4.5.4"
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",

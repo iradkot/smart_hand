@@ -17,7 +17,7 @@ import { FileError, DirectoryError } from "../types/Errors";
  * @returns {Promise<StartCopyingProcessResult>} - The result of the harvesting process, including messages and structured data.
  * @throws Will throw an error if an unhandled exception occurs during the process.
  */
-export async function harvestPath(
+export async function   harvestPath(
   directoryPath: string,
   option: CopyOptions,
   fileHandler: IFileHandler,

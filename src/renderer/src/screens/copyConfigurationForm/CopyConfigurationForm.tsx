@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Form } from '../../../../components/ui/styledComponents';
 import { useNavigate } from 'react-router-dom';
-import { optionsData, OPTION_COPY_FILE_CONTENTS } from '../OPTION_SHOW_REACT_NATIVE_LOGS'; // Assuming OPTION_COPY_FILE_CONTENTS is a valid default
+import { optionsData, OPTION_COPY_FILE_CONTENTS } from '../OPTION_SHOW_REACT_NATIVE_LOGS';
 import RadioGroup from './RadioGroup';
 import TextInput from './TextInput';
 import { useStore } from '../../stateManagement/zustand/useStore';
@@ -13,7 +13,7 @@ const CopyConfigurationForm: React.FC = () => {
   const setStepState = useStore((state) => state.setStepState);
   const stepState = useStore((state) => state.stepState);
   const directoryPath = stepState.directoryPath;
-  const option: OptionValue = stepState.option || OPTION_COPY_FILE_CONTENTS; // Set default value if undefined
+  const option: OptionValue = stepState.option || OPTION_COPY_FILE_CONTENTS;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -21,14 +21,11 @@ const CopyConfigurationForm: React.FC = () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
       try {
-        // Update the state synchronously before copying
         setStepState({
           ...stepState,
           directoryPath,
           option,
         });
-
-        // Ensure the state is fully updated before invoking the copy process
         await copyToClipboard(directoryPath, option);
         navigate('/status');
       } catch (error) {

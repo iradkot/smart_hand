@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { useStore } from "../../../stateManagement/zustand/useStore";
-import { StepState } from "../../../types";
-import { invokeCreateAndRunTest, invokeReadPackageJson } from "../../../../../invokers/ipcInvokers"; // Add new invoker
+import { invokeCreateAndRunTest, invokeReadPackageJson } from "../../../../../invokers/ipcInvokers";
 import ContentTreeFileSelector from "../../../components/FileSelector";
 import { Button, Typography, CircularProgress } from '@mui/material';
 import styled from 'styled-components';
-import {getFileContentFromPath} from "../../../../../utils/harvesterUtils";
+import { getFileContentFromPath } from "../../../../../utils/harvesterUtils";
 
 const getDirectoryPath = (filePath: string) => {
   const lastSlashIndex = filePath.lastIndexOf('\\');
   return lastSlashIndex !== -1 ? filePath.substring(0, lastSlashIndex) : filePath;
 };
 
-// Styled-components for the wrapper
 const Wrapper = styled.div`
   padding: 16px;
   background-color: #f5f5f5;
@@ -23,7 +21,6 @@ const Wrapper = styled.div`
   gap: 16px;
 `;
 
-// Styled-components for the form control
 const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -32,20 +29,19 @@ const Form = styled.form`
 `;
 
 const CreateTestSection: React.FC = () => {
-  const stepState = useStore((state) => state.stepState) as StepState;
   const initializeSession = useStore((state) => state.initializeSession);
+  const stepState = useStore((state) => state.stepState);
   const [testStatus, setTestStatus] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string[]>([]);
-  const [isPending, setIsPending] = useState<boolean>(false); // New pending state
-  const [packageJsonContent, setPackageJsonContent] = useState<string | null>(null); // To hold the content of package.json
-  const [packageJsonPath, setPackageJsonPath] = useState<string | null>(null); // To hold the content of package.json
+  const [isPending, setIsPending] = useState<boolean>(false);
+  const [packageJsonContent, setPackageJsonContent] = useState<string | null>(null);
+  const [packageJsonPath, setPackageJsonPath] = useState<string | null>(null);
 
   const copiedContent = stepState?.copiedContent;
 
   const handlePackageJsonUpload = async () => {
     try {
-      // Open the dialog to select the file and get the file path
-      const { content, packageJsonPath: packageJsonPathResponse  } = await invokeReadPackageJson(stepState.directoryPath); // This is an IPC call to the main process
+      const { content, packageJsonPath: packageJsonPathResponse } = await invokeReadPackageJson(stepState.directoryPath);
       if (content) {
         setPackageJsonContent(content);
         setPackageJsonPath(packageJsonPathResponse);
@@ -68,15 +64,6 @@ const CreateTestSection: React.FC = () => {
       const fileContent = `${filePath}: \n ${getFileContentFromPath(copiedContent?.contentTree, filePath)}`;
       const fileName = filePath.substring(filePath.lastIndexOf('\\') + 1);
 
-      const frameworkFromPackageJson = packageJsonContent
-        ? JSON.parse(packageJsonContent)?.scripts?.test
-        : null;
-
-      // if (!frameworkFromPackageJson) {
-      //   setTestStatus('No test framework found in package.json');
-      //   return;
-      // }
-      // TODO this is for future implementation when we want to allow user add more instructions
       const instructions = ``;
 
       try {
@@ -87,7 +74,7 @@ const CreateTestSection: React.FC = () => {
           fileContent,
           fileName,
           instructions,
-          packageJsonContent
+          packageJsonContent,
         });
         setTestStatus(result.success ? 'Test created and run successfully.' : `Error: ${result.error}`);
       } catch (err) {
@@ -97,7 +84,7 @@ const CreateTestSection: React.FC = () => {
             : 'Failed to create and run test: An unknown error occurred.'
         );
       } finally {
-        setIsPending(false); // End pending state
+        setIsPending(false);
       }
     } else {
       setTestStatus('Missing required data for creating test.');
@@ -112,7 +99,7 @@ const CreateTestSection: React.FC = () => {
           contentTree={copiedContent.contentTree}
           selected={selectedFile}
           setSelected={setSelectedFile}
-          allowMultiple={false} // Only allow single file selection
+          allowMultiple={false}
         />
       )}
       <Button onClick={handlePackageJsonUpload} variant="contained" color="primary">

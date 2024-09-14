@@ -34,13 +34,13 @@ export async function processDirectory(
 
     // Only prompt for confirmation if it's not the initial directory
     if (!isInitialDirectory) {
-      const copyContents = await ui.confirm(`Do you want to copy the contents of the folder? ${path.relative(initialDirectoryPath, currentDirectoryPath)}`);
-
-      if (!copyContents) {
-        ignoredFiles.push(`${indentation}${folderName}/\n`);
-        resultDict[folderName].children = false; // Indicate that children were not copied
-        return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders, resultDict };
-      }
+      // const copyContents = await ui.confirm(`Do you want to copy the contents of the folder? ${path.relative(initialDirectoryPath, currentDirectoryPath)}`);
+      //
+      // if (!copyContents) {
+      //   ignoredFiles.push(`${indentation}${folderName}/\n`);
+      //   resultDict[folderName].children = false; // Indicate that children were not copied
+      //   return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders, resultDict };
+      // }
     }
 
     const items = await fileHandler.readDir(currentDirectoryPath);

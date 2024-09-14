@@ -1,19 +1,18 @@
 import React from 'react';
 import { Container, Header, Section, FolderStructure, FileContent, Actions, Label } from './Status.styles';
 import CopySections from '../../components/CopySections/CopySections';
-import { useStepState } from "../../stateManagement/zustand/selectors/createTest.selectors";
-import { useError, useIsLoading } from "../../stateManagement/zustand/selectors/createTest.selectors";
+import { useStore } from "../../stateManagement/zustand/useStore";
 import LoadingError from "./components/LoadingError";
 import CreateTestSection from "./components/CreateTestSection";
 import { formatFileContents } from '../../../../utils/harvesterUtils';
 
 const FolderContextManager: React.FC = () => {
-  const stepState = useStepState();
-  const isLoading = useIsLoading();
-  const error = useError();
+  const stepState = useStore((state) => state.stepState);
+  const isLoading = useStore((state) => state.isLoading);
+  const error = useStore((state) => state.error);
   const copiedContent = stepState?.copiedContent;
   const joinedContent = copiedContent?.contentTree
-    ? formatFileContents(copiedContent.contentTree) // Accessing the root node
+    ? formatFileContents(copiedContent.contentTree)
     : '';
 
   return (
