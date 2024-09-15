@@ -33,8 +33,13 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = ({ contentTre
     );
   };
 
+  // Helper function to extract the file or folder name from a path
+  const getNameFromPath = (filePath: string) => {
+    return filePath.split(/[/\\]+/).filter(Boolean).pop();
+  };
+
   const renderContentTree = (node: ContentNode, parentPath: string = '') => {
-    const name = node.localPath?.split('\\').pop(); // Extract the name from the localPath
+    const name = node.localPath ? getNameFromPath(node.localPath) : undefined;
 
     if (!name) {
       console.error("Encountered a node with an undefined 'localPath'.", node);
