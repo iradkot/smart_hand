@@ -5,7 +5,6 @@ import {ThemeProvider} from 'styled-components'
 import {theme} from "./style/theme";
 import AppRouter from "./navigation/AppRouter";
 
-
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <CopyHistoryProvider>

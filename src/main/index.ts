@@ -116,9 +116,9 @@ ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPa
   }
 });
 
-ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, fileName: string, instructions?: string, packageJsonContent?: string): Promise<TestCreationArgs> => {
+ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, fileName: string, packageJsonPath: string, instructions?: string, packageJsonContent?: string): Promise<TestCreationArgs> => {
   try {
-    await createAndRunTest(sessionId, directoryPath, fileContent, fileName, instructions, packageJsonContent);
+    await createAndRunTest(sessionId, directoryPath, fileContent, fileName, packageJsonPath, instructions, packageJsonContent);
     return { success: true };
   } catch (error) {
     const errorMessage = handleError(error, 'Error in createAndRunTest');

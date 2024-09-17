@@ -1,5 +1,5 @@
-import { smartHandServer } from '../axiosInstances'
-import {handleError} from "../../utils/ErrorHandler";
+import { smartHandServer } from '../axiosInstances';
+import { handleError } from "../../utils/ErrorHandler";
 
 interface TestDescription {
   title: string;
@@ -18,10 +18,20 @@ interface APIResponse<T> {
   content: T;
 }
 
-interface TestLibrary extends APIResponse<any> {
-  libraries: any[];
+export interface Library {
+  name: string;
+  version: string;
 }
 
+export interface AnalyzePackageJsonContent {
+  testLibraries: Library[];
+  styleLibraries: Library[];
+  utilityLibraries: Library[];
+  otherLibraries: Library[];
+  projectType: 'react-web' | 'react-native' | 'electron' | 'unknown';
+}
+
+export interface AnalyzePackageJsonResponse extends APIResponse<AnalyzePackageJsonContent> {}
 
 export const askGPTPost = async (sessionId: string, input: string): Promise<APIResponse<any>> => {
   try {
@@ -39,7 +49,7 @@ export const askGPTPost = async (sessionId: string, input: string): Promise<APIR
 export const generateTestFile = async (
   sessionId: string,
   fileContent: string,
-  instructions?: string
+  instructions: string
 ): Promise<APIResponse<GenerateTestFileResponse>> => {
   try {
     const response = await smartHandServer.post('/generateTestFile', {
@@ -50,11 +60,10 @@ export const generateTestFile = async (
     console.log('Response from generateTestFile:', response.data);
     return response.data;
   } catch (error) {
-    handleError(error, 'Error in askGPTPost');
+    handleError(error, 'Error in generateTestFile');
     throw error;
   }
 };
-
 
 export const generateTerminalCommands = async (sessionId: string, input: string): Promise<APIResponse<any>> => {
   try {
@@ -69,20 +78,18 @@ export const generateTerminalCommands = async (sessionId: string, input: string)
   }
 };
 
-export const getTestLibraries = async (sessionId: string, packageJson?: string): Promise<TestLibrary> => {
+export const analyzePackageJson = async (sessionId: string, packageJson?: string): Promise<AnalyzePackageJsonResponse> => {
   try {
     if (!packageJson) {
       throw new Error('Package.json not found');
     }
-    const response = await smartHandServer.post('/getTestLibraries', {
+    const response = await smartHandServer.post('/analyzePackageJson', {
       sessionId,
       packageJson, // Send package.json from the client
     });
-    console.log('Response from getTestLibraries:', response.data);
     return response.data;
   } catch (error) {
-    console.log('Error in getTestLibraries:', error);
+    console.log('Error in analyzePackageJson:', error);
     throw error;
   }
 };
-

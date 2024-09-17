@@ -16,16 +16,11 @@ async function gatherTypesAndInterfaces(
   charLimit: number
 ): Promise<string> {
   let result: SearchResult = { collectedTypes: '', totalChars: 0 };
-
-  console.log(`Starting search in directory: ${startDir} with maxDepth: ${maxDepth} and charLimit: ${charLimit}`);
-
   try {
     await searchFolder(startDir, 0, maxDepth, charLimit, result);
   } catch (error) {
     console.error(`Error during search: ${error.message}`);
   }
-
-  console.log(`Finished search with collected characters: ${result.totalChars}`);
   return result.collectedTypes;
 }
 
@@ -40,9 +35,6 @@ async function searchFolder(
     console.log(`Reached max depth or character limit. Stopping search at ${dir}`);
     return;
   }
-
-  console.log(`Searching directory: ${dir} at depth ${currentDepth}`);
-
   try {
     const files = await fs.readdir(dir, { withFileTypes: true });
 
@@ -57,7 +49,6 @@ async function searchFolder(
       if (file.isDirectory()) {
         await searchFolder(filePath, currentDepth + 1, maxDepth, charLimit, result);
       } else if (file.isFile() && isTypeScriptFile(file.name)) {
-        console.log(`Processing TypeScript file: ${filePath}`);
         await processTypeScriptFile(filePath, charLimit, result);
       }
 
@@ -74,18 +65,8 @@ async function searchFolder(
 async function processTypeScriptFile(filePath: string, charLimit: number, result: SearchResult): Promise<void> {
   try {
     const content = await fs.readFile(filePath, 'utf8');
-
-    console.log(`Reading file: ${filePath}`);
-
     const sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true);
     const types = collectTypesFromSourceFile(sourceFile);
-
-    if (types.length > 0) {
-      console.log(`Found types in file: ${filePath}`);
-    } else {
-      console.log(`No types found in file: ${filePath}`);
-    }
-
     for (const type of types) {
       if (result.totalChars + type.length <= charLimit) {
         result.collectedTypes += type + '\n';
@@ -130,16 +111,13 @@ async function processImports(filePath: string, content: string, charLimit: numb
 
     const fileStat = await safeStat(importPath);
     if (fileStat?.isFile() && isTypeScriptFile(importPath)) {
-      console.log(`Processing imported file: ${importPath}`);
       await processTypeScriptFile(importPath, charLimit, result);
     } else if (fileStat?.isDirectory()) {
       const indexPath = path.join(importPath, 'index.ts');
       const indexStat = await safeStat(indexPath);
       if (indexStat?.isFile()) {
-        console.log(`Processing index file: ${indexPath}`);
         await processTypeScriptFile(indexPath, charLimit, result);
       } else {
-        console.log(`Searching folder for types in: ${importPath}`);
         await searchFolder(importPath, 0, 1, charLimit, result); // Search in directory for types
       }
     }

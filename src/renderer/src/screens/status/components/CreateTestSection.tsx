@@ -54,7 +54,7 @@ const CreateTestSection: React.FC = () => {
   };
 
   const handleCreateTest = async () => {
-    if (!!packageJsonContent?.length && stepState) {
+    if (!!packageJsonContent?.length && stepState && typeof packageJsonPath === 'string') {
       let sessionId = stepState.sessionId;
       if (!sessionId) {
         sessionId = initializeSession();
@@ -73,6 +73,7 @@ const CreateTestSection: React.FC = () => {
           directoryPath,
           fileContent,
           fileName,
+          packageJsonPath,
           instructions,
           packageJsonContent,
         });
