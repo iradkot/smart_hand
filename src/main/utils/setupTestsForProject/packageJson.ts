@@ -3,8 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export const updatePackageJson = async (directoryPath: string): Promise<void> => {
-  const packageJsonPath = path.join(directoryPath, 'package.json');
+export const updatePackageJson = async (packageJsonPath: string): Promise<void> => {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
   packageJson.scripts = {

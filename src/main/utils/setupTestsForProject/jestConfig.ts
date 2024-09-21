@@ -23,7 +23,7 @@ module.exports = {
 
 export const createJestSetup = async (directoryPath: string): Promise<void> => {
   const jestSetup = `
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 `.trim();
 
   fs.writeFileSync(path.join(directoryPath, 'jest-setup.ts'), jestSetup);

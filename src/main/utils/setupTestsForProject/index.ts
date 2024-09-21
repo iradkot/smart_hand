@@ -4,30 +4,36 @@ import { createJestConfig, createJestSetup } from './jestConfig';
 import { runCommand } from '../commandRunner';
 import { updatePackageJson } from './packageJson';
 import { commonTestLibraries, platformTestLibraries, TestLibrary, tsCompatibility } from './testLibraries';
-import {detectPackageManager, getTypeScriptVersion} from '../packageUtils';
+import { detectPackageManager, getTypeScriptVersion } from '../packageUtils';
+import {handleError} from "../../../utils/ErrorHandler";
 
-export const setupTestsForProject = async (packageJsonPath: string, platform: string): Promise<void> => {
+interface SetupTestsForProjectOptions {
+  projectPath: string;
+  packageJsonPath: string;
+  platform: string;
+}
+export const setupTestsForProject = async ({projectPath, packageJsonPath, platform}: SetupTestsForProjectOptions): Promise<void> => {
   console.log(`Setting up tests for ${platform} project at ${packageJsonPath}...`);
 
   try {
     // Detect the package manager
-    const packageManager = detectPackageManager(packageJsonPath);
+    const packageManager = detectPackageManager(projectPath);
     console.log(`Detected package manager: ${packageManager}`);
 
     // Get TypeScript version
     const tsVersionRaw = getTypeScriptVersion(packageJsonPath);
     if (!tsVersionRaw) {
-      console.warn('Cannot determine TypeScript version. Skipping test setup.');
-      return;
+      throw new Error('Cannot determine TypeScript version. Ensure package.json exists and TypeScript is listed as a dependency.');
     }
 
     // Parse TypeScript version using semver
     const semver = require('semver');
     const tsVersion = semver.coerce(tsVersionRaw)?.version;
     if (!tsVersion) {
-      console.warn('Invalid TypeScript version format. Skipping test setup.');
-      return;
+      throw new Error('Invalid TypeScript version format. Please check your package.json.');
     }
+
+    console.log(`Detected TypeScript version: ${tsVersion}`);
 
     // Select compatible testing libraries based on TypeScript version
     let compatibleTestLibraries: TestLibrary[] = [];
@@ -40,9 +46,10 @@ export const setupTestsForProject = async (packageJsonPath: string, platform: st
     }
 
     if (compatibleTestLibraries.length === 0) {
-      console.warn(`No compatible testing libraries found for TypeScript version ${tsVersion}. Skipping test setup.`);
-      return;
+      throw new Error(`No compatible testing libraries found for TypeScript version ${tsVersion}.`);
     }
+
+    console.log('Compatible testing libraries:', compatibleTestLibraries);
 
     // Combine commonTestLibraries and compatibleTestLibraries
     const allTestLibraries = [
@@ -65,15 +72,16 @@ export const setupTestsForProject = async (packageJsonPath: string, platform: st
 
     console.log(`Installing dependencies with ${packageManager}: ${installCommand}`);
 
-    await runCommand(installCommand, packageJsonPath);
+    await runCommand(installCommand, projectPath);
 
     // Create/update jest.config.js and jest-setup.ts
     await updatePackageJson(packageJsonPath);
-    await createJestConfig(packageJsonPath, platform);
-    await createJestSetup(packageJsonPath);
+    await createJestConfig(projectPath, platform);
+    await createJestSetup(projectPath);
 
     console.log('Testing setup complete.');
   } catch (error) {
-    console.error('Error setting up testing environment:', error);
+    console.error('Error setting up testing environment:', handleError(error, 'setupTestsForProject'));
+    throw error; // Re-throw to be caught by the caller
   }
 };

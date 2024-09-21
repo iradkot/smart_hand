@@ -6,9 +6,14 @@ export interface TestLibrary {
 }
 
 export const commonTestLibraries: TestLibrary[] = [
-  { name: 'jest', version: '^28.0.0' },
-  { name: 'ts-jest', version: '^28.0.0' },
-  { name: '@types/jest', version: '^28.0.0' },
+  // For TypeScript <5.0.0
+  { name: 'jest', version: '^27.0.0' },
+  { name: 'ts-jest', version: '^27.0.0' },
+  { name: '@types/jest', version: '^27.0.0' },
+  // For TypeScript >=5.0.0
+  { name: 'jest', version: '^29.0.0' },
+  { name: 'ts-jest', version: '^29.0.0' },
+  { name: '@types/jest', version: '^29.0.0' },
 ];
 
 export const platformTestLibraries: Record<string, TestLibrary[]> = {
@@ -21,11 +26,13 @@ export const platformTestLibraries: Record<string, TestLibrary[]> = {
   ],
   electron: [
     { name: 'spectron', version: '^15.0.0' },
-    { name: 'jest-electron', version: '^1.0.0' },
-    { name: 'babel-jest', version: '^28.0.0' },
+    { name: 'babel-jest', version: '^29.0.0' },
     { name: '@babel/core', version: '^7.14.0' },
     { name: '@babel/preset-env', version: '^7.14.0' },
-    { name: '@babel/preset-react', version: '^7.14.0' },
+    // Updated the version below to a valid one
+    { name: '@babel/preset-react', version: '^7.14.5' },
+    { name: '@testing-library/jest-dom', version: '^6.0.0' }, // Add this line
+    { name: '@testing-library/react', version: '^16.0.1' }, // Optional, if you use React in Electron
   ],
 };
 
@@ -38,9 +45,9 @@ export const tsCompatibility: Record<string, TestLibrary[]> = {
     // Add more libraries as needed
   ],
   '>=5.0.0': [
-    { name: 'jest', version: '^28.0.0' },
-    { name: 'ts-jest', version: '^28.0.0' },
-    { name: '@types/jest', version: '^28.0.0' },
-    // Add more libraries as needed
+    { name: 'jest', version: '^29.0.0' },
+    { name: 'ts-jest', version: '^29.0.0' },
+    { name: '@types/jest', version: '^29.0.0' },
+    { name: 'jest-environment-jsdom', version: '^29.0.0' },
   ],
 };

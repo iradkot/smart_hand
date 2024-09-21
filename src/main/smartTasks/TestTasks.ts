@@ -18,15 +18,8 @@ export async function createAndRunTest(
   packageJsonContent?: string
 ): Promise<void> {
 
-  console.log({sessionId,
-    directoryPath,
-    fileContent,
-    fileName,
-    packageJsonPath,
-    instructions,
-    packageJsonContent})
-
   try {
+    const projectPath = packageJsonPath.replace('package.json', '');
     // Step 0: Analyze package.json
     const analyzedPackageJsonResponse = await analyzePackageJson(sessionId, packageJsonContent);
     const analyzedPackageJson = analyzedPackageJsonResponse.content as AnalyzePackageJsonContent;
@@ -99,7 +92,7 @@ export async function createAndRunTest(
             if (userConfirmed) {
               // Run setupTestsForProject
               console.log('Setting up the testing environment...');
-              await setupTestsForProject(packageJsonPath, projectType);
+              await setupTestsForProject({projectPath, platform: projectType, packageJsonPath});
             } else {
               console.log('User declined to set up the testing environment.');
               return; // Halt the process
@@ -115,8 +108,7 @@ export async function createAndRunTest(
 
     // **HALT THE PROCESS IF TEST SETUP WAS SKIPPED**
     console.log('2222')
-    const tsVersionFinal = getTypeScriptVersion(directoryPath);
-    if (!tsVersionFinal) {
+    if (!tsVersionRaw) {
       console.warn('Test setup was skipped due to missing TypeScript version. Halting test generation.');
       return;
     }
