@@ -1,10 +1,6 @@
-// An animated loader component with styled components, which display a spinner
-// It gets its props from the parent component
-
-import React from 'react'
 import styled from 'styled-components'
 
-const Loader = ({ size = 50, color = '#000000' }) => {
+const Loader = ({ size = 50, color = '#000000' }: { size?: number; color?: string }) => {
   return (
     <LoaderContainer size={size}>
       <LoaderSpinner color={color} />
@@ -12,7 +8,7 @@ const Loader = ({ size = 50, color = '#000000' }) => {
   )
 }
 
-const LoaderContainer = styled.div`
+const LoaderContainer = styled.div<{ size: number }>`
   display: flex;
   justify-content: center;
   align-items: center;

@@ -28,7 +28,7 @@ export interface AnalyzePackageJsonContent {
   styleLibraries: Library[];
   utilityLibraries: Library[];
   otherLibraries: Library[];
-  projectType: 'react-web' | 'react-native' | 'electron' | 'unknown';
+  projectType: 'react-web' | 'react-native' | 'electron' | 'node-server' | 'unknown';
 }
 
 export interface AnalyzePackageJsonResponse extends APIResponse<AnalyzePackageJsonContent> {}
@@ -57,23 +57,9 @@ export const generateTestFile = async (
       fileContent,
       instructions,
     });
-    console.log('Response from generateTestFile:', response.data);
     return response.data;
   } catch (error) {
     handleError(error, 'Error in generateTestFile');
-    throw error;
-  }
-};
-
-export const generateTerminalCommands = async (sessionId: string, input: string): Promise<APIResponse<any>> => {
-  try {
-    const response = await smartHandServer.post('/generateTerminalCommands', {
-      sessionId,
-      input,
-    });
-    return response.data;
-  } catch (error) {
-    console.log('Error in generateTerminalCommands:', error);
     throw error;
   }
 };

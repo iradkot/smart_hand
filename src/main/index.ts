@@ -12,7 +12,7 @@ import {
 } from './interfaces';
 import countNestedValues from "../utils/countNestedValues";
 import findPackageJson from "./utils/findPackageJson";
-import {createAndRunTest} from "./smartTasks/TestTasks";
+import {createAndRunTest} from "./smartTasks/creteTestTask/TestTasks";
 import {handleError} from "../utils/ErrorHandler";
 import {IgnoreList} from "./fileOperations/utils/IgnoreList";
 import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";

@@ -1,7 +1,9 @@
 {
   "include": [
     "src/**/*",
-    "electron.d.ts"  // Ensure this file is included
+    "electron.d.ts",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ],
   "exclude": [
     "node_modules",
@@ -23,7 +25,8 @@
       "electron",
       "jest",
       "@testing-library/react",
-      "@testing-library/jest-dom"
+      "@testing-library/jest-dom",
+      "jest-extended"
     ],
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,

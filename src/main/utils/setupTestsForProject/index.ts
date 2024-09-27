@@ -9,11 +9,10 @@ import {handleError} from "../../../utils/ErrorHandler";
 
 interface SetupTestsForProjectOptions {
   projectPath: string;
-  packageJsonPath: string;
   platform: string;
 }
-export const setupTestsForProject = async ({projectPath, packageJsonPath, platform}: SetupTestsForProjectOptions): Promise<void> => {
-  console.log(`Setting up tests for ${platform} project at ${packageJsonPath}...`);
+export const setupTestsForProject = async ({projectPath,, platform}: SetupTestsForProjectOptions): Promise<void> => {
+  console.log(`Setting up tests for ${platform} project at ${projectPath}...`);
 
   try {
     // Detect the package manager
@@ -21,7 +20,7 @@ export const setupTestsForProject = async ({projectPath, packageJsonPath, platfo
     console.log(`Detected package manager: ${packageManager}`);
 
     // Get TypeScript version
-    const tsVersionRaw = getTypeScriptVersion(packageJsonPath);
+    const tsVersionRaw = getTypeScriptVersion(projectPath);
     if (!tsVersionRaw) {
       throw new Error('Cannot determine TypeScript version. Ensure package.json exists and TypeScript is listed as a dependency.');
     }
@@ -75,7 +74,7 @@ export const setupTestsForProject = async ({projectPath, packageJsonPath, platfo
     await runCommand(installCommand, projectPath);
 
     // Create/update jest.config.js and jest-setup.ts
-    await updatePackageJson(packageJsonPath);
+    await updatePackageJson(projectPath);
     await createJestConfig(projectPath, platform);
     await createJestSetup(projectPath);
 

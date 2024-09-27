@@ -9,4 +9,5 @@ export const IGNORE_LIST = [
   'out',
   'resources',
   'dist',
+  'coverage',
 ];
