@@ -4,6 +4,7 @@ import {
   READ_PACKAGE_JSON_INVOKE
 } from "./constants";
 import { PackageJsonReadResult } from "../main/interfaces";
+import {ContentNode} from "../types/pathHarvester.types";
 
 // Define the argument types
 interface CopyingProcessArgs {
@@ -16,6 +17,7 @@ interface TestCreationArgs {
   directoryPath: string;
   fileContent: string;
   fileName: string;
+  contentTree: ContentNode;
   packageJsonPath: string;
   instructions: string;
   packageJsonContent: string;
@@ -25,8 +27,8 @@ export const invokeCopyingProcess = async ({ directoryPath, option }: CopyingPro
   return window.electron.ipcRenderer.invoke(COPYING_PROCESS_INVOKE, directoryPath, option);
 };
 
-export const invokeCreateAndRunTest = async ({ sessionId, directoryPath, fileContent, fileName, packageJsonPath, instructions, packageJsonContent }: TestCreationArgs) => {
-  return window.electron.ipcRenderer.invoke(CREATE_AND_RUN_TEST_INVOKE, sessionId, directoryPath, fileContent, fileName, packageJsonPath, instructions, packageJsonContent);
+export const invokeCreateAndRunTest = async ({ sessionId, directoryPath, fileContent, fileName, contentTree, packageJsonPath, instructions, packageJsonContent }: TestCreationArgs) => {
+  return window.electron.ipcRenderer.invoke(CREATE_AND_RUN_TEST_INVOKE, sessionId, directoryPath, fileContent, fileName, contentTree, packageJsonPath, instructions, packageJsonContent);
 };
 
 export const invokeReadPackageJson = (directoryPath: string): Promise<PackageJsonReadResult> => {

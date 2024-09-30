@@ -4,7 +4,12 @@ import fs from "fs";
 
 const execAsync = promisify(exec);
 
-export const runCommand = async (command: string, executionPath: string): Promise<{ stdout: string; stderr: string }> => {
+interface ExecResult {
+  stdout: string;
+  stderr: string;
+}
+
+export const runCommand = async (command: string, executionPath: string): Promise<{ stdout: string; stderr: string; error?: any }> => {
   try {
     // Verify executionPath is a valid directory
     if (!fs.existsSync(executionPath)) {
@@ -15,26 +20,34 @@ export const runCommand = async (command: string, executionPath: string): Promis
 
     let shell: string | undefined;
 
-    if (process.platform === 'win32') {
-      shell = 'cmd.exe';
+    if (process.env.WSL_DISTRO_NAME || process.platform === 'linux') {
+      // Running inside WSL or native Linux
+      shell = '/bin/bash';
+    } else if (process.platform === 'win32') {
+      shell = process.env.COMSPEC || 'cmd.exe';
     } else {
       shell = process.env.SHELL || '/bin/sh';
     }
 
     const options: ExecOptions = { cwd: executionPath, shell };
 
-    const { stdout, stderr } = await execAsync(command, options);
+    const { stdout, stderr } = await execAsync(command, options) as ExecResult;
     return { stdout, stderr };
   } catch (error: any) {
     if (error.stdout || error.stderr) {
-      return { stdout: error.stdout || '', stderr: error.stderr || '' };
+      return { stdout: error.stdout || '', stderr: error.stderr || '', error };
     } else {
       if (error.code === 'ENOENT') {
         console.error(`Command not found: ${command}`);
       } else {
         console.error(`Error executing command: ${command}`, error);
       }
-      throw error;
+      throw { ...error, stdout: '', stderr: '' };
     }
   }
 };
+
+export  interface CommandError extends Error {
+  stdout?: string;
+  stderr?: string;
+}

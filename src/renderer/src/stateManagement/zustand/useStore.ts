@@ -3,8 +3,9 @@ import { devtools, persist } from 'zustand/middleware';
 import { createUISlice } from './slices/uiSlice';
 import { createProcessSlice } from './slices/processSlice';
 import { createNavigationSlice } from './slices/navigationSlice';
-import { StoreState } from './store.types';
 import { createRehydrationSlice } from './slices/rehydrationSlice';
+import { createCreateTestSectionSlice } from './slices/createTestSectionSlice';
+import {StoreState} from "./store.types";
 
 export const useStore = create<StoreState>()(
   devtools(
@@ -14,6 +15,7 @@ export const useStore = create<StoreState>()(
         ...createUISlice(set, get, api),
         ...createProcessSlice(set, get, api),
         ...createNavigationSlice(set, get, api),
+        ...createCreateTestSectionSlice(set, get, api),
       }),
       {
         name: 'app-storage',
@@ -21,6 +23,12 @@ export const useStore = create<StoreState>()(
           currentRoute: state.currentRoute,
           currentStepId: state.currentStepId,
           stepState: state.stepState,
+          // Include the createTestSection state for persistence
+          testStatus: state.testStatus,
+          selectedFile: state.selectedFile,
+          isPending: state.isPending,
+          packageJsonContent: state.packageJsonContent,
+          packageJsonPath: state.packageJsonPath,
         }),
         onRehydrateStorage: ({ setRehydrated }) => {
           return (_state, error) => {

@@ -1,3 +1,5 @@
+// src/main/smartTasks/createTestTask/utils/fileUtils.ts
+
 import { ContentNode } from '../types/pathHarvester.types';
 
 /**
@@ -47,3 +49,41 @@ export const getFileContentFromPath = (node: ContentNode | undefined, filePath: 
   return null;
 };
 
+/**
+ * Generates a tree-like string representation of file names from a ContentNode.
+ *
+ * @param {ContentNode} contentNode - The root ContentNode to traverse.
+ * @returns {string} - A string representing the file structure in a tree-like format.
+ */
+export const generateFileTree = (contentNode: ContentNode): string => {
+  const lines: string[] = [];
+
+  /**
+   * Recursive helper function to traverse the ContentNode.
+   *
+   * @param {ContentNode} node - Current ContentNode being traversed.
+   * @param {string} prefix - String prefix for formatting the tree structure.
+   * @param {boolean} isLast - Indicates if the current node is the last child.
+   */
+  function traverse(node: ContentNode, prefix: string, isLast: boolean) {
+    if (node.type === 'directory' && node.children) {
+      const entries = Object.entries(node.children);
+      entries.forEach(([name, child], index) => {
+        const isLastChild = index === entries.length - 1;
+        const connector = isLastChild ? '└── ' : '├── ';
+        if (child.type === 'file') {
+          lines.push(`${prefix}${connector}${name}`);
+        } else if (child.type === 'directory') {
+          lines.push(`${prefix}${connector}${name}`);
+          const newPrefix = prefix + (isLastChild ? '    ' : '│   ');
+          traverse(child, newPrefix, isLastChild);
+        }
+      });
+    }
+  }
+
+  // Start traversal from the root
+  traverse(contentNode, '', true);
+
+  return lines.join('\n');
+};

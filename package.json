@@ -18,8 +18,8 @@
     "build:win": "npm run build && electron-builder --win --config",
     "build:mac": "electron-vite build && electron-builder --mac --config",
     "build:linux": "electron-vite build && electron-builder --linux --config",
-    "test": "jest --no-color",
-    "test:watch": "jest --watch --no-color"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",

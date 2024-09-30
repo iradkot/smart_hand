@@ -33,4 +33,17 @@ export interface RehydrationSlice {
   setRehydrated: (rehydrated: boolean) => void;
 }
 
-export type StoreState = UISlice & ProcessSlice & NavigationSlice &RehydrationSlice;
+export interface CreateTestSectionSlice {
+    testStatus: string | null;
+    selectedFile: string[];
+    isPending: boolean;
+    packageJsonContent: string | null;
+    packageJsonPath: string | null;
+    setTestStatus: (status: string | null) => void;
+    setSelectedFile: (files: string[]) => void;
+    setIsPending: (pending: boolean) => void;
+    setPackageJsonContent: (content: string | null) => void;
+    setPackageJsonPath: (path: string | null) => void;
+}
+
+export type StoreState = UISlice & ProcessSlice & NavigationSlice &RehydrationSlice & CreateTestSectionSlice;
