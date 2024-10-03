@@ -1,7 +1,6 @@
 // src/main/utils/setupTestsForProject/packageJson.ts
 
 import fs from 'fs';
-import path from 'path';
 
 export const updatePackageJson = async (packageJsonPath: string): Promise<void> => {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));

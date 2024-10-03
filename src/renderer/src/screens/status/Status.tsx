@@ -4,7 +4,7 @@ import CopySections from '../../components/CopySections/CopySections';
 import { useStore } from "../../stateManagement/zustand/useStore";
 import LoadingError from "./components/LoadingError";
 import CreateTestSection from "./components/CreateTestSection";
-import { formatFileContents } from '../../../../utils/harvesterUtils';
+import { formatFileContents } from '../../../../utils/harvesterUtils/harvesterUtils';
 
 const FolderContextManager: React.FC = () => {
   const stepState = useStore((state) => state.stepState);

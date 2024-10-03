@@ -1,5 +1,5 @@
 import {BuildContentResult} from "../../types/interfaces";
-import {contentTree} from "../../../../types/pathHarvester.types";
+import {ContentTree} from "../../../../types/pathHarvester.types";
 
 export class CopyOptionHandler {
   /**
@@ -9,7 +9,7 @@ export class CopyOptionHandler {
   static buildContent(
     folderStructure: string[],
     ignoredFiles: string[],
-    resultDict: contentTree,
+    resultDict: ContentTree,
   ): BuildContentResult {
     const result: Record<string, any> = {
       folderStructure: folderStructure.join(''),

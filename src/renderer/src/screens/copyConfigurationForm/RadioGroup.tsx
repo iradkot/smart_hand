@@ -1,6 +1,6 @@
 import React from 'react';
 import { Label, Radio } from '../../../../components/ui/styledComponents';
-import { OptionValue } from '../../types';
+import { OptionValue } from '../../types/types';
 
 interface Option {
   value: OptionValue;

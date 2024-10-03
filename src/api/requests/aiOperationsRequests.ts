@@ -11,7 +11,9 @@ interface GenerateTestFileResponse {
   testDescription: TestDescription;
   testFileName: string;
   testCode: string;
+  requestedFiles: string[];
   runCommand: string;
+
 }
 
 interface APIResponse<T> {
@@ -63,6 +65,7 @@ export const generateTestFile = async (
     throw error;
   }
 };
+
 
 export const analyzePackageJson = async (sessionId: string, packageJson?: string): Promise<AnalyzePackageJsonResponse> => {
   try {

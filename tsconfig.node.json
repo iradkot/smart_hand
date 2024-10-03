@@ -5,6 +5,6 @@
   "compilerOptions": {
     "composite": true,
     "types": ["electron-vite/node", "electron"],
-    "outDir": "dist",
+    "outDir": "dist"
   }
 }

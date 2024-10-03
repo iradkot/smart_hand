@@ -4,7 +4,7 @@ import { optionsData, OPTION_COPY_FILE_CONTENTS } from '../OPTION_SHOW_REACT_NAT
 import RadioGroup from './RadioGroup';
 import TextInput from './TextInput';
 import { useStore } from '../../stateManagement/zustand/useStore';
-import { OptionValue } from '../../types';
+import { OptionValue } from '../../types/types';
 import {useAppNavigation} from "../../hooks/useAppNavigation";
 
 const CopyConfigurationForm: React.FC = () => {

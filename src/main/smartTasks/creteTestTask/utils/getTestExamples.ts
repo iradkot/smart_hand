@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import {handleError} from "../../../../utils/ErrorHandler";
 
 const isDevelopment = process.env.NODE_ENV === 'development';  // Check if running in development mode
 
@@ -42,7 +43,6 @@ export async function getTestExamples(): Promise<string> {
 
     return testExamples.join('\n\n');
   } catch (error) {
-    console.error(`Error reading test files: ${error.message}`);
-    throw error;
+    throw handleError(error, 'getTestExamples');
   }
 }

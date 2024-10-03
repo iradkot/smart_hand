@@ -52,7 +52,7 @@ export async function createAndRunTest(
       packageManager,
       analyzedPackageJson,
       fileHandler,
-      maxRetries: 3
+      maxRetries: 5
     });
 
     if (!testResult.success) {

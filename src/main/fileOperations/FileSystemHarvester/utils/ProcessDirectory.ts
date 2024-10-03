@@ -2,7 +2,7 @@ import path from 'path';
 import {IFileHandler, IUserInterface, IIgnoreList, FileOrFolder, CopyOptions} from '../../types/interfaces';
 import { createIndentationString } from "./CreateIndentationString";
 import { processFile } from "./ProcessFile";
-import {contentTree} from "../../../../types/pathHarvester.types";
+import {ContentTree} from "../../../../types/pathHarvester.types";
 
 export async function processDirectory(
   currentDirectoryPath: string,
@@ -12,7 +12,7 @@ export async function processDirectory(
   fileHandler: IFileHandler,
   ui: IUserInterface,
   ignoreList: IIgnoreList
-): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[], resultDict: contentTree }> {
+): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[], resultDict: ContentTree }> {
   const isInitialDirectory = currentDirectoryPath === initialDirectoryPath;
   const indentation = createIndentationString(depth, false);
   const folderName = path.basename(currentDirectoryPath);

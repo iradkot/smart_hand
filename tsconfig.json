@@ -1,15 +1,26 @@
 {
+  "compilerOptions": {
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "strict": true,
+    "declaration": false,
+    "emitDeclarationOnly": false
+  },
   "include": [
     "src/**/*",
-    "electron.d.ts",
+    "src/types/**/*.d.ts",
     "**/*.test.ts",
     "**/*.test.tsx"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "out",
-    "**/*.d.ts"
+    "out"
   ],
   "files": [],
   "references": [
@@ -19,18 +30,5 @@
     {
       "path": "./tsconfig.web.json"
     }
-  ],
-  "compilerOptions": {
-    "types": [
-      "electron",
-      "jest",
-      "@testing-library/react",
-      "@testing-library/jest-dom",
-      "jest-extended"
-    ],
-    "jsx": "react-jsx",
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    "strict": true
-  }
+  ]
 }

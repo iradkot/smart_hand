@@ -16,12 +16,20 @@ export const commonTestLibraries: TestLibrary[] = [
   { name: '@types/jest', version: '^29.0.0' },
 ];
 
+const commonReactTestLibraries: TestLibrary[] = [
+  { name: '@testing-library/react', version: '^12.0.0' },
+  { name: '@testing-library/jest-dom', version: '^5.17.0' },
+  { name: '@testing-library/react-hooks"', version: '^8.0.1' },
+];
+
+
+
 export const platformTestLibraries: Record<string, TestLibrary[]> = {
   web: [
-    { name: '@testing-library/react', version: '^12.0.0' },
-    { name: '@testing-library/jest-dom', version: '^5.17.0' },
+    ...commonReactTestLibraries
   ],
   'react-native': [
+    ...commonReactTestLibraries,
     { name: '@testing-library/react-native', version: '^8.0.0' },
   ],
   electron: [
@@ -31,8 +39,7 @@ export const platformTestLibraries: Record<string, TestLibrary[]> = {
     { name: '@babel/preset-env', version: '^7.14.0' },
     // Updated the version below to a valid one
     { name: '@babel/preset-react', version: '^7.14.5' },
-    { name: '@testing-library/jest-dom', version: '^5.17.0' },
-    { name: '@testing-library/react', version: '^16.0.1' }, // Optional, if you use React in Electron
+    ...commonReactTestLibraries
   ],
   'node-server': [
     { name: 'jest', version: '^27.0.0' },

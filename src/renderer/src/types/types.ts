@@ -1,4 +1,4 @@
-import {copiedContent} from "../../types/pathHarvester.types";
+import {copiedContent} from "../../../types/pathHarvester.types";
 
 /**
  * Represents the state of the process, including the structure of directories and files.

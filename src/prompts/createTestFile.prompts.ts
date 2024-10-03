@@ -3,27 +3,27 @@ export const createTestFilePrompt = ({
                                        targetFile,
                                        fileContent,
                                        analyzedTestLibraries,
-                                       testExamples
+                                       testExamples,
+                                       filePathsString,
+                                       additionalFilesSection,
                                      }) => `
-Create a unit test for the attached file using **exclusively** the **TypeScript definitions** and **test examples provided**. The test should cover all edge cases and scenarios, and the file should be placed in the same directory as the original file, i.e., ${targetDirectory}.
+Create a unit test for the attached file using **only** the provided definitions and test examples. Cover all edge cases and scenarios.
+The test file should be placed in the same directory as the file to test (\`${targetDirectory}\`).
 
 ### Key Instructions:
 
-- The format for the test file name should be: \`${targetFile}.test.ts\`.
-    - Example: If the target file is \`${targetFile}.ts\`, the test file should be \`${targetFile}.test.ts\`.
-    - If the file includes JSX, the format should be \`${targetFile}.test.tsx\`.
-- Only use the functions, utilities, and types explicitly defined in the \`analyzedTestLibraries\` and provided test examples. **Do not use external libraries or functions** unless explicitly part of the provided test examples or libraries.
+- Name the test file: \`${targetFile}.test.ts\`.
+- **If you require additional files or context**, specify their relative paths from the list below in the \`requestedFiles\` array of your JSON response.
+- **Use the exact paths as listed.**
 
-1. **Exclusive Use of Provided Test Libraries and Examples**: Use the utilities, types, and libraries in \`analyzedTestLibraries\` and the test example files. Do not use any external methods or assumptions beyond what is provided.
+### Available Files:
 
-2. **Ensure Typed Components**: Ensure all React components and their props are properly typed using TypeScript. Avoid implicit \`any\` types.
+${filePathsString}
 
-3. **Cover Edge Cases**: Make sure tests cover all edge cases, boundary conditions, and invalid inputs based on the structure and scenarios provided in the examples.
-
-4. **Test Libraries**: Only use the libraries listed in \`analyzedTestLibraries\`.
+${additionalFilesSection}
 
 ### Libraries Used:
-${JSON.stringify(analyzedTestLibraries, null, 2)}
+${analyzedTestLibraries}
 
 ### Test Examples Provided:
 ${testExamples}
@@ -33,23 +33,68 @@ ${targetFile}
 File Content:
 ${fileContent}
 
-**Reminder**: Follow the types and utilities provided and ensure your test adheres to the given structures.
+**Important**: Respond with a JSON object matching the provided schema. Include any needed files in the \`requestedFiles\` array.
+
+**Example Response**:
+\`\`\`json
+{
+  "testDescription": { /* ... */ },
+  "testFileName": "yourTestFileName.test.ts",
+  "testCode": "Your test code here",
+  "runCommand": "Your run command here",
+  "requestedFiles": ["src/utils/someUtility.ts", "src/constants/styleConstants.ts"]
+}
+\`\`\`
 `;
 
-export const handleTestRunErrorPrompt = ({ errorMessage, generatedTestFile, testCode }) => `
-An error occurred while running the tests for the generated file: \`${generatedTestFile}\`.
+
+export const handleTestRunErrorPrompt = ({
+                                           errorMessage,
+                                           generatedTestFile,
+                                           testCode,
+                                           filePathsString,
+                                           additionalFilesSection,
+                                         }) => `
+An error occurred while running the tests for \`${generatedTestFile}\`.
 
 ### Error Message:
 \`\`\`
 ${errorMessage}
 \`\`\`
 
-Please correct the test code accordingly. If you need additional files or context, specify the filenames, and they will be provided.
+**Important Instructions**:
+
+- **Analyze the error message carefully**.
+- **If the error indicates missing files, modules, or context**, you **must** specify the relative paths of the files you need from the 'Available Files' list below in the \`requestedFiles\` array of your JSON response.
+- **Use the exact paths as listed**.
+- **Do not include the contents of the requested files in your response**.
+- **Your response must be a JSON object matching the schema provided**.
+
+### Available Files:
+
+${filePathsString}
+
+${additionalFilesSection}
 
 ### Current Test Code:
 \`\`\`typescript
 ${testCode}
 \`\`\`
 
-Provide the corrected test code in the same format as before.
+**Example Response**:
+\`\`\`json
+{
+  "testDescription": {
+    "title": "Your Test Title",
+    "description": "Your Test Description",
+    "instructions": "Instructions on how to run the test"
+  },
+  "testFileName": "yourTestFileName.test.ts",
+  "testCode": "Your corrected test code here",
+  "runCommand": "Your run command here",
+  "requestedFiles": ["src/utils/harvesterUtils.ts", "src/stateManagement/zustand/useStore.ts"]
+}
+\`\`\`
+
+Provide the corrected test code in the \`testCode\` field, including any necessary imports or references.
 `;

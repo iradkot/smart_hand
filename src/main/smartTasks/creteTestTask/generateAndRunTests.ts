@@ -7,6 +7,10 @@ import { createTestFileName, updateTestFileName } from './helpers/fileNameUtils'
 import { getTestExamples } from './utils/getTestExamples';
 import { TestGenerationParams, TestGenerationResult } from './types';
 import determineIfContentIsTsx from "./utils/determineIfContentIsTsx";
+import {
+  generateSimplifiedFilePaths,
+} from "../../../utils/harvesterUtils/harvesterUtils";
+import {findFilesInNode} from "../../../utils/harvesterUtils/findFilesInNode/findFilesInNode";
 
 export async function generateAndRunTests(params: TestGenerationParams): Promise<TestGenerationResult> {
   const {
@@ -19,7 +23,7 @@ export async function generateAndRunTests(params: TestGenerationParams): Promise
     packageManager,
     analyzedPackageJson,
     fileHandler,
-    maxRetries
+    maxRetries,
   } = params;
 
   let testCode = '';
@@ -27,6 +31,10 @@ export async function generateAndRunTests(params: TestGenerationParams): Promise
   let lastErrorMessage = '';
 
   const testExamples = await getTestExamples();
+  const simplifiedFilePaths   = generateSimplifiedFilePaths(contentTree);
+  const filePathsString = simplifiedFilePaths.join('\n');
+
+  let additionalFilesContent: Record<string, string> = {};
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     console.log(`Attempt ${attempt} of ${maxRetries}`);
@@ -41,13 +49,28 @@ export async function generateAndRunTests(params: TestGenerationParams): Promise
       testExamples,
       testCode,
       lastErrorMessage,
-      testFileName
+      testFileName,
+      filePathsString,
+      additionalFilesContent, // Include additional files
     });
 
     // Generate or correct test code
     console.log(`createTestFilePrompt (attempt ${attempt}):`, prompt);
     const testResponse = await generateTestFile(sessionId, fileContent, prompt);
-    testCode = testResponse.content.testCode;
+
+    const { content } = testResponse;
+    testCode = content.testCode;
+
+    if (content.requestedFiles && content.requestedFiles.length > 0) {
+      console.log('Requested files:', content.requestedFiles);
+      additionalFilesContent = findFilesInNode(content.requestedFiles, contentTree);
+      // additionalFilesContent = getFilesContent({
+      //   node: contentTree,
+      //   targetPaths: content.requestedFiles,
+      //   rootPath: projectPath,
+      // });
+      console.log('length of additionalFilesContent:', Object.keys(additionalFilesContent).length);
+    }
 
     // Determine file extension and update file name
     const testFileEnding = determineIfContentIsTsx(testCode) ? 'tsx' : 'ts';

@@ -1,4 +1,4 @@
-import { StepState } from '../../types';
+import { StepState } from '../../types/types';
 import { copiedContent } from '../../../../types/pathHarvester.types';
 
 export interface UISlice {

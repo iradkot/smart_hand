@@ -1,4 +1,4 @@
-import {OptionValue} from "../types";
+import {OptionValue} from "../types/types";
 
 export interface OptionData {
   value: OptionValue

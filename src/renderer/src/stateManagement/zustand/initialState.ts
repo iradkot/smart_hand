@@ -1,12 +1,12 @@
 // src/stateManagement/zustand/initialState.ts
 
-import { OptionValue, StepState } from '../../types';
-import { contentTree, copiedContent, ContentNode } from '../../../../types/pathHarvester.types';
+import { OptionValue, StepState } from '../../types/types';
+import { ContentTree, copiedContent, ContentNode } from '../../../../types/pathHarvester.types';
 
 export const initialContentNode: ContentNode = {
   type: 'directory',
   localPath: '',
-  children: {} as contentTree,
+  children: {} as ContentTree,
 };
 
 export const initialCopiedContent: copiedContent = {

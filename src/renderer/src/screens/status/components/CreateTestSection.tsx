@@ -9,7 +9,7 @@ import {
 import ContentTreeFileSelector from '../../../components/FileSelector';
 import { Button, Typography, CircularProgress } from '@mui/material';
 import styled from 'styled-components';
-import { getFileContentFromPath } from '../../../../../utils/harvesterUtils';
+import {getFileContentFromPath} from "../../../../../utils/harvesterUtils/harvesterUtils";
 
 const getDirectoryPath = (filePath: string) => {
   const lastSlashIndex = filePath.lastIndexOf('\\');
@@ -110,7 +110,8 @@ const CreateTestSection: React.FC = () => {
         setTestStatus(
           result.success
             ? 'Test created and run successfully.'
-            : `Error: ${result.error}`
+            : `
+      }Error: ${result.error}`
         );
       } catch (err) {
         setTestStatus(

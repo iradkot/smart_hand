@@ -13,6 +13,8 @@ interface PromptParams {
   testCode: string;
   lastErrorMessage: string;
   testFileName: string;
+  filePathsString: string;
+  additionalFilesContent?: Record<string, string>;
 }
 
 export function createPrompt(params: PromptParams): string {
@@ -25,8 +27,19 @@ export function createPrompt(params: PromptParams): string {
     testExamples,
     testCode,
     lastErrorMessage,
-    testFileName
+    testFileName,
+    filePathsString,
+    additionalFilesContent,
   } = params;
+
+  // Generate additional files section if any
+  let additionalFilesSection = '';
+  if (additionalFilesContent && Object.keys(additionalFilesContent).length > 0) {
+    additionalFilesSection = '### Additional Files Provided:\n';
+    for (const [filePath, content] of Object.entries(additionalFilesContent)) {
+      additionalFilesSection += `\n**${filePath}:**\n\`\`\`typescript\n${content}\n\`\`\`\n`;
+    }
+  }
 
   if (attempt === 1) {
     // First attempt: Generate initial test code
@@ -35,14 +48,18 @@ export function createPrompt(params: PromptParams): string {
       targetFile: fileName,
       fileContent: fileContent,
       analyzedTestLibraries: JSON.stringify(analyzedPackageJson.testLibraries, null, 2),
-      testExamples
+      testExamples,
+      filePathsString,
+      additionalFilesSection,
     });
   } else {
     // Subsequent attempts: Use error messages to correct the test code
     return handleTestRunErrorPrompt({
       errorMessage: lastErrorMessage,
       generatedTestFile: testFileName,
-      testCode: testCode
+      testCode: testCode,
+      filePathsString,
+      additionalFilesSection,
     });
   }
 }
