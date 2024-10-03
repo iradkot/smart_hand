@@ -11,7 +11,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';  // Check if runni
  */
 export async function getTestExamples(): Promise<string> {
   const examplesDir = isDevelopment
-    ? path.resolve(__dirname, '../../examples')  // Points to src folder in dev
+    ? path.resolve(__dirname, '../../src/exampleTest')  // Points to src folder in dev
     : path.resolve(process.resourcesPath, 'examples');  // Adjust for production (you can fine-tune the path based on how files are bundled)
 
   // Recursively collects all files from a directory
