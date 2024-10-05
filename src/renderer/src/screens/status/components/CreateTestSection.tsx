@@ -93,8 +93,6 @@ const CreateTestSection: React.FC = () => {
       )}`;
       const fileName = filePath.substring(filePath.lastIndexOf('\\') + 1);
 
-      const instructions = '';
-
       try {
         setIsPending(true);
         const result = await invokeCreateAndRunTest({
@@ -103,7 +101,6 @@ const CreateTestSection: React.FC = () => {
           fileContent,
           fileName,
           packageJsonPath,
-          instructions,
           packageJsonContent,
           contentTree: copiedContent.contentTree,
         });

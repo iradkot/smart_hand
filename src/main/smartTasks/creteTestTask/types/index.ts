@@ -1,4 +1,5 @@
-// src/main/smartTasks/createTestTask/types/index.ts
+// createTestTask/types/index.ts
 
-export * from './TestGenerationParams';
-export * from './TestGenerationResult';
+export * from './testConfig.types';
+export * from './testState.types';
+export * from './testResult.types';

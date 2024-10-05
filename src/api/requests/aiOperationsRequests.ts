@@ -25,7 +25,7 @@ export interface Library {
   version: string;
 }
 
-export interface AnalyzePackageJsonContent {
+export interface AnalyzedPackageJsonData {
   testLibraries: Library[];
   styleLibraries: Library[];
   utilityLibraries: Library[];
@@ -33,7 +33,7 @@ export interface AnalyzePackageJsonContent {
   projectType: 'react-web' | 'react-native' | 'electron' | 'node-server' | 'unknown';
 }
 
-export interface AnalyzePackageJsonResponse extends APIResponse<AnalyzePackageJsonContent> {}
+export interface AnalyzePackageJsonResponse extends APIResponse<AnalyzedPackageJsonData> {}
 
 export const askGPTPost = async (sessionId: string, input: string): Promise<APIResponse<any>> => {
   try {

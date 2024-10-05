@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ExampleComponent Visual and Focus Tests matches snapshot for visual consistency 1`] = `
+<div>
+  <div
+    class="sc-braxZu cSCVkU"
+  >
+    <label
+      for="count"
+    >
+      Counter
+    </label>
+    <p
+      data-testid="count-display"
+      id="count"
+    >
+      Count: 
+      0
+    </p>
+    <button
+      class="sc-gJhJTp NAVpP"
+      data-testid="increment-button"
+      type="button"
+    >
+      Increment
+    </button>
+    <button
+      class="sc-gJhJTp NAVpP"
+      data-testid="decrement-button"
+      type="button"
+    >
+      Decrement
+    </button>
+  </div>
+</div>
+`;

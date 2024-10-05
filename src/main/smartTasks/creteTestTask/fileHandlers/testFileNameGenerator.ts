@@ -1,4 +1,4 @@
-// src/main/smartTasks/createTestTask/helpers/fileNameUtils.ts
+// createTestTask/fileHandlers/testFileNameGenerator.ts
 
 export function createTestFileName(fileName: string): string {
   return fileName.includes('.')

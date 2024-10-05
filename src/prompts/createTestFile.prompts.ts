@@ -1,3 +1,13 @@
+interface InitialPromptParams {
+  targetDirectory: string;
+  targetFile: string;
+  fileContent: string;
+  analyzedTestLibraries: string;
+  testExamples: string;
+  filePathsString: string;
+  additionalFilesSection: string;
+}
+
 export const createTestFilePrompt = ({
                                        targetDirectory,
                                        targetFile,
@@ -6,7 +16,7 @@ export const createTestFilePrompt = ({
                                        testExamples,
                                        filePathsString,
                                        additionalFilesSection,
-                                     }) => `
+                                     }: InitialPromptParams) => `
 Create a unit test for the attached file using **only** the provided definitions and test examples. Cover all edge cases and scenarios.
 The test file should be placed in the same directory as the file to test (\`${targetDirectory}\`).
 
@@ -48,13 +58,20 @@ ${fileContent}
 `;
 
 
+interface ErrorHandlingPromptParams {
+  errorMessage: string;
+  generatedTestFile: string;
+  testCode: string;
+  filePathsString: string;
+  additionalFilesSection: string;
+}
 export const handleTestRunErrorPrompt = ({
                                            errorMessage,
                                            generatedTestFile,
                                            testCode,
                                            filePathsString,
                                            additionalFilesSection,
-                                         }) => `
+                                         }: ErrorHandlingPromptParams) => `
 An error occurred while running the tests for \`${generatedTestFile}\`.
 
 ### Error Message:

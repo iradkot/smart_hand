@@ -12,13 +12,13 @@ import {
 } from './interfaces';
 import countNestedValues from "../utils/countNestedValues";
 import findPackageJson from "./utils/findPackageJson";
-import {createAndRunTest} from "./smartTasks/creteTestTask/TestTasks";
 import {handleError} from "../utils/ErrorHandler";
 import {IgnoreList} from "./fileOperations/utils/IgnoreList";
 import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
 import {CopyOptions} from "./fileOperations/types/interfaces";
 import {IGNORE_LIST} from "../constants/ignoreList";
 import {ContentNode} from "../types/pathHarvester.types";
+import {createAndRunTest} from "./smartTasks/creteTestTask/createAndRunTest";
 
 // Constants
 const WINDOW_WIDTH = 900;
@@ -117,9 +117,10 @@ ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPa
   }
 });
 
-ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, fileName: string, contentTree: ContentNode, packageJsonPath: string, instructions?: string, packageJsonContent?: string): Promise<TestCreationArgs> => {
+ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, fileName: string, contentTree: ContentNode, packageJsonPath: string, packageJsonContent: string): Promise<TestCreationArgs> => {
   try {
-    await createAndRunTest(sessionId, directoryPath, fileContent, fileName, packageJsonPath, instructions, contentTree, packageJsonContent);
+    console.log('packageJsonContent:', packageJsonContent);
+    await createAndRunTest(sessionId, directoryPath, fileContent, fileName, packageJsonPath, contentTree, packageJsonContent);
     return { success: true };
   } catch (error) {
     const errorMessage = handleError(error, 'Error in createAndRunTest');
