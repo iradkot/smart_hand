@@ -1,7 +1,5 @@
-// createTestTask/types/testConfig.types.ts
-
-import { ContentNode } from './contentNode.types';
 import {AnalyzedPackageJsonData} from "../../../../api/requests/aiOperationsRequests";
+import {ContentNode} from "../../../../types/pathHarvester.types";
 
 export interface TestConfig {
   sessionId: string;

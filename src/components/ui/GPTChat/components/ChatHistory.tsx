@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { renderGPTResponse } from '../formatGptResponse';
 import { ChatEntry } from '../../../../renderer/src/types/types'; // Import or define your type
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import { Person as UserIcon, Router as GptIcon } from '@material-ui/icons'; // Import Material-UI icons
 
 // Styled components
@@ -34,7 +34,6 @@ interface Props {
 }
 
 const ChatHistory: FC<Props> = ({ chatHistory }) => {
-  const theme = useTheme();
 
   return (
     <ChatContainer>

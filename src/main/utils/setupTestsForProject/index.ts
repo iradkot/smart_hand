@@ -11,7 +11,7 @@ interface SetupTestsForProjectOptions {
   projectPath: string;
   platform: string;
 }
-export const setupTestsForProject = async ({projectPath,, platform}: SetupTestsForProjectOptions): Promise<void> => {
+export const setupTestsForProject = async ({projectPath, platform}: SetupTestsForProjectOptions): Promise<void> => {
   console.log(`Setting up tests for ${platform} project at ${projectPath}...`);
 
   try {

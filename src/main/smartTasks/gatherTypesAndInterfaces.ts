@@ -1,7 +1,15 @@
-import * as fs from 'fs/promises';
+import {
+  readdir,
+  stat,
+  readFile
+
+}from 'fs/promises';
+import { Stats } from 'fs';
+
 import * as path from 'path';
 import * as ts from 'typescript'; // TypeScript Compiler API
 import { IGNORE_LIST } from '../../constants/ignoreList';
+import {handleError} from "../../utils/ErrorHandler";
 
 const TS_FILE_EXTENSIONS = ['.ts', '.tsx', '.d.ts'];
 
@@ -19,7 +27,7 @@ async function gatherTypesAndInterfaces(
   try {
     await searchFolder(startDir, 0, maxDepth, charLimit, result);
   } catch (error) {
-    console.error(`Error during search: ${error.message}`);
+    handleError(error, 'Error during search');
   }
   return result.collectedTypes;
 }
@@ -36,7 +44,7 @@ async function searchFolder(
     return;
   }
   try {
-    const files = await fs.readdir(dir, { withFileTypes: true });
+    const files = await readdir(dir, { withFileTypes: true });
 
     for (const file of files) {
       const filePath = path.join(dir, file.name);
@@ -58,13 +66,13 @@ async function searchFolder(
       }
     }
   } catch (error) {
-    console.error(`Error reading directory ${dir}: ${error.message}`);
+    handleError(error, `Error reading directory ${dir}`);
   }
 }
 
 async function processTypeScriptFile(filePath: string, charLimit: number, result: SearchResult): Promise<void> {
   try {
-    const content = await fs.readFile(filePath, 'utf8');
+    const content = await readFile(filePath, 'utf8');
     const sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true);
     const types = collectTypesFromSourceFile(sourceFile);
     for (const type of types) {
@@ -79,7 +87,7 @@ async function processTypeScriptFile(filePath: string, charLimit: number, result
 
     await processImports(filePath, content, charLimit, result);
   } catch (error) {
-    console.error(`Error processing TypeScript file ${filePath}: ${error.message}`);
+    handleError(error, `Error processing TypeScript file ${filePath}`);
   }
 }
 
@@ -124,9 +132,9 @@ async function processImports(filePath: string, content: string, charLimit: numb
   }
 }
 
-async function safeStat(filePath: string): Promise<fs.Stats | null> {
+async function safeStat(filePath: string): Promise<Stats | null> {
   try {
-    return await fs.stat(filePath);
+    return await stat(filePath);
   } catch {
     return null;
   }

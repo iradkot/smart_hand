@@ -19,7 +19,6 @@ interface TestCreationArgs {
   fileName: string;
   contentTree: ContentNode;
   packageJsonPath: string;
-  instructions: string;
   packageJsonContent: string;
 }
 

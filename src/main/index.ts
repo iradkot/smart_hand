@@ -1,6 +1,7 @@
 import {app, BrowserWindow, dialog, ipcMain, IpcMainInvokeEvent, shell} from 'electron';
 import {join} from 'path';
-import icon from '../../resources/icon.png';
+// @ts-ignore
+import icon from '../../resources/the_smart_hand_icon.png';
 import {FileHandler} from "./fileOperations/utils/FileHandler";
 import {COPYING_PROCESS_INVOKE, CREATE_AND_RUN_TEST_INVOKE, READ_PACKAGE_JSON_INVOKE} from "../invokers/constants";
 import {UserInterface} from "./fileOperations/utils/UserInterface";
