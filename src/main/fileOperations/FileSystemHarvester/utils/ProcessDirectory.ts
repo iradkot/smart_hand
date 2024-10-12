@@ -1,8 +1,9 @@
 import path from 'path';
-import {IFileHandler, IUserInterface, IIgnoreList, FileOrFolder, CopyOptions} from '../../types/interfaces';
+import { IFileHandler, IUserInterface, IIgnoreList, FileOrFolder, CopyOptions } from '../../types/interfaces';
 import { createIndentationString } from "./CreateIndentationString";
 import { processFile } from "./ProcessFile";
-import {ContentTree} from "../../../../types/pathHarvester.types";
+import { ContentTree } from "../../../../types/pathHarvester.types";
+import { normalizePath } from '../../../utils/PathUtils'
 
 export async function processDirectory(
   currentDirectoryPath: string,
@@ -13,9 +14,13 @@ export async function processDirectory(
   ui: IUserInterface,
   ignoreList: IIgnoreList
 ): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[], resultDict: ContentTree }> {
-  const isInitialDirectory = currentDirectoryPath === initialDirectoryPath;
+  // Normalize paths
+  const normalizedCurrentPath = normalizePath(currentDirectoryPath);
+  const normalizedInitialPath = normalizePath(initialDirectoryPath);
+
+  const isInitialDirectory = normalizedCurrentPath === normalizedInitialPath;
   const indentation = createIndentationString(depth, false);
-  const folderName = path.basename(currentDirectoryPath);
+  const folderName = path.basename(normalizedCurrentPath);
   let folderStructure: string[] = [];
   let ignoredFiles: string[] = [];
   let filesAndFolders: FileOrFolder[] = [];
@@ -24,30 +29,19 @@ export async function processDirectory(
   try {
     // Add the folder name to the structure regardless of copying contents
     folderStructure.push(`${isInitialDirectory ? '' : indentation}${folderName}/\n`);
-    filesAndFolders.push({ relativePath: path.relative(initialDirectoryPath, currentDirectoryPath), isFile: false });
+    filesAndFolders.push({ relativePath: path.relative(normalizedInitialPath, normalizedCurrentPath), isFile: false });
 
     resultDict[folderName] = {
       type: 'directory',
       children: {},
-      localPath: currentDirectoryPath, // Assign the full local path here
+      localPath: normalizedCurrentPath, // Assign the full local path here
     };
 
-    // Only prompt for confirmation if it's not the initial directory
-    if (!isInitialDirectory) {
-      // const copyContents = await ui.confirm(`Do you want to copy the contents of the folder? ${path.relative(initialDirectoryPath, currentDirectoryPath)}`);
-      //
-      // if (!copyContents) {
-      //   ignoredFiles.push(`${indentation}${folderName}/\n`);
-      //   resultDict[folderName].children = false; // Indicate that children were not copied
-      //   return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders, resultDict };
-      // }
-    }
-
-    const items = await fileHandler.readDir(currentDirectoryPath);
+    const items = await fileHandler.readDir(normalizedCurrentPath);
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      const itemPath = path.join(currentDirectoryPath, item);
-      const relativeItemPath = path.relative(initialDirectoryPath, itemPath);
+      const itemPath = path.join(normalizedCurrentPath, item);
+      const relativeItemPath = path.relative(normalizedInitialPath, itemPath);
       const isLast = i === items.length - 1;
 
       if (ignoreList.shouldIgnore(itemPath)) {
@@ -63,7 +57,7 @@ export async function processDirectory(
         filesAndFolders = filesAndFolders.concat(fileResult);
         resultDict[folderName].children[item] = fileDict[item];
       } else if (itemStat.isDirectory()) {
-        const { structure, ignored, filesAndFolders: dirResult, resultDict: dirDict } = await processDirectory(itemPath, initialDirectoryPath, option, depth + 1, fileHandler, ui, ignoreList);
+        const { structure, ignored, filesAndFolders: dirResult, resultDict: dirDict } = await processDirectory(itemPath, normalizedInitialPath, option, depth + 1, fileHandler, ui, ignoreList);
         folderStructure = folderStructure.concat(structure);
         ignoredFiles = ignoredFiles.concat(ignored);
         filesAndFolders = filesAndFolders.concat(dirResult);
@@ -72,7 +66,7 @@ export async function processDirectory(
     }
     return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders, resultDict };
   } catch (error) {
-    console.error(`Error processing directory ${currentDirectoryPath}:`, error);
+    console.error(`Error processing directory ${normalizedCurrentPath}:`, error);
     return { structure: folderStructure, ignored: ignoredFiles, filesAndFolders, resultDict };
   }
 }

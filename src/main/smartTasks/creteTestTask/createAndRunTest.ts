@@ -1,18 +1,19 @@
 // createTestTask/createAndRunTest.ts
 
-import { analyzeProject } from './analysis/analyzeProject';
-import { loadTestExamples } from './examples/loadTestExamples';
-import { buildPrompt } from './prompts/buildPrompt';
-import { generateTestCode } from './generation/generateTestCode';
-import { executeTests } from './execution/executeTests';
-import { createTestFileName, updateTestFileName } from './fileHandlers/testFileNameGenerator';
-import { writeTestFile } from './fileHandlers/writeTestFile';
-import { writePromptFile } from './fileHandlers/writePromptFile';
-import { inferFileExtension } from './utils/inferFileExtension';
-import { TestConfig, TestState } from './types';
+import {analyzeProject} from './analysis/analyzeProject';
+import {loadTestExamples} from './examples/loadTestExamples';
+import {buildPrompt} from './prompts/buildPrompt';
+import {generateTestCode} from './generation/generateTestCode';
+import {createTestFileName, updateTestFileName} from './fileHandlers/testFileNameGenerator';
+import {writeTestFile} from './fileHandlers/writeTestFile';
+import {writePromptFile} from './fileHandlers/writePromptFile';
+import {inferFileExtension} from './utils/inferFileExtension';
+import {TestConfig, TestState} from './types';
 import {generateSimplifiedFilePaths} from "../../../utils/harvesterUtils/harvesterUtils";
 import {ContentNode} from "../../../types/pathHarvester.types";
 import {detectPackageManager} from "../../utils/packageUtils";
+import {processTestResult} from "./testRunner/processTestResult";
+import {executeTests} from "./testRunner/executeTests";
 
 export async function createAndRunTest(
   sessionId: string,
@@ -32,7 +33,7 @@ export async function createAndRunTest(
   }
 
   const packageManager = detectPackageManager(projectPath);
-  const maxRetries = 5;
+  const maxRetries = 3;
   const testExamples = await loadTestExamples();
   const simplifiedFilePaths = generateSimplifiedFilePaths(contentTree);
   const filePathsString = simplifiedFilePaths.join('\n');
@@ -67,16 +68,21 @@ export async function createAndRunTest(
     const testFileName = `${attempt}_${state.testFileName}`;
     const testFilePath = `${config.directoryPath}/${testFileName}`;
 
-    await writeTestFile(config.directoryPath, `${testFileName}`, state.testCode);
+    await writeTestFile(config.directoryPath, testFileName, state.testCode);
     await writePromptFile(config.directoryPath, `${attempt}_prompt.txt`, prompt);
 
     const testResult = await executeTests(config.packageManager, config.projectPath, testFilePath);
 
-    if (testResult.success) {
+    const processedTestResult = processTestResult(testResult, state);
+
+    if (processedTestResult.isSuccess) {
+      // Optionally, you can pass the error message to the prompt or another handler if needed
       console.log('Tests passed successfully.');
       return;
     } else {
-      state.lastErrorMessage = testResult.errorMessage || '';
+      state.lastErrorMessage = processedTestResult.errorMessage;
+      // The error message is already set in the state; proceed to the next attempt
+      console.warn(`Attempt ${attempt} failed. Error Message:\n${state.lastErrorMessage}`);
     }
   }
 

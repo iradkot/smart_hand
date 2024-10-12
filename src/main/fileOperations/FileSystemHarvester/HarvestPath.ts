@@ -1,9 +1,10 @@
 import { CopyOptionHandler } from "./utils/CopyOptionHandler";
 import { processFile } from "./utils/ProcessFile";
 import { processDirectory } from "./utils/ProcessDirectory";
-import {CopyOptions, IFileHandler, IIgnoreList, IUserInterface, StartCopyingProcessResult} from "../types/interfaces";
+import { CopyOptions, IFileHandler, IIgnoreList, IUserInterface, StartCopyingProcessResult } from "../types/interfaces";
 import { logger } from "../utils/Logger";
 import { FileError, DirectoryError } from "../types/Errors";
+import {normalizePath} from "../../utils/PathUtils";
 
 /**
  * Harvests the content and structure of a specified path, either a file or directory,
@@ -17,23 +18,26 @@ import { FileError, DirectoryError } from "../types/Errors";
  * @returns {Promise<StartCopyingProcessResult>} - The result of the harvesting process, including messages and structured data.
  * @throws Will throw an error if an unhandled exception occurs during the process.
  */
-export async function   harvestPath(
+export async function harvestPath(
   directoryPath: string,
   option: CopyOptions,
   fileHandler: IFileHandler,
   ui: IUserInterface,
   ignoreList: IIgnoreList,
 ): Promise<StartCopyingProcessResult> {
-  try {
-    logger.info(`Starting harvesting process for directory: "${directoryPath}"`);
+  // Normalize the directory path based on the environment
+  const normalizedPath = normalizePath(directoryPath);
 
-    const initialStat = await fileHandler.stat(directoryPath);
+  try {
+    logger.info(`Starting harvesting process for directory: "${normalizedPath}"`);
+
+    const initialStat = await fileHandler.stat(normalizedPath);
     let result;
 
     if (initialStat.isFile()) {
-      result = await processFile(directoryPath, directoryPath, option, 0, true, fileHandler);  // Pass full path
+      result = await processFile(normalizedPath, normalizedPath, option, 0, true, fileHandler); // Pass full path
     } else {
-      result = await processDirectory(directoryPath, directoryPath, option, 0, fileHandler, ui, ignoreList);  // Pass full path
+      result = await processDirectory(normalizedPath, normalizedPath, option, 0, fileHandler, ui, ignoreList); // Pass full path
     }
 
     const content = CopyOptionHandler.buildContent(

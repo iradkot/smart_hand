@@ -1,7 +1,8 @@
 import { createIndentationString } from "./CreateIndentationString";
 import { logger } from "../../utils/Logger";
 import path from "path";
-import {CopyOptions, FileOrFolder, IFileHandler} from "../../types/interfaces";
+import { CopyOptions, FileOrFolder, IFileHandler } from "../../types/interfaces";
+import { normalizePath } from '../../../utils/PathUtils'
 
 export async function processFile(
   itemPath: string,
@@ -11,12 +12,15 @@ export async function processFile(
   isLast: boolean,
   fileHandler: IFileHandler
 ): Promise<{ structure: string[], ignored: string[], filesAndFolders: FileOrFolder[], resultDict: Record<string, any> }> {
+  // Normalize the item path
+  const normalizedItemPath = normalizePath(itemPath);
+
   const prefix = createIndentationString(depth, isLast);
-  const fileName = path.basename(itemPath);
-  logger.debug(`Processing file: ${itemPath}`);
+  const fileName = path.basename(normalizedItemPath);
+  logger.debug(`Processing file: ${normalizedItemPath}`);
 
   const folderStructure = [`${prefix}${fileName}\n`];
-  const fileContent = option === CopyOptions.CopycontentTree ? await fileHandler.readFile(itemPath) : null;
+  const fileContent = option === CopyOptions.CopycontentTree ? await fileHandler.readFile(normalizedItemPath) : null;
   const fileEntries = fileContent ? [`${relativeItemPath}\n${fileContent}\n`] : [];
 
   const filesAndFolders: FileOrFolder[] = [{
@@ -29,7 +33,7 @@ export async function processFile(
     [fileName]: {
       type: 'file',
       content: fileContent,
-      localPath: itemPath, // Assign the full local path here
+      localPath: normalizedItemPath, // Assign the full local path here
     }
   };
 
