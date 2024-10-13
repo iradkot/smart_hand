@@ -22,10 +22,6 @@ export type StepState = {
   gptAnswer?: string;
 };
 
-// Other types remain unchanged
-export type TableRow = string[];
-export type gptChatTableSegment = { content: TableRow[] };
-export type gptChatCodeSegment = { content: string };
 export type ChatEntry = {
   role: 'user' | 'gpt';
   content: string;
