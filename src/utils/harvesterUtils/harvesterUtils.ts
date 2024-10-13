@@ -71,7 +71,6 @@ export const generateFileTree = (contentNode: ContentNode): string => {
    *
    * @param {ContentNode} node - Current ContentNode being traversed.
    * @param {string} prefix - String prefix for formatting the tree structure.
-   * @param {boolean} isLast - Indicates if the current node is the last child.
    */
   function traverse(node: ContentNode, prefix: string) {
     if (node.type === 'directory' && node.children) {
@@ -118,4 +117,74 @@ export const generateSimplifiedFilePaths = (contentNode: ContentNode): string[] 
 
   traverse(contentNode, '');
   return filePaths;
+};
+
+export const generateSelectedFolderStructure = (
+  node: ContentNode,
+  selectedPaths: string[],
+  currentPath: string = ''
+): string => {
+  const lines: string[] = [];
+
+  const normalizedCurrentPath = currentPath ? currentPath : node.localPath;
+
+  if (selectedPaths.includes(node.localPath)) {
+    lines.push(normalizedCurrentPath || '.'); // Use '.' for root
+  }
+
+  if (node.type === 'directory' && node.children) {
+    for (const [name, childNode] of Object.entries(node.children)) {
+      const childPath = normalizedCurrentPath
+        ? `${normalizedCurrentPath}/${name}`
+        : name;
+      const childStructure = generateSelectedFolderStructure(
+        childNode,
+        selectedPaths,
+        childPath
+      );
+      if (childStructure) {
+        lines.push(childStructure);
+      }
+    }
+  }
+
+  return lines.join('\n');
+};
+
+export const generateSelectedFileContents = (
+  node: ContentNode,
+  selectedPaths: string[]
+): string => {
+  let content = '';
+
+  if (selectedPaths.includes(node.localPath)) {
+    if (node.type === 'file' && node.content) {
+      content += `${node.localPath}:\n${node.content}\n`;
+    }
+  }
+
+  if (node.type === 'directory' && node.children) {
+    for (const childNode of Object.values(node.children)) {
+      content += generateSelectedFileContents(childNode, selectedPaths);
+    }
+  }
+
+  return content;
+};
+
+export const findNodeByPath = (node: ContentNode, path: string): ContentNode | null => {
+  if (node.localPath === path) {
+    return node;
+  }
+
+  if (node.type === 'directory' && node.children) {
+    for (const child of Object.values(node.children)) {
+      const result = findNodeByPath(child, path);
+      if (result) {
+        return result;
+      }
+    }
+  }
+
+  return null;
 };

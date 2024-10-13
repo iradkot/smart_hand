@@ -3,11 +3,13 @@
 import React from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import { ContentNode } from '../../../types/pathHarvester.types';
+import {findNodeByPath} from "../../../utils/harvesterUtils/harvesterUtils";
 
 interface BaseFolderFileSelectorProps {
   contentTree: ContentNode;
   allowMultiple?: boolean;
   initialSelected?: string[];
+  allowFolderSelection?: boolean;
 }
 
 interface ControlledFolderFileSelectorProps extends BaseFolderFileSelectorProps {
@@ -25,7 +27,7 @@ type FolderFileSelectorProps =
   | PersistedFolderFileSelectorProps;
 
 const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
-  const { contentTree, allowMultiple = true, initialSelected = [] } = props;
+  const { contentTree, allowMultiple = true, initialSelected = [], allowFolderSelection } = props;
 
   // Initialize effectiveSelected and effectiveSetSelected based on props
   let effectiveSelected: string[];
@@ -56,21 +58,45 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
     effectiveSetSelected = setSelected;
   }
 
-  const handleFileToggle = (filePath: string) => {
-    let updatedSelectedFiles: string[];
+  const toggleSelectionRecursively = (
+    node: ContentNode,
+    selected: string[],
+    select: boolean
+  ): string[] => {
+    let updatedSelected = [...selected];
 
-    if (allowMultiple) {
-      updatedSelectedFiles = effectiveSelected.includes(filePath)
-        ? effectiveSelected.filter((file) => file !== filePath)
-        : [...effectiveSelected, filePath];
+    if (select) {
+      if (!updatedSelected.includes(node.localPath)) {
+        updatedSelected.push(node.localPath);
+      }
     } else {
-      updatedSelectedFiles = effectiveSelected.includes(filePath)
-        ? []
-        : [filePath];
+      updatedSelected = updatedSelected.filter((p) => p !== node.localPath);
     }
 
-    effectiveSetSelected(updatedSelectedFiles);
+    if (node.type === 'directory' && node.children) {
+      for (const child of Object.values(node.children)) {
+        updatedSelected = toggleSelectionRecursively(child, updatedSelected, select);
+      }
+    }
+
+    return updatedSelected;
   };
+
+  const handlePathToggle = (path: string) => {
+    const select = !effectiveSelected.includes(path);
+    let updatedSelectedPaths: string[];
+
+    const node = findNodeByPath(contentTree, path);
+    if (node) {
+      updatedSelectedPaths = toggleSelectionRecursively(
+        node,
+        effectiveSelected,
+        select
+      );
+      effectiveSetSelected(updatedSelectedPaths);
+    }
+  };
+
 
   const handleFolderToggle = (folderPath: string) => {
     setExpandedFolders((prevExpanded) =>
@@ -106,30 +132,39 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
             <input
               type={allowMultiple ? 'checkbox' : 'radio'}
               checked={effectiveSelected.includes(node.localPath)}
-              onChange={() => handleFileToggle(node.localPath)}
+              onChange={() => handlePathToggle(node.localPath)}
             />
             📄 {name}
           </label>
         </li>
       );
     } else if (node.type === 'directory') {
-      const folderPath = `${parentPath}/${name}`;
+      const folderPath = parentPath ? `${parentPath}/${name}` : name;
       const isExpanded = expandedFolders.includes(folderPath);
 
       return (
         <li key={node.localPath}>
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => handleFolderToggle(folderPath)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                handleFolderToggle(folderPath);
-              }
-            }}
-            style={{ cursor: 'pointer', userSelect: 'none' }}
-          >
-            {isExpanded ? '📂' : '📁'} <strong>{name}</strong>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {allowFolderSelection && (
+              <input
+                type={allowMultiple ? 'checkbox' : 'radio'}
+                checked={effectiveSelected.includes(node.localPath)}
+                onChange={() => handlePathToggle(node.localPath)}
+              />
+            )}
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => handleFolderToggle(folderPath)}
+              onKeyUp={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleFolderToggle(folderPath);
+                }
+              }}
+              style={{ cursor: 'pointer', userSelect: 'none', marginLeft: '8px' }}
+            >
+              {isExpanded ? '📂' : '📁'} <strong>{name}</strong>
+            </div>
           </div>
           {isExpanded && node.children && (
             <ul>
