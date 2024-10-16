@@ -1,5 +1,3 @@
-// src/screens/status/components/CreateTestSection.tsx
-
 import React from 'react';
 import { useStore } from '../../../stateManagement/zustand/useStore';
 import {

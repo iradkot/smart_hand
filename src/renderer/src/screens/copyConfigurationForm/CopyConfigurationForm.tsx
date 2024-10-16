@@ -1,11 +1,11 @@
+// src/screens/copyConfigurationForm/CopyConfigurationForm.tsx
+
 import React, { useState } from 'react';
-import { Button, Form } from '../../style/styledComponents';
+import { Button, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Box } from '@mui/material';
 import { optionsData, OPTION_COPY_FILE_CONTENTS } from '../OPTION_SHOW_REACT_NATIVE_LOGS';
-import RadioGroup from './RadioGroup';
-import TextInput from './TextInput';
 import { useStore } from '../../stateManagement/zustand/useStore';
 import { OptionValue } from '../../types/types';
-import {useAppNavigation} from "../../hooks/useAppNavigation";
+import { useAppNavigation } from '../../hooks/useAppNavigation';
 
 const CopyConfigurationForm: React.FC = () => {
   const copyToClipboard = useStore((state) => state.copyToClipboard);
@@ -27,7 +27,7 @@ const CopyConfigurationForm: React.FC = () => {
           option,
         });
         await copyToClipboard(directoryPath, option);
-        navigateTo('/status'); // Update the route in the store
+        navigateTo('/status');
       } catch (error) {
         console.error('Failed to process submission:', error);
       } finally {
@@ -36,37 +36,41 @@ const CopyConfigurationForm: React.FC = () => {
     }
   };
 
-
-  const handleOptionChange = (newOption: OptionValue) => {
+  const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setStepState({
       ...stepState,
-      option: newOption,
+      option: event.target.value as OptionValue,
     });
   };
 
-  const handleDirectoryPathChange = (newPath: string) => {
+  const handleDirectoryPathChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setStepState({
       ...stepState,
-      directoryPath: newPath,
+      directoryPath: event.target.value,
     });
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <RadioGroup
-        options={optionsData}
-        selectedOption={option}
-        onChange={handleOptionChange}
-      />
-      <TextInput
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <FormControl component="fieldset">
+        <FormLabel component="legend">Select Option</FormLabel>
+        <RadioGroup row value={option} onChange={handleOptionChange}>
+          {optionsData.map((opt) => (
+            <FormControlLabel key={opt.value} value={opt.value} control={<Radio />} label={opt.label} />
+          ))}
+        </RadioGroup>
+      </FormControl>
+      <TextField
+        fullWidth
+        label="Directory Path"
+        variant="outlined"
         value={directoryPath}
-        placeholder="Enter Directory Path"
         onChange={handleDirectoryPathChange}
       />
-      <Button type="submit" disabled={isSubmitting}>
+      <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
         Submit
       </Button>
-    </Form>
+    </Box>
   );
 };
 

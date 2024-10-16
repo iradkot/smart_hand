@@ -1,48 +1,34 @@
-import React, {useEffect} from 'react';
-import {Container, Header, Section, FolderStructure, FileContent, Actions, Label} from './Status.styles';
-import CopySections from '../../components/CopySections/CopySections';
-import {useStore} from "../../stateManagement/zustand/useStore";
-import LoadingError from "./components/LoadingError";
-import CreateTestSection from "./components/CreateTestSection";
+// src/renderer/src/screens/status/Status.tsx
+
+import React, { useEffect, useState } from 'react';
+import { useStore } from '../../stateManagement/zustand/useStore';
+import { Container, Header } from './Status.styles';
+import LoadingError from './components/LoadingError';
+import ContentTabs from './components/ContentTabs';
+import CreateTestSection from './components/CreateTestSection';
+import { Box, Button } from '@mui/material';
+import { useCopyHistory } from '../../stateManagement/contexts';
 import {
   generateSelectedFileContents,
-  generateSelectedFolderStructure
+  generateSelectedFolderStructure,
 } from '../../../../utils/harvesterUtils/harvesterUtils';
 import ContentTreeFileSelector from "../../components/FileSelector";
-import {Button} from "@mui/material";
-import useLocalStorage from "../../hooks/useLocalStorage";
-import {useCopyHistory} from "../../stateManagement/contexts";
 
-const FolderContextManager: React.FC = () => {
-  const {copyToClipboardWithToast} = useCopyHistory();
+const Status: React.FC = () => {
+  const { copyToClipboardWithToast } = useCopyHistory();
   const stepState = useStore((state) => state.stepState);
   const isLoading = useStore((state) => state.isLoading);
   const error = useStore((state) => state.error);
   const copiedContent = stepState?.copiedContent;
 
-  const [selectedPaths, setSelectedPaths] = useLocalStorage<string[]>(
-    'selectedPaths',
-    []
-  );
-  const [displayContent, setDisplayContent] = useLocalStorage<string>('displayContent', '');
-  const [displayStructure, setDisplayStructure] = useLocalStorage<string>('displayStructure', '');
+  const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
 
-  const handleCopyStructure = () => {
-    copyToClipboardWithToast(displayStructure, 99);
-  };
-
-  const handleCopyContent = () => {
-    copyToClipboardWithToast(displayContent, 99);
-  };
-
-  const handleCopyBoth = () => {
-    const combinedContent = `${displayStructure}\n\n${displayContent}`;
-    copyToClipboardWithToast(combinedContent, 99);
-  };
-
+  // Generate content based on selected paths
+  const [displayContent, setDisplayContent] = useState<string>('');
+  const [displayStructure, setDisplayStructure] = useState<string>('');
 
   useEffect(() => {
-    if (selectedPaths.length > 0 && copiedContent.contentTree) {
+    if (selectedPaths.length > 0 && copiedContent?.contentTree) {
       const structure = generateSelectedFolderStructure(
         copiedContent.contentTree,
         selectedPaths
@@ -57,77 +43,64 @@ const FolderContextManager: React.FC = () => {
       setDisplayStructure('');
       setDisplayContent('');
     }
-  }, [selectedPaths, copiedContent.contentTree]);
-
+  }, [selectedPaths, copiedContent?.contentTree]);
 
   return (
     <Container>
-      <Header>Managing Folder Context</Header>
-      <Label>Step 3: Focusing on path {stepState?.directoryPath}</Label>
-      <LoadingError isLoading={isLoading} error={error}/>
+      <Header>Status</Header>
+      <LoadingError isLoading={isLoading} error={error} />
       {copiedContent?.contentTree && (
-        <>
-          <Section>
-            <ContentTreeFileSelector
-              contentTree={copiedContent.contentTree}
-              selected={selectedPaths}
-              setSelected={setSelectedPaths}
-              allowMultiple={true}
-              allowFolderSelection={true}
-            />
-          </Section>
-          <Actions>
+        <Box mt={2}>
+          {/* Reintroduce the file selector */}
+          <ContentTreeFileSelector
+            contentTree={copiedContent.contentTree}
+            selected={selectedPaths}
+            setSelected={setSelectedPaths}
+            allowMultiple={true}
+            allowFolderSelection={true}
+          />
+          {/* Pass selected content to ContentTabs */}
+          <ContentTabs
+            displayContent={displayContent}
+            displayStructure={displayStructure}
+          />
+          {/* Add Copy Buttons */}
+          <Box mt={2} display="flex" gap={2}>
             <Button
               variant="contained"
               color="primary"
-              onClick={handleCopyStructure}
+              onClick={() => copyToClipboardWithToast(displayStructure, 99)}
+              disabled={!displayStructure}
             >
               Copy Structure
             </Button>
             <Button
               variant="contained"
               color="primary"
-              onClick={handleCopyContent}
+              onClick={() => copyToClipboardWithToast(displayContent, 99)}
+              disabled={!displayContent}
             >
               Copy Content
             </Button>
             <Button
               variant="contained"
               color="primary"
-              onClick={handleCopyBoth}
+              onClick={() =>
+                copyToClipboardWithToast(
+                  `${displayStructure}\n\n${displayContent}`,
+                  99
+                )
+              }
+              disabled={!displayStructure && !displayContent}
             >
               Copy Both
             </Button>
-          </Actions></>
+          </Box>
+        </Box>
       )}
-
-      <Section>
-        {displayStructure && (
-          <FolderStructure>
-            <CopySections
-              content={displayStructure}
-              title={'Selected Folder Structure'}
-            />
-          </FolderStructure>
-        )}
-      </Section>
-
-      <Section>
-        {displayContent && (
-          <FileContent>
-            <CopySections
-              content={displayContent}
-              title={'Selected Files Content'}
-            />
-          </FileContent>
-        )}
-      </Section>
-      <Actions>
-        <CreateTestSection/>
-        {/* Future buttons or inputs can be added here */}
-      </Actions>
+      <CreateTestSection />
     </Container>
   );
 };
 
-export default FolderContextManager;
+export default Status;
