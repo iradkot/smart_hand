@@ -5,7 +5,6 @@ import {useStore} from "../../stateManagement/zustand/useStore";
 import LoadingError from "./components/LoadingError";
 import CreateTestSection from "./components/CreateTestSection";
 import {
-  formatFileContents,
   generateSelectedFileContents,
   generateSelectedFolderStructure
 } from '../../../../utils/harvesterUtils/harvesterUtils';
@@ -20,9 +19,7 @@ const FolderContextManager: React.FC = () => {
   const isLoading = useStore((state) => state.isLoading);
   const error = useStore((state) => state.error);
   const copiedContent = stepState?.copiedContent;
-  const joinedContent = copiedContent?.contentTree
-    ? formatFileContents(copiedContent.contentTree)
-    : '';
+
   const [selectedPaths, setSelectedPaths] = useLocalStorage<string[]>(
     'selectedPaths',
     []
@@ -125,23 +122,6 @@ const FolderContextManager: React.FC = () => {
           </FileContent>
         )}
       </Section>
-
-      <Section>
-        {copiedContent?.folderStructure && (
-          <FolderStructure>
-            <CopySections content={copiedContent.folderStructure} title={'Full Folder Structure'}/>
-          </FolderStructure>
-        )}
-      </Section>
-
-      <Section>
-        {joinedContent && (
-          <FileContent>
-            <CopySections content={joinedContent} title={'Entire Files Content'}/>
-          </FileContent>
-        )}
-      </Section>
-
       <Actions>
         <CreateTestSection/>
         {/* Future buttons or inputs can be added here */}

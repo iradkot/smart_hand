@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Label as SharedLabel } from '../../../../components/ui/styledComponents';
+import { Label as SharedLabel } from '../../style/styledComponents';
 
 // Base styles
 export const Container = styled.div`

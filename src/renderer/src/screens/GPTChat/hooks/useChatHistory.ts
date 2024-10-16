@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {generateUniqueSessionId} from "../../../../utils/generateUniqueSessionId";
+import {generateUniqueSessionId} from "../../../../../utils/generateUniqueSessionId";
 
 type Role = 'user' | 'gpt'
 

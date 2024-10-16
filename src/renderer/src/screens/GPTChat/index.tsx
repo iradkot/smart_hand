@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
-import { askGPTPost } from '../../../api/requests/aiOperationsRequests';
 import { useChatHistory } from './hooks/useChatHistory';
 import ChatInput from './components/ChatInput';
 import ChatHistory from './components/ChatHistory';
-import Loader from '../Loader';
+import Loader from '../../components/Loader';
+import {askGPTPost} from "../../../../api/requests/aiOperationsRequests";
 
 function GPTChat() {
   const [isLoading, setIsLoading] = useState(false);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Form } from '../../../../components/ui/styledComponents';
+import { Button, Form } from '../../style/styledComponents';
 import { optionsData, OPTION_COPY_FILE_CONTENTS } from '../OPTION_SHOW_REACT_NATIVE_LOGS';
 import RadioGroup from './RadioGroup';
 import TextInput from './TextInput';

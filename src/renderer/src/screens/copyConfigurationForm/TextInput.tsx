@@ -1,5 +1,5 @@
 import React from 'react';
-import { Label, Input } from '../../../../components/ui/styledComponents';
+import { Label, Input } from '../../style/styledComponents';
 
 interface TextInputProps {
   value: string;
