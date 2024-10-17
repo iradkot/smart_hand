@@ -22,9 +22,11 @@ The test file should be placed in the same directory as the file to test (\`${ta
 
 ### Key Instructions:
 
-- Name the test file: \`${targetFile}.test.ts\`.
-- **If you require additional files or context**, specify their relative paths from the list below in the \`requestedFiles\` array of your JSON response.
-- **Use the exact paths as listed.**
+- **Exact Path Usage:** If additional files or context are required, specify their relative paths **exactly** as listed in the \`Available Files\` below in the \`requestedFiles\` array of your JSON response.
+- **No Inference:** Do **not** infer or modify any paths. Use only the paths provided in the \`Available Files\` list.
+- **JSON Response:** Your response must strictly adhere to the provided JSON schema.
+
+
 
 ### Available Files:
 
@@ -52,7 +54,7 @@ ${fileContent}
   "testFileName": "yourTestFileName.test.ts",
   "testCode": "Your test code here",
   "runCommand": "Your run command here",
-  "requestedFiles": ["src/utils/someUtility.ts", "src/constants/styleConstants.ts"]
+  "requestedFiles": ["some/file/path.ts", "another/file/path.ts"]
 }
 \`\`\`
 `;
@@ -83,14 +85,15 @@ ${errorMessage}
 
 - **Analyze the error message carefully**.
 - **If the error indicates missing files, modules, or context**, you **must** specify the relative paths of the files you need from the 'Available Files' list below in the \`requestedFiles\` array of your JSON response.
+- **Do not infer or alter any paths.** Use only the paths provided in the \`Available Files\` list.
 - **Use the exact paths as listed**.
-- **Do not include the contents of the requested files in your response**.
 - **Your response must be a JSON object matching the schema provided**.
 
 ### Available Files:
 
 ${filePathsString}
 
+### Additional Files:
 ${additionalFilesSection}
 
 ### Current Test Code:
@@ -103,13 +106,13 @@ ${testCode}
 {
   "testDescription": {
     "title": "Your Test Title",
-    "description": "Your Test Description",
+    "description": "Your Test Description explaining why the error occurred and how to fix it",
     "instructions": "Instructions on how to run the test"
   },
   "testFileName": "yourTestFileName.test.ts",
   "testCode": "Your corrected test code here",
   "runCommand": "Your run command here",
-  "requestedFiles": ["src/utils/harvesterUtils.ts", "src/stateManagement/zustand/useStore.ts"]
+  "requestedFiles": ["some/file/path.ts", "another/file/path.ts"]
 }
 \`\`\`
 
