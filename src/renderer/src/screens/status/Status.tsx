@@ -6,7 +6,8 @@ import { Container, Header } from './Status.styles';
 import LoadingError from './components/LoadingError';
 import ContentTabs from './components/ContentTabs';
 import CreateTestSection from './components/CreateTestSection';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import { ExpandMore  } from '@material-ui/icons';
 import { useCopyHistory } from '../../stateManagement/contexts';
 import {
   generateSelectedFileContents,
@@ -21,11 +22,39 @@ const Status: React.FC = () => {
   const error = useStore((state) => state.error);
   const copiedContent = stepState?.copiedContent;
 
+  const [expanded, setExpanded] = useState<string | false>(false);
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
 
-  // Generate content based on selected paths
   const [displayContent, setDisplayContent] = useState<string>('');
   const [displayStructure, setDisplayStructure] = useState<string>('');
+
+  useEffect(() => {
+    const savedExpanded = localStorage.getItem('statusExpanded');
+    if (savedExpanded) {
+      setExpanded(savedExpanded);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (expanded) {
+      localStorage.setItem('statusExpanded', expanded);
+    }
+  }, [expanded]);
+
+  const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpanded(isExpanded ? panel : false);
+  };
+
+  useEffect(() => {
+    const savedSelectedPaths = localStorage.getItem('selectedPaths');
+    if (savedSelectedPaths) {
+      setSelectedPaths(JSON.parse(savedSelectedPaths));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('selectedPaths', JSON.stringify(selectedPaths));
+  }, [selectedPaths]);
 
   useEffect(() => {
     if (selectedPaths.length > 0 && copiedContent?.contentTree) {
@@ -49,56 +78,77 @@ const Status: React.FC = () => {
     <Container>
       <Header>Status</Header>
       <LoadingError isLoading={isLoading} error={error} />
+
       {copiedContent?.contentTree && (
-        <Box mt={2}>
-          {/* Reintroduce the file selector */}
-          <ContentTreeFileSelector
-            contentTree={copiedContent.contentTree}
-            selected={selectedPaths}
-            setSelected={setSelectedPaths}
-            allowMultiple={true}
-            allowFolderSelection={true}
-          />
-          {/* Pass selected content to ContentTabs */}
-          <ContentTabs
-            displayContent={displayContent}
-            displayStructure={displayStructure}
-          />
-          {/* Add Copy Buttons */}
-          <Box mt={2} display="flex" gap={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => copyToClipboardWithToast(displayStructure, 99)}
-              disabled={!displayStructure}
-            >
-              Copy Structure
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => copyToClipboardWithToast(displayContent, 99)}
-              disabled={!displayContent}
-            >
-              Copy Content
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() =>
-                copyToClipboardWithToast(
-                  `${displayStructure}\n\n${displayContent}`,
-                  99
-                )
-              }
-              disabled={!displayStructure && !displayContent}
-            >
-              Copy Both
-            </Button>
-          </Box>
-        </Box>
+        <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+          <AccordionSummary
+            expandIcon={<ExpandMore />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography>Copy Content and Manage</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box mt={2}>
+              <ContentTreeFileSelector
+                contentTree={copiedContent.contentTree}
+                selected={selectedPaths}
+                setSelected={setSelectedPaths}
+                allowMultiple={true}
+                allowFolderSelection={true}
+              />
+              <ContentTabs
+                displayContent={displayContent}
+                displayStructure={displayStructure}
+              />
+              <Box mt={2} display="flex" gap={2}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => copyToClipboardWithToast(displayStructure, 99)}
+                  disabled={!displayStructure}
+                >
+                  Copy Structure
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => copyToClipboardWithToast(displayContent, 99)}
+                  disabled={!displayContent}
+                >
+                  Copy Content
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() =>
+                    copyToClipboardWithToast(
+                      `${displayStructure}\n\n${displayContent}`,
+                      99
+                    )
+                  }
+                  disabled={!displayStructure && !displayContent}
+                >
+                  Copy Both
+                </Button>
+              </Box>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
       )}
-      <CreateTestSection />
+
+      <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
+        <AccordionSummary
+          expandIcon={<ExpandMore  />}
+          aria-controls="panel2a-content"
+          id="panel2a-header"
+        >
+          <Typography>Create and Run Test</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <CreateTestSection />
+        </AccordionDetails>
+      </Accordion>
     </Container>
   );
 };

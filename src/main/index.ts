@@ -19,7 +19,7 @@ import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
 import {CopyOptions} from "./fileOperations/types/interfaces";
 import {IGNORE_LIST} from "../constants/ignoreList";
 import {ContentNode} from "../types/pathHarvester.types";
-import {createAndRunTest} from "./smartTasks/creteTestTask/createAndRunTest";
+import {createAndRunTest} from "./smartTasks/createTestTask/createAndRunTest";
 
 // Constants
 const WINDOW_WIDTH = 900;

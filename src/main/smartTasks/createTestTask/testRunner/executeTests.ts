@@ -26,6 +26,7 @@ export async function executeTests(
   } catch (error) {
     console.error('Error executing tests:', error);
 
+    // Ensure errorMessage is a string
     return {
       success: false,
       errorMessage: handleError(error, 'executeTests'),

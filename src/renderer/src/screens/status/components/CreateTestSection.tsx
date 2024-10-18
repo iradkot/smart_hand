@@ -139,7 +139,7 @@ const CreateTestSection: React.FC = () => {
         onClick={handlePackageJsonUpload}
         variant="contained"
         color="primary"
-        disabled={isPending}
+        disabled={Boolean(isPending)}
       >
         {isPending ? <CircularProgress size={24} /> : 'Upload package.json'}
       </Button>
@@ -164,7 +164,7 @@ const CreateTestSection: React.FC = () => {
         >
           {isPending ? <CircularProgress size={24} /> : 'Create Test'}
         </Button>
-        {testStatus && (
+        { testStatus && typeof testStatus === 'string' && (
           <Typography
             variant="body1"
             color={

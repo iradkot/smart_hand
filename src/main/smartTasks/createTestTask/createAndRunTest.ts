@@ -33,7 +33,7 @@ export async function createAndRunTest(
   }
 
   const packageManager = detectPackageManager(projectPath);
-  const maxRetries = 3;
+  const maxRetries = 7;
   const testExamples = await loadTestExamples();
   const simplifiedFilePaths = generateSimplifiedFilePaths(contentTree);
   const filePathsString = simplifiedFilePaths.join('\n');
