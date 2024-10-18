@@ -1,13 +1,13 @@
 import React from 'react';
-import { useStore } from '../../../stateManagement/zustand/useStore';
+import {useStore} from 'src/renderer/src/stateManagement/zustand/useStore';
 import {
   invokeCreateAndRunTest,
   invokeReadPackageJson,
-} from '../../../../../invokers/ipcInvokers';
-import ContentTreeFileSelector from '../../../components/FileSelector';
-import { Button, Typography, CircularProgress } from '@mui/material';
+} from 'src/invokers/ipcInvokers';
+import ContentTreeFileSelector from 'src/renderer/src/components/FileSelector';
+import {Button, Typography, CircularProgress} from '@mui/material';
 import styled from 'styled-components';
-import {getFileContentFromPath} from "../../../../../utils/harvesterUtils/harvesterUtils";
+import {getFileContentFromPath} from "src/utils/harvesterUtils/harvesterUtils";
 
 const getDirectoryPath = (filePath: string) => {
   const lastSlashIndex = filePath.lastIndexOf('\\');
@@ -51,7 +51,7 @@ const CreateTestSection: React.FC = () => {
   const handlePackageJsonUpload = async () => {
     try {
       if (stepState?.directoryPath) {
-        const { content, packageJsonPath: packageJsonPathResponse } =
+        const {content, packageJsonPath: packageJsonPathResponse} =
           await invokeReadPackageJson(stepState.directoryPath);
         if (content) {
           setPackageJsonContent(content);
@@ -141,7 +141,7 @@ const CreateTestSection: React.FC = () => {
         color="primary"
         disabled={Boolean(isPending)}
       >
-        {isPending ? <CircularProgress size={24} /> : 'Upload package.json'}
+        {isPending ? <CircularProgress size={24}/> : 'Upload package.json'}
       </Button>
       {packageJsonPath && (
         <Typography variant="body1" color="textSecondary">
@@ -162,9 +162,9 @@ const CreateTestSection: React.FC = () => {
             !selectedFile.length || !packageJsonContent || isPending
           }
         >
-          {isPending ? <CircularProgress size={24} /> : 'Create Test'}
+          {isPending ? <CircularProgress size={24}/> : 'Create Test'}
         </Button>
-        { testStatus && typeof testStatus === 'string' && (
+        {testStatus && typeof testStatus === 'string' && (
           <Typography
             variant="body1"
             color={

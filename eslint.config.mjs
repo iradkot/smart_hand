@@ -62,6 +62,9 @@ export default [
         version: 'detect', // Automatically detects the React version
       },
       'import/resolver': {
+        typescript: {
+          project: './tsconfig.json', // Points to your tsconfig file
+        },
         node: {
           extensions: ['.js', '.jsx', '.ts', '.tsx'],
         },

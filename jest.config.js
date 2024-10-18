@@ -13,4 +13,11 @@ module.exports = {
       },
     ],
   },
+  moduleNameMapper: {
+    '^@renderer/(.*)$': '<rootDir>/src/renderer/src/$1',
+    '^@preload/(.*)$': '<rootDir>/src/preload/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1',
+    '^@main/(.*)$': '<rootDir>/src/main/$1',
+    '^@root/(.*)$': '<rootDir>/src/$1',
+  },
 };
