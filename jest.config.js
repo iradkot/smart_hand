@@ -14,10 +14,6 @@ module.exports = {
     ],
   },
   moduleNameMapper: {
-    '^@renderer/(.*)$': '<rootDir>/src/renderer/src/$1',
-    '^@preload/(.*)$': '<rootDir>/src/preload/$1',
-    '^@shared/(.*)$': '<rootDir>/src/shared/$1',
-    '^@main/(.*)$': '<rootDir>/src/main/$1',
-    '^@root/(.*)$': '<rootDir>/src/$1',
+    '^src/(.*)$': '<rootDir>/src/$1', // Maps absolute imports like 'src/renderer/...' to their actual paths
   },
-};
+}

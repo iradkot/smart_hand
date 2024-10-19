@@ -12,8 +12,11 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest-setup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   transform: {
-    '^.+\\\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\\\.(ts|tsx)$': 'ts-jest'
   },
+    moduleNameMapper: {
+    '^src/(.*)$': '<rootDir>/src/$1' // Maps absolute imports like 'src/renderer/...' to their actual paths
+  }
 };
 `.trim();
 
