@@ -16,3 +16,4 @@ export interface TestResult {
   warnings?: string[];
   errorMessage?: string;
 }
+

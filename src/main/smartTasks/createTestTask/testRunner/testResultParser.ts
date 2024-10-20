@@ -19,11 +19,25 @@ export async function parseTestResults(
     return {
       success: false,
       errorMessage: 'Failed to parse Jest results',
+      // Store warnings separately if needed
       warnings: stderr ? stderr.split('\n').filter(line => line.trim() !== '') : [],
     };
   } finally {
     await fs.unlink(jestResultsPath).catch(() => {});
   }
+
+  // Extract relevant test failures
+  const testResults = jestResults.testResults.map((result: any) => {
+    const failedAssertions = result.assertionResults.filter((assertion: any) => assertion.status === 'failed');
+    return {
+      testFilePath: result.name,
+      status: result.status,
+      assertionResults: failedAssertions.map((assertion: any) => ({
+        title: assertion.title,
+        failureMessages: assertion.failureMessages,
+      })),
+    };
+  });
 
   return {
     success: exitCode === 0,
@@ -33,11 +47,8 @@ export async function parseTestResults(
       numPendingTests: jestResults.numPendingTests,
       numTotalTests: jestResults.numTotalTests,
     },
-    testResults: jestResults.testResults.map((result: any) => ({
-      testFilePath: result.name,
-      status: result.status,
-      failureMessages: result.failureMessages,
-    })),
-    warnings: stderr ? stderr.split('\n').filter(line => line.trim() !== '') : [],
+    testResults,
+    // Optionally include stderr as warnings or discard
+    warnings: [], // Empty if you choose not to display warnings
   };
 }
