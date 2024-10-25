@@ -1,4 +1,4 @@
-import {ContentNode} from '../../types/pathHarvester.types';
+import {ContentNode} from 'src/types/pathHarvester.types';
 
 /**
  * Recursively traverses the ContentNode based on path segments to find target files.

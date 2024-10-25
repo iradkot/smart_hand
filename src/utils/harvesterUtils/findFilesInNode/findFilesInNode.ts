@@ -1,5 +1,5 @@
 // findFilesInNode.ts
-import {ContentNode} from "../../../types/pathHarvester.types";
+import {ContentNode} from "src/types/pathHarvester.types";
 
 /**
  * Normalizes a file path by replacing backslashes with forward slashes,

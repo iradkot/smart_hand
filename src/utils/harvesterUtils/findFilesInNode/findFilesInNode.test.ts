@@ -1,6 +1,6 @@
 // findFilesInNode.test.ts
 
-import {ContentTree, ContentNode} from "../../../types/pathHarvester.types";
+import {ContentTree, ContentNode} from "src/types/pathHarvester.types";
 // findFilesInNode.test.ts
 
 import { findFilesInNode } from './findFilesInNode';
