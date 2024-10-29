@@ -19,7 +19,8 @@ import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
 import {CopyOptions} from "./fileOperations/types/interfaces";
 import {IGNORE_LIST} from "../constants/ignoreList";
 import {ContentNode} from "../types/pathHarvester.types";
-import {createAndRunTest} from "./smartTasks/createTestTask/createAndRunTest";
+// import {createAndRunTest} from "./smartTasks/createTestTask/createAndRunTest";
+import { smartUnitTestMaker } from 'src/main/smartTasks/smartUnitTestMaker'
 
 // Constants
 const WINDOW_WIDTH = 900;
@@ -120,7 +121,8 @@ ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPa
 
 ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, sessionId: string, directoryPath: string, fileContent: string, fileName: string, contentTree: ContentNode, packageJsonPath: string, packageJsonContent: string): Promise<TestCreationArgs> => {
   try {
-    await createAndRunTest(sessionId, directoryPath, fileContent, fileName, packageJsonPath, contentTree, packageJsonContent);
+    // await createAndRunTest(sessionId, directoryPath, fileContent, fileName, packageJsonPath, contentTree, packageJsonContent);
+    await smartUnitTestMaker(sessionId, directoryPath, fileContent, fileName, packageJsonPath, contentTree, packageJsonContent);
     return { success: true };
   } catch (error) {
     const errorMessage = handleError(error, 'Error in createAndRunTest');
