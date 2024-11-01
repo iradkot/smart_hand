@@ -1,4 +1,4 @@
-import {app, BrowserWindow, dialog, ipcMain, IpcMainInvokeEvent, shell} from 'electron';
+import {app, BrowserWindow, WebPreferences,  dialog, ipcMain, IpcMainInvokeEvent, shell} from 'electron';
 import {join} from 'path';
 // @ts-ignore
 import icon from '../../resources/the_smart_hand_icon.png';
@@ -21,6 +21,16 @@ import {IGNORE_LIST} from "../constants/ignoreList";
 import {ContentNode} from "../types/pathHarvester.types";
 // import {createAndRunTest} from "./smartTasks/createTestTask/createAndRunTest";
 import { smartUnitTestMaker } from 'src/main/smartTasks/smartUnitTestMaker'
+
+
+import { inspector } from './inspector'; // Import the singleton inspector
+
+// Start the inspector
+inspector.start?.();
+
+interface ExtendedWebPreferences extends WebPreferences {
+  nativeWindowOpen?: boolean;
+}
 
 // Constants
 const WINDOW_WIDTH = 900;
@@ -72,11 +82,20 @@ function getWebPreferences() {
     additionalArguments: [`--csp="default-src 'self'; connect-src http://localhost:3000"`],
     nodeIntegration: true,
     contextIsolation: false,
+    nativeWindowOpen: true,
   };
 }
 
 function loadWindow(mainWindow: BrowserWindow) {
   mainWindow.webContents.setWindowOpenHandler((details) => {
+    if (details.url.includes('stately.ai')) { // Allow inspector URLs
+      const inspectorWindow = new BrowserWindow({
+        webPreferences: { nativeWindowOpen: true } as ExtendedWebPreferences,
+      });
+      inspectorWindow.loadURL(details.url);
+      return { action: 'deny' };
+    }
+
     shell.openExternal(details.url);
     return { action: 'deny' };
   });

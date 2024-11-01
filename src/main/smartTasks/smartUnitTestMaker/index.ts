@@ -5,6 +5,7 @@ import { testMakerMachine } from './stateMachine/testMakerMachine';
 import { logInfo, logError } from './utils/loggingUtils';
 import { TestMakerContext } from './types';
 import { ContentNode } from 'src/types/pathHarvester.types';
+import { inspector } from '../../inspector'; // Import the shared inspector
 
 export async function smartUnitTestMaker(
   sessionId: string,
@@ -33,7 +34,9 @@ export async function smartUnitTestMaker(
       packageManager: '', // This will be set during the machine execution
     };
 
-    const actor = createActor(testMakerMachine, { input });
+    const { inspect } = inspector; // Use the shared inspector
+
+    const actor = createActor(testMakerMachine, { input, inspect });
 
     actor.subscribe({
       next: (snapshot) => {
@@ -44,7 +47,7 @@ export async function smartUnitTestMaker(
             resolve();
           } else {
             const error = new Error('State machine terminated with failure.');
-           logError(error);
+            logError(error);
             reject(error);
           }
           actor.stop();
