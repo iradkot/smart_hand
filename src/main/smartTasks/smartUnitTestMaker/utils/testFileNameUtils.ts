@@ -1,6 +1,6 @@
 // utils/testFileNameUtils.ts
 
-import path from 'path';
+import * as path from 'path';
 
 export const generateTestFileName = (originalFileName: string): string => {
   const ext = path.extname(originalFileName);

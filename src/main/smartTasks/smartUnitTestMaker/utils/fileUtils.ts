@@ -1,8 +1,8 @@
 // utils/fileUtils.ts
 
-import fs from 'fs';
+import * as fs from 'fs';
 
-import path from 'path';
+import * as path from 'path';
 
 export const readFile = async (directoryPath: string, filePath: string): Promise<string> => {
   const absolutePath = path.resolve(directoryPath, filePath);

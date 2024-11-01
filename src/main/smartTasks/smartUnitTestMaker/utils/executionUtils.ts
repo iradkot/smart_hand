@@ -3,7 +3,7 @@
 import { exec } from 'child_process';
 import { TestResult } from '../types';
 import { promises as fs } from 'fs';
-import path from 'path';
+import * as path from 'path';
 
 export const executeTest = (packageManager: string, projectPath: string, testFilePath: string): Promise<TestResult> => {
   return new Promise((resolve) => {

@@ -1,5 +1,4 @@
 import { createIndentationString } from "./CreateIndentationString";
-import { logger } from "../../utils/Logger";
 import path from "path";
 import { CopyOptions, FileOrFolder, IFileHandler } from "../../types/interfaces";
 import { normalizePath } from '../../../utils/PathUtils'
@@ -17,7 +16,6 @@ export async function processFile(
 
   const prefix = createIndentationString(depth, isLast);
   const fileName = path.basename(normalizedItemPath);
-  logger.debug(`Processing file: ${normalizedItemPath}`);
 
   const folderStructure = [`${prefix}${fileName}\n`];
   const fileContent = option === CopyOptions.CopycontentTree ? await fileHandler.readFile(normalizedItemPath) : null;

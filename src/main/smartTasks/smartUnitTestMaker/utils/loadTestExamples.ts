@@ -2,7 +2,7 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import {handleError} from "../../../../utils/ErrorHandler";
+import {handleError} from 'src/utils/ErrorHandler';
 
 /**
  * This function is responsible for loading the test examples which are used by the prompt.
