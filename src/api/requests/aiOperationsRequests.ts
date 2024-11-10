@@ -1,5 +1,5 @@
-import { smartHandServer } from '../axiosInstances';
-import { handleError } from "../../utils/ErrorHandler";
+import { smartHandServer } from '../axiosInstances'
+import { handleError } from '../../utils/ErrorHandler'
 
 interface TestDescription {
   title: string;
@@ -43,8 +43,8 @@ export const askGPTPost = async (sessionId: string, input: string): Promise<APIR
     });
     return response.data;
   } catch (error) {
-    console.log('Error in askGPTPost:', error);
-    throw error;
+    const errorMsg = handleError(error, 'askGPTPost');
+    throw new Error(errorMsg);
   }
 };
 
@@ -61,8 +61,8 @@ export const generateTestFile = async (
     });
     return response.data;
   } catch (error) {
-    handleError(error, 'Error in generateTestFile');
-    throw error;
+    const errorMsg = handleError(error, 'generateTestFile');
+    throw new Error(errorMsg);
   }
 };
 
@@ -78,7 +78,8 @@ export const analyzePackageJson = async (sessionId: string, packageJson?: string
     });
     return response.data;
   } catch (error) {
-    console.log('Error in analyzePackageJson:', error);
-    throw error;
+    const errorMsg = handleError(error, 'analyzePackageJson');
+    throw new Error(errorMsg);
+
   }
 };

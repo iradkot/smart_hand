@@ -18,7 +18,13 @@ export async function loadTestExamples(): Promise<string> {
         if (entry.isDirectory()) {
           return collectTestFiles(res);
         } else if (res.match(/\.test\.[jt]sx?$/)) {
-          return [res];
+          try {
+            await fs.readFile(res, 'utf-8'); // Attempt to read the file
+            return [res];
+          } catch (err) {
+            console.error(`Failed to read file ${res}:`, err);
+            return []; // Skip files that fail to read
+          }
         } else {
           return [];
         }
@@ -32,6 +38,6 @@ export async function loadTestExamples(): Promise<string> {
     const testExamples = await Promise.all(testFiles.map((file) => fs.readFile(file, 'utf-8')));
     return testExamples.join('\n\n');
   } catch (error) {
-    throw handleError(error, 'loadTestExamples');
-  }
+    const errorMsg = handleError(error, 'loadTestExamples');
+    throw new Error(errorMsg);  }
 }

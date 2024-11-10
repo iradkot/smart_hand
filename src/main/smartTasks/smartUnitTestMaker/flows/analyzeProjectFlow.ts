@@ -3,6 +3,7 @@
 import { detectPackageManager } from '../utils/fileUtils';
 import { analyzePackageJson } from 'src/api/requests/aiOperationsRequests';
 import { TestMakerContext } from '../types';
+import { handleError } from 'src/utils/ErrorHandler'
 
 export const analyzeProjectFlow = async ({
                                            input,
@@ -24,6 +25,7 @@ export const analyzeProjectFlow = async ({
       packageManager,
     };
   } catch (error) {
-    throw error;
+    const errorMessage = handleError(error, 'analyzeProjectFlow');
+    throw new Error(errorMessage);
   }
 };

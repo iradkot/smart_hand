@@ -9,10 +9,18 @@ export default defineConfig({
         src: resolve(__dirname, 'src')
       }
     },
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      sourcemap: true, // Enable source maps for main
+      outDir: 'out/main'
+    }
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      sourcemap: true, // Enable source maps for main
+      outDir: 'out/preload'
+    }
   },
   renderer: {
     resolve: {
@@ -20,6 +28,10 @@ export default defineConfig({
         src: resolve(__dirname, 'src')
       }
     },
-    plugins: [react()]
+    plugins: [react()],
+    build: {
+      sourcemap: true, // Enable source maps for renderer
+      outDir: 'out/renderer'
+    }
   }
 });

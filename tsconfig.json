@@ -12,6 +12,7 @@
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
+     "sourceMap": true,
     "strict": true,
     "declaration": false,
     "emitDeclarationOnly": false

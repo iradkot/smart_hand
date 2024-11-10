@@ -13,6 +13,21 @@ import {
   TestResult,
   WriteFileInput,
 } from '../types'
+import { errorHandler } from 'src/main/smartTasks/smartUnitTestMaker/stateMachine/xstate.utils'
+
+type ErrorActorEvent =
+  | { type: 'xstate.error.actor.0.testMaker.analyzingProject'; error: Error }
+  | { type: 'error.platform.createInitialTest.generateTestFile'; error: Error }
+  | { type: 'error.platform.createInitialTest.writeFile'; error: Error }
+  | { type: 'error.platform.createInitialTest.executeTest'; error: Error };
+
+type CreateInitialTestEvent =
+  | { type: 'START' }
+  | { type: 'done.invoke.generateTestFile'; output: GenerateTestFileOutput }
+  | { type: 'done.invoke.writeFile' }
+  | { type: 'done.invoke.executeTest'; output: TestResult }
+  | ErrorActorEvent;
+
 
 const generateTestFileActor = fromPromise<GenerateTestFileOutput, GenerateTestFileInput>(
   async ({ input }) => {
@@ -35,14 +50,7 @@ export const createInitialTestMachine = setup({
   types: {
     context: {} as CreateInitialTestContext,
     input: {} as CreateInitialTestInput,
-    events: {} as
-      | { type: 'START' }
-      | { type: 'done.invoke.generateTestFile', output: GenerateTestFileOutput }
-      | { type: 'done.invoke.writeFile' }
-      | { type: 'done.invoke.executeTest', output: TestResult }
-      | { type: 'error.invoke.generateTestFile', error: Error }
-      | { type: 'error.invoke.writeFile', error: Error }
-      | { type: 'error.invoke.executeTest', error: Error },
+    events: {} as CreateInitialTestEvent,
     output: {} as TestResult,
   },
   actors: {
@@ -89,9 +97,7 @@ export const createInitialTestMachine = setup({
         },
         onError: {
           target: 'failure',
-          actions: assign(({ event }) => ({
-            error: (event as { error: Error }).error,
-          })),
+          actions: errorHandler,
         },
       },
     },
@@ -106,9 +112,7 @@ export const createInitialTestMachine = setup({
         onDone: 'executingTest',
         onError: {
           target: 'failure',
-          actions: assign(({ event }) => ({
-            error: (event as { error: Error }).error,
-          })),
+          actions: errorHandler,
         },
       },
     },
@@ -137,9 +141,7 @@ export const createInitialTestMachine = setup({
         ],
         onError: {
           target: 'failure',
-          actions: assign(({ event }) => ({
-            error: (event as { error: Error }).error,
-          })),
+          actions: errorHandler,
         },
       },
     },
@@ -150,7 +152,7 @@ export const createInitialTestMachine = setup({
     },
     failure: {
       type: 'final',
-      output: ({ context }) => context.testResult,
+      output: ({ context }) => context.error,
       entry: ({ context }) => {
         console.error('Test creation and execution failed.', context.error)
       },

@@ -1,6 +1,6 @@
-// types.ts
+// src/main/smartTasks/smartUnitTestMaker/types/index.ts
 
-import { ContentNode } from 'src/types/pathHarvester.types'
+import { ContentNode } from 'src/types/pathHarvester.types';
 
 export interface GenerateTestFileOutput {
   content: {
@@ -36,8 +36,6 @@ export interface TestMakerInput {
 }
 
 export interface TestMakerContext extends TestMakerInput {
-  contentTree: ContentNode;
-  packageJsonContent: string;
   retries: number;
   maxRetries: number;
   testResult: TestResult | null;
@@ -45,6 +43,7 @@ export interface TestMakerContext extends TestMakerInput {
   testExamples: string;
   projectPath: string;
   packageManager: string;
+  error: Error | null;
 }
 
 export interface TestResult {

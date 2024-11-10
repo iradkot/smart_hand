@@ -6,6 +6,7 @@ import { generateTestFileName } from '../utils/testFileNameUtils';
 import { generateTestFile } from 'src/api/requests/aiOperationsRequests';
 import { TestMakerContext } from '../types';
 import { errorHandlingPrompt } from 'src/main/smartTasks/smartUnitTestMaker/prompts'
+import { handleError } from 'src/utils/ErrorHandler'
 
 export const handleTestFailureFlow = async ({
                                               input,
@@ -39,6 +40,6 @@ export const handleTestFailureFlow = async ({
 
     return testResult;
   } catch (error) {
-    throw error;
-  }
+    const errorMsg = handleError(error, 'handleTestFailureFlow');
+    throw new Error(errorMsg);  }
 };

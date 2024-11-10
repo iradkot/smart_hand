@@ -3,22 +3,29 @@ import { AnalyzeProjectOutput, PrepareTestContextOutput, TestMakerContext, TestM
 import { analyzeProjectFlow, handleTestFailureFlow, prepareTestContextFlow } from '../flows'
 import { cannotRetry, canRetry, testPassed } from './guards'
 import { createInitialTestMachine } from './createInitialTestMachine'
+import { errorHandler } from 'src/main/smartTasks/smartUnitTestMaker/stateMachine/xstate.utils'
+
+type ErrorEvent =
+  | { type: 'error.invoke.analyzeProjectFlow'; error: unknown }
+  | { type: 'error.invoke.prepareTestContextFlow'; error: unknown }
+  | { type: 'error.invoke.createInitialTestMachine'; error: unknown }
+  | { type: 'error.invoke.handleTestFailureFlow'; error: unknown };
+
+type TestMakerEvent =
+  | { type: 'START' }
+  | { type: 'RETRY' }
+  | { type: 'done.invoke.analyzeProjectFlow'; output: AnalyzeProjectOutput }
+  | { type: 'done.invoke.prepareTestContextFlow'; output: PrepareTestContextOutput }
+  | { type: 'done.invoke.createInitialTestMachine'; output: TestResult }
+  | { type: 'done.invoke.handleTestFailureFlow'; output: TestResult }
+  | ErrorEvent;
 
 export const testMakerMachine = setup({
   types: {
     context: {} as TestMakerContext,
     input: {} as TestMakerInput,
     events: {} as
-      | { type: 'START' }
-      | { type: 'RETRY' }
-      | { type: 'done.invoke.analyzeProjectFlow', output: AnalyzeProjectOutput }
-      | { type: 'done.invoke.prepareTestContextFlow', output: PrepareTestContextOutput }
-      | { type: 'done.invoke.createInitialTestMachine', output: TestResult }
-      | { type: 'done.invoke.handleTestFailureFlow', output: TestResult }
-      | { type: 'error.invoke.analyzeProjectFlow', error: Error }
-      | { type: 'error.invoke.prepareTestContextFlow', error: Error }
-      | { type: 'error.invoke.createInitialTestMachine', error: Error }
-      | { type: 'error.invoke.handleTestFailureFlow', error: Error },
+      TestMakerEvent,
   },
   guards: { testPassed, canRetry, cannotRetry },
   actors: {
@@ -39,6 +46,7 @@ export const testMakerMachine = setup({
     testExamples: '',
     packageManager: '',
     projectPath: input.packageJsonPath,
+    error: null,
   }),
   states: {
     idle: {
@@ -58,7 +66,10 @@ export const testMakerMachine = setup({
             packageManager: event.output.packageManager,
           })),
         },
-        onError: 'failure',
+        onError: {
+          target: 'failure',
+          actions: errorHandler,
+        },
       },
     },
     preparingTestContext: {
@@ -70,7 +81,10 @@ export const testMakerMachine = setup({
             testExamples: event.output.testExamples,
           })),
         },
-        onError: 'failure',
+        onError: {
+          target: 'failure',
+          actions: errorHandler,
+        },
       },
     },
     creatingInitialTest: {
@@ -83,7 +97,10 @@ export const testMakerMachine = setup({
             testResult: (event as { output: TestResult }).output,
           })),
         },
-        onError: 'failure',
+        onError: {
+          target: 'failure',
+          actions: errorHandler,
+        },
       },
     },
     checkingTestResult: {
@@ -104,7 +121,10 @@ export const testMakerMachine = setup({
             retries: context.retries + 1,
           })),
         },
-        onError: 'failure',
+        onError: {
+          target: 'failure',
+          actions: errorHandler,
+        },
       },
     },
     success: {
@@ -113,7 +133,14 @@ export const testMakerMachine = setup({
     },
     failure: {
       type: 'final',
-      entry: () => console.error('Test creation and execution failed.'),
+      output: ({ context }) => context.error,
+      entry: ({ context }) => {
+        if (context.error instanceof Error) {
+          console.error('Test creation and execution failed.', context.error.message);
+        } else {
+          console.error('Test creation and execution failed.', context.error);
+        }
+      },
     },
   },
 })

@@ -1,3 +1,5 @@
+import 'source-map-support/register';
+
 import {app, BrowserWindow, WebPreferences,  dialog, ipcMain, IpcMainInvokeEvent, shell} from 'electron';
 import {join} from 'path';
 // @ts-ignore
@@ -144,7 +146,7 @@ ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, session
     await smartUnitTestMaker(sessionId, directoryPath, fileContent, fileName, packageJsonPath, contentTree, packageJsonContent);
     return { success: true };
   } catch (error) {
-    const errorMessage = handleError(error, 'Error in createAndRunTest');
+    const errorMessage = handleError(error, 'createAndRunTest');
     return { success: false, error: errorMessage };
   }
 });

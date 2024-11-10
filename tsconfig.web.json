@@ -5,6 +5,7 @@
     "src/*.ts"
   ],
   "compilerOptions": {
+    "sourceMap": true,
     "composite": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
