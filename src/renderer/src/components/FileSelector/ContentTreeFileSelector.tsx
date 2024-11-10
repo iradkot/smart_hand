@@ -3,11 +3,11 @@ import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { Checkbox } from '@mui/material';
 import { FolderOpen, Folder, InsertDriveFile } from '@material-ui/icons';
-import { ContentNode } from '../../../../types/pathHarvester.types';
+import { ContentNode } from 'src/types/pathHarvester.types';
 import {
   FolderFileSelectorProps,
   ControlledFolderFileSelectorProps,
-} from '../../types/FileSelector.types';
+} from 'src/renderer/src/types/FileSelector.types';
 import { getNameFromPath, sortContentNodes } from '../../utils/FileSelector.utils';
 
 const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
