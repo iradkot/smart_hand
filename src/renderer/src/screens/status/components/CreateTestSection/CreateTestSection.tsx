@@ -1,13 +1,13 @@
 import React from 'react';
 import {useStore} from 'src/renderer/src/stateManagement/zustand/useStore';
-import {
-  invokeCreateAndRunTest,
-  invokeReadPackageJson,
-} from 'src/invokers/ipcInvokers';
+import {invokeCreateAndRunTest, invokeReadPackageJson,} from 'src/invokers/ipcInvokers';
 import ContentTreeFileSelector from 'src/renderer/src/components/FileSelector';
-import {Button, Typography, CircularProgress} from '@mui/material';
+import {Button, CircularProgress, Typography, Paper} from '@mui/material';
+
 import styled from 'styled-components';
 import {getFileContentFromPath} from "src/utils/harvesterUtils/harvesterUtils";
+import SelectedFileDisplay
+  from "src/renderer/src/screens/status/components/CreateTestSection/components/SelectedFileDisplay";
 
 const getDirectoryPath = (filePath: string) => {
   const lastSlashIndex = filePath.lastIndexOf('\\');
@@ -124,8 +124,12 @@ const CreateTestSection: React.FC = () => {
 
   return (
     <Wrapper>
+      <Paper elevation={3} style={{ padding: '16px', marginTop: '16px' }}>
       <Typography variant="h4" gutterBottom>
         Create and Run Test
+      </Typography>
+      <Typography variant="body1" color="textSecondary">
+        Select a file to test, upload your <code>package.json</code>, and then click "Create Test".
       </Typography>
       {copiedContent?.contentTree && (
         <ContentTreeFileSelector
@@ -135,6 +139,7 @@ const CreateTestSection: React.FC = () => {
           allowMultiple={false}
         />
       )}
+      <SelectedFileDisplay selectedFile={selectedFile} />
       <Button
         onClick={handlePackageJsonUpload}
         variant="contained"
@@ -143,6 +148,12 @@ const CreateTestSection: React.FC = () => {
       >
         {isPending ? <CircularProgress size={24}/> : 'Upload package.json'}
       </Button>
+      {(!selectedFile.length || !packageJsonContent) && !isPending && (
+        <Typography variant="body2" color="error">
+          {!selectedFile.length && 'Please select a file. '}
+          {!packageJsonContent && 'Please upload package.json.'}
+        </Typography>
+      )}
       {packageJsonPath && (
         <Typography variant="body1" color="textSecondary">
           package.json path: {packageJsonPath}
@@ -175,6 +186,7 @@ const CreateTestSection: React.FC = () => {
           </Typography>
         )}
       </Form>
+      </Paper>
     </Wrapper>
   );
 };

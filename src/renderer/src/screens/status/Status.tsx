@@ -5,7 +5,7 @@ import { useStore } from '../../stateManagement/zustand/useStore';
 import { Container, Header } from './Status.styles';
 import LoadingError from './components/LoadingError';
 import ContentTabs from './components/ContentTabs';
-import CreateTestSection from './components/CreateTestSection';
+import CreateTestSection from './components/CreateTestSection/CreateTestSection';
 import { Box, Button, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
 import { ExpandMore  } from '@material-ui/icons';
 import { useCopyHistory } from '../../stateManagement/contexts';
