@@ -21,6 +21,7 @@ export interface CreateInitialTestContext extends CreateInitialTestInput {
   prompt: string;
   testCode: string;
   testFileName: string;
+  filePathsString: string;
   testResult: TestResult | null;
   error: Error | null;
 }
