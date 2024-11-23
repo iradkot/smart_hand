@@ -1,11 +1,11 @@
 // src/stateManagement/zustand/slices/processSlice.ts
 
-import { StateCreator } from 'zustand';
-import { ProcessSlice, StoreState } from '../store.types';
-import { generateUniqueSessionId } from '../../../../../utils/generateUniqueSessionId';
-import { handleError } from '../../../../../utils/ErrorHandler';
-import { invokeCopyingProcess } from '../../../../../invokers/ipcInvokers';
-import { initialStepState } from '../initialState';
+import {StateCreator} from 'zustand';
+import {ProcessSlice, StoreState} from '../store.types';
+import {generateUniqueSessionId} from '../../../../../utils/generateUniqueSessionId';
+import {handleError} from '../../../../../utils/ErrorHandler';
+import {invokeCopyingProcess} from '../../../../../invokers/ipcInvokers';
+import {initialStepState} from '../initialState';
 
 export const createProcessSlice: StateCreator<
   StoreState,
@@ -17,10 +17,10 @@ export const createProcessSlice: StateCreator<
   stepState: initialStepState,
   step: 1,
 
-  setStep: (step) => set({ step }),
-  setCurrentStepId: (stepId) => set({ currentStepId: stepId }),
-  setStepState: (stepState) => set({ stepState }),
-  resetProcess: () => set({ stepState: initialStepState }),
+  setStep: (step) => set({step}),
+  setCurrentStepId: (stepId) => set({currentStepId: stepId}),
+  setStepState: (stepState) => set({stepState}),
+  resetProcess: () => set({stepState: initialStepState}),
 
   initializeSession: () => {
     const sessionId = generateUniqueSessionId();
@@ -38,8 +38,8 @@ export const createProcessSlice: StateCreator<
     get().setError(null);
 
     try {
-      const response = await invokeCopyingProcess({ directoryPath, option });
-      console.log({ response });
+      const response = await invokeCopyingProcess({directoryPath, option});
+      console.log({response});
 
       set((state) => ({
         stepState: {
@@ -56,6 +56,12 @@ export const createProcessSlice: StateCreator<
       get().setLoading(false);
       get().setError(`Error: ${errorMessage}`);
       throw err;
+    }
+  },
+  refreshCopiedContent: async () => {
+    const { stepState, copyToClipboard } = get();
+    if (stepState.directoryPath && stepState.option) {
+      await copyToClipboard(stepState.directoryPath, stepState.option);
     }
   },
 });

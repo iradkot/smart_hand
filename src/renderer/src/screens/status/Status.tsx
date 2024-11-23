@@ -7,7 +7,7 @@ import LoadingError from './components/LoadingError';
 import ContentTabs from './components/ContentTabs';
 import CreateTestSection from './components/CreateTestSection/CreateTestSection';
 import { Box, Button, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
-import { ExpandMore  } from '@material-ui/icons';
+import { ExpandMore, Refresh  } from '@material-ui/icons';
 import { useCopyHistory } from '../../stateManagement/contexts';
 import {
   generateSelectedFileContents,
@@ -17,9 +17,12 @@ import ContentTreeFileSelector from "../../components/FileSelector";
 
 const Status: React.FC = () => {
   const { copyToClipboardWithToast } = useCopyHistory();
-  const stepState = useStore((state) => state.stepState);
-  const isLoading = useStore((state) => state.isLoading);
-  const error = useStore((state) => state.error);
+  const { refreshCopiedContent, stepState, isLoading, error } = useStore((state) => ({
+    refreshCopiedContent: state.refreshCopiedContent,
+    stepState: state.stepState,
+    isLoading: state.isLoading,
+    error: state.error,
+  }));
   const copiedContent = stepState?.copiedContent;
 
   const [expanded, setExpanded] = useState<string | false>(false);
@@ -130,6 +133,15 @@ const Status: React.FC = () => {
                   disabled={!displayStructure && !displayContent}
                 >
                   Copy Both
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<Refresh />}
+                  onClick={refreshCopiedContent}
+                  disabled={isLoading}
+                >
+                  Refresh
                 </Button>
               </Box>
             </Box>

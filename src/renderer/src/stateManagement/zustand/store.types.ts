@@ -11,6 +11,7 @@ export interface UISlice {
 export interface ProcessSlice {
   currentStepId: string;
   stepState: StepState;
+  refreshCopiedContent: () => void;
   step: number;
   setStep: (step: number) => void;
   setCurrentStepId: (stepId: string) => void;
