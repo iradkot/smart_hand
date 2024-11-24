@@ -97,7 +97,8 @@ export function handleError(error: unknown, context: string, indent = ''): strin
 
   if (error instanceof AggregateError) {
     lines.push(`${indent}AggregateError in ${context}:`);
-    error.errors.forEach((err, idx) => {
+    let idx = 0;
+    for (const err of error.errors) {
       lines.push(`${indent}  Error ${idx + 1}:`);
       if (axios.isAxiosError(err)) {
         lines.push(formatAxiosError(err, context, indent + '    '));
@@ -106,7 +107,8 @@ export function handleError(error: unknown, context: string, indent = ''): strin
       } else {
         lines.push(`${indent}    ${String(err)}`);
       }
-    });
+      idx++;
+    }
   } else if (axios.isAxiosError(error)) {
     lines.push(formatAxiosError(error, context, indent));
   } else if (error instanceof Error) {

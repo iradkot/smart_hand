@@ -9,7 +9,7 @@ module.exports = {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
       {
-        tsconfig: 'tsconfig.json', // Ensure this path is correct
+        tsconfig: './tsconfig.json',
       },
     ],
   },
