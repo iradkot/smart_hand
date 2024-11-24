@@ -1,23 +1,20 @@
 // src/renderer/src/screens/status/Status.tsx
 
-import React, { useEffect, useState } from 'react';
-import { useStore } from '../../stateManagement/zustand/useStore';
-import { Container } from './Status.styles';
+import React, {useEffect, useState} from 'react';
+import {useStore} from '../../stateManagement/zustand/useStore';
+import {Container} from './Status.styles';
 import LoadingError from './components/LoadingError';
 import ContentTabs from './components/ContentTabs';
 import CreateTestSection from './components/CreateTestSection/CreateTestSection';
-import { Box, Button, Accordion, AccordionSummary, AccordionDetails, Typography, Grid } from '@mui/material';
-import { ExpandMore, Refresh  } from '@material-ui/icons';
-import { useCopyHistory } from '../../stateManagement/contexts';
-import {
-  generateSelectedFileContents,
-  generateSelectedFolderStructure,
-} from 'src/utils/harvesterUtils/harvesterUtils';
+import {Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, Typography} from '@mui/material';
+import {ExpandMore, Refresh} from '@material-ui/icons';
+import {useCopyHistory} from '../../stateManagement/contexts';
+import {generateSelectedFileContents, generateSelectedFolderStructure,} from 'src/utils/harvesterUtils/harvesterUtils';
 import ContentTreeFileSelector from "../../components/FileSelector";
 
 const Status: React.FC = () => {
-  const { copyToClipboardWithToast } = useCopyHistory();
-  const { refreshCopiedContent, stepState, isLoading, error } = useStore((state) => ({
+  const {copyToClipboardWithToast} = useCopyHistory();
+  const {refreshCopiedContent, stepState, isLoading, error} = useStore((state) => ({
     refreshCopiedContent: state.refreshCopiedContent,
     stepState: state.stepState,
     isLoading: state.isLoading,
@@ -82,89 +79,89 @@ const Status: React.FC = () => {
       <Typography variant="h4" component="h2" gutterBottom>
         Status
       </Typography>
-      <LoadingError isLoading={isLoading} error={error} />
+      <LoadingError isLoading={isLoading} error={error}/>
       <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={12}>
 
-      {copiedContent?.contentTree && (
-        <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
-          <AccordionSummary
-            expandIcon={<ExpandMore />}
-            aria-controls="panel1a-content"
-            id="panel1a-header"
-          >
-            <Typography>Copy Content and Manage</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Box mt={2}>
-              <ContentTreeFileSelector
-                contentTree={copiedContent.contentTree}
-                selected={selectedPaths}
-                setSelected={setSelectedPaths}
-                allowMultiple={true}
-                allowFolderSelection={true}
-              />
-              <ContentTabs
-                displayContent={displayContent}
-                displayStructure={displayStructure}
-              />
-              <Box mt={2} display="flex" gap={2}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => copyToClipboardWithToast(displayStructure, 99)}
-                  disabled={!displayStructure}
-                >
-                  Copy Structure
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => copyToClipboardWithToast(displayContent, 99)}
-                  disabled={!displayContent}
-                >
-                  Copy Content
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() =>
-                    copyToClipboardWithToast(
-                      `${displayStructure}\n\n${displayContent}`,
-                      99
-                    )
-                  }
-                  disabled={!displayStructure && !displayContent}
-                >
-                  Copy Both
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  startIcon={<Refresh />}
-                  onClick={refreshCopiedContent}
-                  disabled={isLoading}
-                >
-                  Refresh
-                </Button>
-              </Box>
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-      )}
+          {copiedContent?.contentTree && (
+            <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+              <AccordionSummary
+                expandIcon={<ExpandMore/>}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+              >
+                <Typography>Copy Content and Manage</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box mt={2}>
+                  <ContentTreeFileSelector
+                    contentTree={copiedContent.contentTree}
+                    selected={selectedPaths}
+                    setSelected={setSelectedPaths}
+                    allowMultiple={true}
+                    allowFolderSelection={true}
+                  />
+                  <ContentTabs
+                    displayContent={displayContent}
+                    displayStructure={displayStructure}
+                  />
+                  <Box mt={2} display="flex" gap={2}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => copyToClipboardWithToast(displayStructure, 99)}
+                      disabled={!displayStructure}
+                    >
+                      Copy Structure
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => copyToClipboardWithToast(displayContent, 99)}
+                      disabled={!displayContent}
+                    >
+                      Copy Content
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() =>
+                        copyToClipboardWithToast(
+                          `${displayStructure}\n\n${displayContent}`,
+                          99
+                        )
+                      }
+                      disabled={!displayStructure && !displayContent}
+                    >
+                      Copy Both
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      startIcon={<Refresh/>}
+                      onClick={refreshCopiedContent}
+                      disabled={isLoading}
+                    >
+                      Refresh
+                    </Button>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          )}
 
-      <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
-        <AccordionSummary
-          expandIcon={<ExpandMore  />}
-          aria-controls="panel2a-content"
-          id="panel2a-header"
-        >
-          <Typography>Create and Run Test</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <CreateTestSection />
-        </AccordionDetails>
-      </Accordion>
+          <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
+            <AccordionSummary
+              expandIcon={<ExpandMore/>}
+              aria-controls="panel2a-content"
+              id="panel2a-header"
+            >
+              <Typography>Create and Run Test</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <CreateTestSection/>
+            </AccordionDetails>
+          </Accordion>
         </Grid>
       </Grid>
     </Container>

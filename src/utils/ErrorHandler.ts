@@ -1,5 +1,3 @@
-// src/utils/ErrorHandler.ts
-
 import axios, { AxiosError } from 'axios';
 
 interface CodedError extends Error {
@@ -7,20 +5,17 @@ interface CodedError extends Error {
 }
 
 /**
- * Extracts the first relevant line from the error stack trace.
- * Assumes that source-map-support has mapped the stack trace to TypeScript files.
+ * Extracts the file location (file path, line, column) from an error's stack trace.
+ * @param error The error object.
+ * @returns A string representing the location, e.g., " (file.ts:10:5)", or an empty string if not found.
  */
 function extractErrorLocation(error: Error): string {
   if (!error.stack) return '';
 
-  // Split stack trace into lines
   const stackLines = error.stack.split('\n');
-
-  // Find the first stack line that points to a .ts file
   const tsStackLine = stackLines.find(line => line.includes('.ts'));
 
   if (tsStackLine) {
-    // Use regex to extract file path, line number, and column number
     const regex = /\(?([^\s:()]+\.ts):(\d+):(\d+)\)?$/;
     const match = tsStackLine.match(regex);
 
@@ -34,90 +29,97 @@ function extractErrorLocation(error: Error): string {
 }
 
 /**
- * Formats AxiosError with relevant details and source location.
+ * Formats an AxiosError with proper indentation and line breaks.
+ * @param error The AxiosError object.
+ * @param context A string describing the context in which the error occurred.
+ * @param indent A string representing the current indentation.
+ * @returns A formatted error message string.
  */
-function formatAxiosError(error: AxiosError, context: string): string {
+function formatAxiosError(error: AxiosError, context: string, indent = ''): string {
+  const lines: string[] = [];
   const statusCode = error.response?.status;
   const statusText = error.response?.statusText;
   const errorCode = error.code;
-  const errorDetails = error.response?.data || error.message;
+  const errorDetails = typeof error.response?.data === 'object' ? JSON.stringify(error.response?.data, null, 2) : error.response?.data || error.message;
   const location = extractErrorLocation(error);
 
-  let message = `AxiosError${location}: ${errorDetails}`;
+  lines.push(`${indent}AxiosError${location}: ${errorDetails}`);
 
   if (errorCode) {
-    message += ` (code: ${errorCode})`;
+    lines.push(`${indent}  (code: ${errorCode})`);
   }
 
   if (statusCode) {
-    message += ` (status: ${statusCode} ${statusText || ''})`;
+    lines.push(`${indent}  (status: ${statusCode} ${statusText || ''})`);
   }
 
   if (error.cause) {
-    const causeMessage = handleError(error.cause, context);
-    message += `; caused by ${causeMessage}`;
+    lines.push(`${indent}  Caused by:`);
+    lines.push(handleError(error.cause, context, indent + '    '));
   }
 
-  return message;
+  return lines.join('\n');
 }
 
 /**
- * Formats standard Error with relevant details and source location.
+ * Formats a standard Error with proper indentation and line breaks.
+ * @param error The Error object.
+ * @param context A string describing the context in which the error occurred.
+ * @param indent A string representing the current indentation.
+ * @returns A formatted error message string.
  */
-function formatStandardError(error: CodedError, context: string): string {
+function formatStandardError(error: CodedError, context: string, indent = ''): string {
+  const lines: string[] = [];
   const location = extractErrorLocation(error);
-  let message = `Error${location} in ${context}: ${error.message}`;
+  lines.push(`${indent}Error${location} in ${context}: ${error.message}`);
 
   if (error.code) {
-    message += ` (code: ${error.code})`;
+    lines.push(`${indent}  (code: ${error.code})`);
   }
 
   if (error.cause) {
-    const causeMessage = handleError(error.cause, context);
-    message += `\n  Caused by: ${causeMessage}`;
+    lines.push(`${indent}  Caused by:`);
+    lines.push(handleError(error.cause, context, indent + '    '));
   }
 
-  return message;
+  return lines.join('\n');
 }
 
 /**
- * Main error handling function.
+ * Handles formatting of unknown error types, including AggregateError and non-Error objects.
+ * @param error The unknown error object.
+ * @param context A string describing the context in which the error occurred.
+ * @param indent A string representing the current indentation.
+ * @returns A formatted error message string.
  */
-export function handleError(error: unknown, context: string): string {
-  let errorMessage: string;
+export function handleError(error: unknown, context: string, indent = ''): string {
+  const lines: string[] = [];
 
   if (error instanceof AggregateError) {
-    // Handle AggregateError by concatenating all individual error messages
-    const aggregatedMessages = error.errors
-      .map((err, idx) => {
-        if (axios.isAxiosError(err)) {
-          return `Error ${idx + 1}: ${formatAxiosError(err, context)}`;
-        } else if (err instanceof Error) {
-          return `Error ${idx + 1}: ${formatStandardError(err, context)}`;
-        } else {
-          return `Error ${idx + 1}: ${String(err)}`;
-        }
-      })
-      .join('; ');
-    errorMessage = `AggregateError in ${context}: ${aggregatedMessages}`;
+    lines.push(`${indent}AggregateError in ${context}:`);
+    error.errors.forEach((err, idx) => {
+      lines.push(`${indent}  Error ${idx + 1}:`);
+      if (axios.isAxiosError(err)) {
+        lines.push(formatAxiosError(err, context, indent + '    '));
+      } else if (err instanceof Error) {
+        lines.push(formatStandardError(err as CodedError, context, indent + '    '));
+      } else {
+        lines.push(`${indent}    ${String(err)}`);
+      }
+    });
   } else if (axios.isAxiosError(error)) {
-    // Handle AxiosError instances
-    errorMessage = `AxiosError in ${context}: ${formatAxiosError(error, context)}`;
+    lines.push(formatAxiosError(error, context, indent));
   } else if (error instanceof Error) {
-    // Handle standard Error instances
-    errorMessage = formatStandardError(error, context);
+    lines.push(formatStandardError(error as CodedError, context, indent));
   } else if (typeof error === 'object' && error !== null) {
-    // Handle non-Error objects
     try {
-      errorMessage = `Non-Error object in ${context}: ${JSON.stringify(error, null, 2)}`;
+      lines.push(`${indent}Non-Error object in ${context}:\n${indent}  ${JSON.stringify(error, null, 2)}`);
     } catch {
-      errorMessage = `Non-Error object in ${context}: Unable to stringify error object.`;
+      lines.push(`${indent}Non-Error object in ${context}: Unable to stringify error object.`);
     }
   } else {
-    // Handle primitive types
-    errorMessage = `Unknown error type in ${context}: ${String(error)}`;
+    lines.push(`${indent}Unknown error type in ${context}: ${String(error)}`);
   }
 
-  // console.error(error);
-  return errorMessage;
+  return lines.join('\n');
 }

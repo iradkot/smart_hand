@@ -1,13 +1,14 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useStore} from 'src/renderer/src/stateManagement/zustand/useStore';
 import {invokeCreateAndRunTest, invokeReadPackageJson,} from 'src/invokers/ipcInvokers';
 import ContentTreeFileSelector from 'src/renderer/src/components/FileSelector';
-import {Button, CircularProgress, Typography, Paper} from '@mui/material';
+import {Button, CircularProgress, Grid, Paper, Typography} from '@mui/material';
 
 import styled from 'styled-components';
 import {getFileContentFromPath} from "src/utils/harvesterUtils/harvesterUtils";
 import SelectedFileDisplay
   from "src/renderer/src/screens/status/components/CreateTestSection/components/SelectedFileDisplay";
+import {XSTATE_UPDATE_INVOKE} from "src/invokers/constants";
 
 const getDirectoryPath = (filePath: string) => {
   const lastSlashIndex = filePath.lastIndexOf('\\');
@@ -47,6 +48,25 @@ const CreateTestSection: React.FC = () => {
   const setPackageJsonContent = useStore((state) => state.setPackageJsonContent);
   const packageJsonPath = useStore((state) => state.packageJsonPath);
   const setPackageJsonPath = useStore((state) => state.setPackageJsonPath);
+
+  // get xstate statuses:
+  const xStateCurrent = useStore((state) => state.xStateCurrent);
+  const setXStateCurrent = useStore((state) => state.setXStateCurrent);
+
+  useEffect(() => {
+    const handleStateUpdate = (_event, serializedState) => {
+      console.log('Received state update:', serializedState);
+      const state = JSON.parse(serializedState);
+      setXStateCurrent(state.value); // Assuming you want to display state.value
+    };
+
+    window.electron.ipcRenderer.on(XSTATE_UPDATE_INVOKE, handleStateUpdate);
+
+    return () => {
+      window.electron.ipcRenderer.removeListener(XSTATE_UPDATE_INVOKE, handleStateUpdate);
+    };
+  }, [setXStateCurrent]);
+
 
   const handlePackageJsonUpload = async () => {
     try {
@@ -124,68 +144,83 @@ const CreateTestSection: React.FC = () => {
 
   return (
     <Wrapper>
-      <Paper elevation={3} style={{ padding: '16px', marginTop: '16px' }}>
-      <Typography variant="h4" gutterBottom>
-        Create and Run Test
-      </Typography>
-      <Typography variant="body1" color="textSecondary">
-        Select a file to test, upload your <code>package.json</code>, and then click "Create Test".
-      </Typography>
-      {copiedContent?.contentTree && (
-        <ContentTreeFileSelector
-          contentTree={copiedContent.contentTree}
-          selected={selectedFile}
-          setSelected={setSelectedFile}
-          allowMultiple={false}
-        />
-      )}
-      <SelectedFileDisplay selectedFile={selectedFile} />
-      <Button
-        onClick={handlePackageJsonUpload}
-        variant="contained"
-        color="primary"
-        disabled={Boolean(isPending)}
-      >
-        {isPending ? <CircularProgress size={24}/> : 'Upload package.json'}
-      </Button>
-      {(!selectedFile.length || !packageJsonContent) && !isPending && (
-        <Typography variant="body2" color="error">
-          {!selectedFile.length && 'Please select a file. '}
-          {!packageJsonContent && 'Please upload package.json.'}
-        </Typography>
-      )}
-      {packageJsonPath && (
-        <Typography variant="body1" color="textSecondary">
-          package.json path: {packageJsonPath}
-        </Typography>
-      )}
-      <Form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleCreateTest();
-        }}
-      >
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          disabled={
-            !selectedFile.length || !packageJsonContent || isPending
-          }
-        >
-          {isPending ? <CircularProgress size={24}/> : 'Create Test'}
-        </Button>
-        {testStatus && typeof testStatus === 'string' && (
-          <Typography
-            variant="body1"
-            color={
-              testStatus.startsWith('Error') ? 'error' : 'primary'
-            }
-          >
-            {testStatus}
-          </Typography>
-        )}
-      </Form>
+      <Paper elevation={3} style={{padding: '16px', marginTop: '16px'}}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+
+            <Typography variant="h4" gutterBottom>
+              Create and Run Test
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              Select a file to test, upload your <code>package.json</code>, and then click "Create Test".
+            </Typography>
+            {copiedContent?.contentTree && (
+              <ContentTreeFileSelector
+                contentTree={copiedContent.contentTree}
+                selected={selectedFile}
+                setSelected={setSelectedFile}
+                allowMultiple={false}
+              />
+            )}
+            <SelectedFileDisplay selectedFile={selectedFile}/>
+            <Button
+              onClick={handlePackageJsonUpload}
+              variant="contained"
+              color="primary"
+              disabled={Boolean(isPending)}
+            >
+              {isPending ? <CircularProgress size={24}/> : 'Upload package.json'}
+            </Button>
+            {(!selectedFile.length || !packageJsonContent) && !isPending && (
+              <Typography variant="body2" color="error">
+                {!selectedFile.length && 'Please select a file. '}
+                {!packageJsonContent && 'Please upload package.json.'}
+              </Typography>
+            )}
+            {packageJsonPath && (
+              <Typography variant="body1" color="textSecondary">
+                package.json path: {packageJsonPath}
+              </Typography>
+            )}
+            <Form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCreateTest();
+              }}
+            >
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={
+                  !selectedFile.length || !packageJsonContent || isPending
+                }
+              >
+                {isPending ? <CircularProgress size={24}/> : 'Create Test'}
+              </Button>
+              {testStatus && typeof testStatus === 'string' && (
+                <Typography
+                  variant="body1"
+                  color={
+                    testStatus.startsWith('Error') ? 'error' : 'primary'
+                  }
+                  style={{whiteSpace: 'pre-wrap'}}
+                >
+                  {testStatus}
+                </Typography>
+              )}
+            </Form>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            {/* Right side: display the current XState state */}
+            <Paper elevation={3} sx={{p: 2}}>
+              <Typography variant="h5">Current test runner state</Typography>
+              <Typography variant="body1" style={{whiteSpace: 'pre-wrap'}}>
+                {xStateCurrent ? xStateCurrent : 'Idle'}
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
       </Paper>
     </Wrapper>
   );

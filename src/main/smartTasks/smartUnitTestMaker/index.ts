@@ -1,12 +1,15 @@
 // src/main/smartTasks/smartUnitTestMaker/index.ts
 
-import { createActor } from 'xstate'
-import { testMakerMachine } from './stateMachine/testMakerMachine'
-import { logInfo } from './utils/loggingUtils'
-import { TestMakerContext } from './types'
-import { ContentNode } from 'src/types/pathHarvester.types'
-import { inspector } from '../../inspector' // Import the shared inspector
-import { handleError } from 'src/utils/ErrorHandler' // Import the updated handleError
+import {createActor} from 'xstate'
+import {testMakerMachine} from './stateMachine/testMakerMachine'
+import {logInfo} from './utils/loggingUtils'
+import {TestMakerContext} from './types'
+import {ContentNode} from 'src/types/pathHarvester.types'
+import {inspector} from '../../inspector' // Import the shared inspector
+import {handleError} from 'src/utils/ErrorHandler' // Import the updated handleError
+import {BrowserWindow} from 'electron'
+import {XSTATE_UPDATE_INVOKE} from "src/invokers/constants";
+
 
 export async function smartUnitTestMaker(
   sessionId: string,
@@ -18,6 +21,8 @@ export async function smartUnitTestMaker(
   packageJsonContent: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
+      const mainWindow = BrowserWindow.getAllWindows()[0];
+
       const input: TestMakerContext = {
         sessionId,
         directoryPath,
@@ -36,15 +41,17 @@ export async function smartUnitTestMaker(
         error: null,
       }
 
-      const { inspect } = inspector // Use the shared inspector
+      const {inspect} = inspector // Use the shared inspector
 
-      const actor = createActor(testMakerMachine, { input, inspect })
+      const actor = createActor(testMakerMachine, {input, inspect})
 
       actor.subscribe({
         next: (snapshot) => {
-          logInfo(`Transitioned to state: ${JSON.stringify(snapshot.value)}`)
+          const currentState = JSON.stringify(snapshot)
+          logInfo(`Transitioned to state: ${currentState}`)
+          mainWindow.webContents.send(XSTATE_UPDATE_INVOKE, currentState);
           if (snapshot.status === 'done') {
-            if (snapshot.value  === 'success') {
+            if (snapshot.value === 'success') {
               logInfo('State machine completed successfully.')
               resolve()
             } else if (snapshot.value === 'failure') {
@@ -65,13 +72,18 @@ export async function smartUnitTestMaker(
         error: (error) => {
           const errorMsg = handleError(error, 'State Machine')
           console.log('error in state machineasda', errorMsg)
+          mainWindow.webContents.send(XSTATE_UPDATE_INVOKE, JSON.stringify({value: errorMsg}));
           reject(new Error(errorMsg))
           actor.stop()
+        },
+        complete: () => {
+          mainWindow.webContents.send(XSTATE_UPDATE_INVOKE, 'State machine stopped.');
+          logInfo('State machine stopped.')
         },
       })
 
       actor.start()
-      actor.send({ type: 'START' })
+      actor.send({type: 'START'})
     },
   )
 

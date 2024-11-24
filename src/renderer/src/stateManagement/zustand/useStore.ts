@@ -23,8 +23,9 @@ export const useStore = create<StoreState>()(
         ...createProcessSlice(set, get, api),
         ...createNavigationSlice(set, get, api),
         ...createCreateTestSectionSlice(set, get, api),
-
         // Non-persisted slice containing transient UI states
+        xStateCurrent: '',
+        setXStateCurrent: (state) => set({ xStateCurrent: state }),
         ...createUISlice(set, get, api),
       }),
       {

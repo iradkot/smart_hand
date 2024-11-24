@@ -1,5 +1,5 @@
 import { StepState } from '../../types/types';
-import { copiedContent } from '../../../../types/pathHarvester.types';
+import { copiedContent } from 'src/types/pathHarvester.types';
 
 export interface UISlice {
   isLoading: boolean;
@@ -47,4 +47,9 @@ export interface CreateTestSectionSlice {
     setPackageJsonPath: (path: string | null) => void;
 }
 
-export type StoreState = UISlice & ProcessSlice & NavigationSlice &RehydrationSlice & CreateTestSectionSlice;
+export interface XStateSlice {
+  xStateCurrent: string;
+  setXStateCurrent: (state: string) => void;
+}
+
+export type StoreState = UISlice & ProcessSlice & NavigationSlice &RehydrationSlice & CreateTestSectionSlice & XStateSlice;
