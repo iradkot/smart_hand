@@ -1,5 +1,6 @@
 import { StepState } from '../../types/types';
 import { copiedContent } from 'src/types/pathHarvester.types';
+import {AnyMachineSnapshot} from "xstate";
 
 export interface UISlice {
   isLoading: boolean;
@@ -46,10 +47,17 @@ export interface CreateTestSectionSlice {
     setPackageJsonContent: (content: string | null) => void;
     setPackageJsonPath: (path: string | null) => void;
 }
-
-export interface XStateSlice {
-  xStateCurrent: string;
-  setXStateCurrent: (state: string) => void;
+export interface XStateUpdate {
+  snapshot: AnyMachineSnapshot;
+  timestamp: number;
 }
 
-export type StoreState = UISlice & ProcessSlice & NavigationSlice &RehydrationSlice & CreateTestSectionSlice & XStateSlice;
+export interface XStateSlice {
+  xStateCurrent: AnyMachineSnapshot | null;
+  xStateHistory: XStateUpdate[];
+  setXStateCurrent: (state: AnyMachineSnapshot) => void;
+  addXStateToHistory: (update: XStateUpdate) => void;
+  resetXStateHistory: () => void;
+}
+
+export type StoreState = UISlice & ProcessSlice & NavigationSlice & RehydrationSlice & CreateTestSectionSlice & XStateSlice;

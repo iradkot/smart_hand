@@ -2,13 +2,17 @@ import React, {useEffect} from 'react';
 import {useStore} from 'src/renderer/src/stateManagement/zustand/useStore';
 import {invokeCreateAndRunTest, invokeReadPackageJson,} from 'src/invokers/ipcInvokers';
 import ContentTreeFileSelector from 'src/renderer/src/components/FileSelector';
-import {Button, CircularProgress, Grid, Paper, Typography} from '@mui/material';
+import {Button, CircularProgress, Grid, List, Paper, Typography} from '@mui/material';
 
 import styled from 'styled-components';
 import {getFileContentFromPath} from "src/utils/harvesterUtils/harvesterUtils";
 import SelectedFileDisplay
   from "src/renderer/src/screens/status/components/CreateTestSection/components/SelectedFileDisplay";
 import {XSTATE_UPDATE_INVOKE} from "src/invokers/constants";
+import {AnyMachineSnapshot} from "xstate";
+import StateTransitionItem
+  from "src/renderer/src/screens/status/components/CreateTestSection/components/StateTransitionItem";
+import {Clear} from "@material-ui/icons";
 
 const getDirectoryPath = (filePath: string) => {
   const lastSlashIndex = filePath.lastIndexOf('\\');
@@ -50,14 +54,21 @@ const CreateTestSection: React.FC = () => {
   const setPackageJsonPath = useStore((state) => state.setPackageJsonPath);
 
   // get xstate statuses:
-  const xStateCurrent = useStore((state) => state.xStateCurrent);
+  // const xStateCurrent = useStore((state) => state.xStateCurrent);
+  const xStateHistory = useStore((state) => state.xStateHistory);
   const setXStateCurrent = useStore((state) => state.setXStateCurrent);
+  const addXStateToHistory = useStore((state) => state.addXStateToHistory);
+  const resetXStateHistory = useStore((state) => state.resetXStateHistory);
+
 
   useEffect(() => {
-    const handleStateUpdate = (_event, serializedState) => {
-      console.log('Received state update:', serializedState);
-      const state = JSON.parse(serializedState);
-      setXStateCurrent(state.value); // Assuming you want to display state.value
+    // Reset the history when the component mounts
+    resetXStateHistory();
+
+    const handleStateUpdate = (_event, serializedSnapshot) => {
+      const snapshot: AnyMachineSnapshot = JSON.parse(serializedSnapshot);
+      setXStateCurrent(snapshot);
+      addXStateToHistory({ snapshot, timestamp: Date.now() });
     };
 
     window.electron.ipcRenderer.on(XSTATE_UPDATE_INVOKE, handleStateUpdate);
@@ -65,7 +76,7 @@ const CreateTestSection: React.FC = () => {
     return () => {
       window.electron.ipcRenderer.removeListener(XSTATE_UPDATE_INVOKE, handleStateUpdate);
     };
-  }, [setXStateCurrent]);
+  }, [setXStateCurrent, addXStateToHistory, resetXStateHistory]);
 
 
   const handlePackageJsonUpload = async () => {
@@ -198,7 +209,7 @@ const CreateTestSection: React.FC = () => {
               >
                 {isPending ? <CircularProgress size={24}/> : 'Create Test'}
               </Button>
-              {testStatus && typeof testStatus === 'string' && (
+              {testStatus && (
                 <Typography
                   variant="body1"
                   color={
@@ -213,11 +224,32 @@ const CreateTestSection: React.FC = () => {
           </Grid>
           <Grid item xs={12} md={6}>
             {/* Right side: display the current XState state */}
-            <Paper elevation={3} sx={{p: 2}}>
-              <Typography variant="h5">Current test runner state</Typography>
-              <Typography variant="body1" style={{whiteSpace: 'pre-wrap'}}>
-                {xStateCurrent ? xStateCurrent : 'Idle'}
+            <Paper elevation={3} sx={{ p: 2 }}>
+              <Typography variant="h5" gutterBottom>
+                State Machine Flow
               </Typography>
+              {xStateHistory.length > 0 ? (
+                <>
+                  <List>
+                    {xStateHistory.map((item) => {
+                      console.log('item', item);
+                      return (
+                        <StateTransitionItem key={item.timestamp} item={item}/>
+                      );
+                    })}
+                  </List>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<Clear />}
+                    onClick={resetXStateHistory}
+                  >
+                    Clear History
+                  </Button>
+                </>
+              ) : (
+                <Typography variant="body1">No state transitions yet.</Typography>
+              )}
             </Paper>
           </Grid>
         </Grid>

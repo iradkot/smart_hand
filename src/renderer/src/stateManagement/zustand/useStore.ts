@@ -7,7 +7,8 @@ import { createProcessSlice } from './slices/processSlice';
 import { createNavigationSlice } from './slices/navigationSlice';
 import { createRehydrationSlice } from './slices/rehydrationSlice';
 import { createCreateTestSectionSlice } from './slices/createTestSectionSlice';
-import { StoreState } from "./store.types";
+import {StoreState, XStateUpdate} from "./store.types";
+import {AnyMachineSnapshot} from "xstate";
 
 /**
  * Initialize the Zustand store with devtools and persist middleware.
@@ -24,8 +25,12 @@ export const useStore = create<StoreState>()(
         ...createNavigationSlice(set, get, api),
         ...createCreateTestSectionSlice(set, get, api),
         // Non-persisted slice containing transient UI states
-        xStateCurrent: '',
-        setXStateCurrent: (state) => set({ xStateCurrent: state }),
+        xStateCurrent: null,
+        xStateHistory: [],
+        setXStateCurrent: (state: AnyMachineSnapshot) => set({ xStateCurrent: state }),
+        addXStateToHistory: (update: XStateUpdate) =>
+          set((prev) => ({ xStateHistory: [...prev.xStateHistory, update] })),
+        resetXStateHistory: () => set({ xStateHistory: [] }),
         ...createUISlice(set, get, api),
       }),
       {
