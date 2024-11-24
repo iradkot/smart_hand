@@ -2,17 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../../stateManagement/zustand/useStore';
-import { Container, Header } from './Status.styles';
+import { Container } from './Status.styles';
 import LoadingError from './components/LoadingError';
 import ContentTabs from './components/ContentTabs';
 import CreateTestSection from './components/CreateTestSection/CreateTestSection';
-import { Box, Button, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import { Box, Button, Accordion, AccordionSummary, AccordionDetails, Typography, Grid } from '@mui/material';
 import { ExpandMore, Refresh  } from '@material-ui/icons';
 import { useCopyHistory } from '../../stateManagement/contexts';
 import {
   generateSelectedFileContents,
   generateSelectedFolderStructure,
-} from '../../../../utils/harvesterUtils/harvesterUtils';
+} from 'src/utils/harvesterUtils/harvesterUtils';
 import ContentTreeFileSelector from "../../components/FileSelector";
 
 const Status: React.FC = () => {
@@ -79,8 +79,12 @@ const Status: React.FC = () => {
 
   return (
     <Container>
-      <Header>Status</Header>
+      <Typography variant="h4" component="h2" gutterBottom>
+        Status
+      </Typography>
       <LoadingError isLoading={isLoading} error={error} />
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
 
       {copiedContent?.contentTree && (
         <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
@@ -161,6 +165,8 @@ const Status: React.FC = () => {
           <CreateTestSection />
         </AccordionDetails>
       </Accordion>
+        </Grid>
+      </Grid>
     </Container>
   );
 };
