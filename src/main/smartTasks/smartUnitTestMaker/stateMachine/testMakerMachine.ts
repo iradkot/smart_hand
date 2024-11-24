@@ -40,7 +40,7 @@ export const testMakerMachine = setup({
   context: ({ input }) => ({
     ...input,
     retries: 0,
-    maxRetries: 3,
+    maxRetries: 10,
     testResult: null,
     analyzedPackageJson: null,
     testExamples: '',
