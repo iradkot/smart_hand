@@ -19,8 +19,7 @@ It failed with the following error:
 ${params.errorMessage}
 \`\`\`
 
-these are the additional files you requested for
-${params.additionalFiles ? `Additional Files:\n${params.additionalFiles}` : ''}
+${params.additionalFiles ? `these are the additional files you requested for\n Additional Files:\n${params.additionalFiles}` : ''}
 
 Please revise the test code to fix the errors and ensure that it passes all tests.
 `;

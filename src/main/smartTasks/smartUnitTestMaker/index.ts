@@ -9,6 +9,7 @@ import {inspector} from '../../inspector' // Import the shared inspector
 import {handleError} from 'src/utils/ErrorHandler' // Import the updated handleError
 import {BrowserWindow} from 'electron'
 import {XSTATE_UPDATE_INVOKE} from "src/invokers/constants";
+import {generateSimplifiedFilePaths} from "src/utils/harvesterUtils/harvesterUtils";
 
 
 export async function smartUnitTestMaker(
@@ -22,6 +23,10 @@ export async function smartUnitTestMaker(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
       const mainWindow = BrowserWindow.getAllWindows()[0];
+
+      const filePathsArray = generateSimplifiedFilePaths(contentTree);
+      const filePathsString = filePathsArray.join('\n');
+
 
       const input: TestMakerContext = {
         sessionId,
@@ -39,6 +44,9 @@ export async function smartUnitTestMaker(
         projectPath: directoryPath,
         packageManager: '', // This will be set during the machine execution
         error: null,
+        filePathsString: filePathsString,
+        additionalFiles: '',
+        requestedFiles: [],
       }
 
       const {inspect} = inspector // Use the shared inspector
@@ -48,7 +56,6 @@ export async function smartUnitTestMaker(
       actor.subscribe({
         next: (snapshot) => {
           const currentState = JSON.stringify(snapshot)
-          logInfo(`Transitioned to state: ${currentState}`)
           mainWindow.webContents.send(XSTATE_UPDATE_INVOKE, currentState);
           if (snapshot.status === 'done') {
             if (snapshot.value === 'success') {

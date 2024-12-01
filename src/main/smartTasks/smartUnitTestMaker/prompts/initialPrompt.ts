@@ -5,6 +5,7 @@ export const initialPrompt = (params: {
   fileContent: string;
   testExamples: string;
    filePathsString: string;
+  additionalFiles?: string;
 }): string => {
   return `
 I need to create a unit test for the following TypeScript file.
@@ -15,6 +16,8 @@ This is the file content that needs to be tested:
 \`\`\`typescript
 ${params.fileContent}
 \`\`\`
+
+${params.additionalFiles ? `Here are the additional files you requested:\n${params.additionalFiles}` : ''}
 
 Here are some example tests for reference:
 ${params.testExamples}

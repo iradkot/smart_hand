@@ -13,6 +13,7 @@ import {AnyMachineSnapshot} from "xstate";
 import StateTransitionItem
   from "src/renderer/src/screens/status/components/CreateTestSection/components/StateTransitionItem";
 import {Clear} from "@material-ui/icons";
+import { IpcRendererEvent } from 'electron';
 
 const getDirectoryPath = (filePath: string) => {
   const lastSlashIndex = filePath.lastIndexOf('\\');
@@ -65,7 +66,9 @@ const CreateTestSection: React.FC = () => {
     // Reset the history when the component mounts
     resetXStateHistory();
 
-    const handleStateUpdate = (_event, serializedSnapshot) => {
+    const handleStateUpdate = (
+      _event: IpcRendererEvent,
+      serializedSnapshot: string) => {
       const snapshot: AnyMachineSnapshot = JSON.parse(serializedSnapshot);
       setXStateCurrent(snapshot);
       addXStateToHistory({ snapshot, timestamp: Date.now() });

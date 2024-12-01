@@ -4,7 +4,11 @@ import { ContentNode } from 'src/types/pathHarvester.types';
 
 export interface GenerateTestFileOutput {
   content: {
+    testDescription?: any;
+    testFileName?: string;
     testCode: string;
+    runCommand?: string;
+    requestedFiles?: string[];
   };
 }
 
@@ -15,6 +19,10 @@ export interface CreateInitialTestInput {
   fileName: string;
   testExamples: string;
   packageManager: string;
+  filePathsString: string;
+  additionalFiles?: string;
+  requestedFiles?: string[];
+  contentTree: ContentNode;
 }
 
 export interface CreateInitialTestContext extends CreateInitialTestInput {
@@ -22,6 +30,8 @@ export interface CreateInitialTestContext extends CreateInitialTestInput {
   testCode: string;
   testFileName: string;
   filePathsString: string;
+  additionalFiles?: string;
+  requestedFiles?: string[];
   testResult: TestResult | null;
   error: Error | null;
 }
@@ -34,6 +44,8 @@ export interface TestMakerInput {
   packageJsonPath: string;
   contentTree: ContentNode;
   packageJsonContent: string;
+  requestedFiles?: string[];
+  additionalFiles?: string;
 }
 
 export interface TestMakerContext extends TestMakerInput {
@@ -44,7 +56,9 @@ export interface TestMakerContext extends TestMakerInput {
   testExamples: string;
   projectPath: string;
   packageManager: string;
+  requestedFiles?: string[];
   error: Error | null;
+  filePathsString: string;
 }
 
 export interface TestResult {

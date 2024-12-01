@@ -24,8 +24,6 @@ export async function findTypeDefinitionsForDependencySync(
     if (files.length === 0) {
       console.log(`No type definitions found for ${name}.`);
     } else {
-      console.log(`Type definitions for ${name}:`, files);
-
       // If minimal is true, filter only files that end with 'index.d.ts'
       const filteredFiles = minimal ? files.filter(file => file.endsWith('index.d.ts')) : files;
 
