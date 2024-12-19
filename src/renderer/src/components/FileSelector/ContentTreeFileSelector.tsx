@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
-import { Checkbox } from '@mui/material';
-import { FolderOpen, Folder, InsertDriveFile } from '@material-ui/icons';
 import { ContentNode } from 'src/types/pathHarvester.types';
 import {
   FolderFileSelectorProps,
   ControlledFolderFileSelectorProps,
 } from 'src/renderer/src/types/FileSelector.types';
-import { getNameFromPath, sortContentNodes } from '../../utils/FileSelector.utils';
+import { sortContentNodes } from '../../utils/FileSelector.utils';
+
+import { getNodeSelectionState, handleCheckChange } from './utils/selectionState';
+import { useNodeMap } from './hooks/useNodeMap';
+import { getRecursiveInfo } from './utils/recursiveInfo';
+import { NodeLabel } from './components/NodeLabel';
+import { SelectedSummary } from './components/SelectedSummary';
 
 const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
   const {
@@ -18,7 +22,6 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
     allowFolderSelection = false,
   } = props;
 
-  // Initialize selected files state
   let effectiveSelected: string[];
   let effectiveSetSelected: (files: string[]) => void;
 
@@ -34,64 +37,6 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
 
   const [expandedNodes, setExpandedNodes] = useState<string[]>([]);
 
-  const getNodeSelectionState = (
-    node: ContentNode
-  ): 'checked' | 'indeterminate' | 'unchecked' => {
-    if (node.type === 'file') {
-      return effectiveSelected.includes(node.localPath) ? 'checked' : 'unchecked';
-    } else if (node.type === 'directory') {
-      if (allowFolderSelection && effectiveSelected.includes(node.localPath)) {
-        return 'checked';
-      }
-      if (node.children) {
-        const childStates = Object.values(node.children).map(getNodeSelectionState);
-        const allChecked = childStates.every((state) => state === 'checked');
-        const allUnchecked = childStates.every((state) => state === 'unchecked');
-        if (allChecked) {
-          return 'checked';
-        } else if (allUnchecked) {
-          return 'unchecked';
-        } else {
-          return 'indeterminate';
-        }
-      }
-    }
-    return 'unchecked';
-  };
-
-  const handleCheckChange = (node: ContentNode, checked: boolean) => {
-    let newSelectedSet = allowMultiple ? new Set(effectiveSelected) : new Set<string>();
-
-    if (!allowMultiple && checked) {
-      // In single-select mode, only one item can be selected
-      newSelectedSet.clear();
-    }
-
-    const updateSelection = (
-      node: ContentNode,
-      checked: boolean,
-      selectedSet: Set<string>
-    ) => {
-      if (node.type === 'file' || (allowFolderSelection && node.type === 'directory')) {
-        if (checked) {
-          selectedSet.add(node.localPath);
-        } else {
-          selectedSet.delete(node.localPath);
-        }
-      }
-
-      if (allowMultiple && node.children) {
-        // Only update children if multiple selection is allowed
-        Object.values(node.children).forEach((child) =>
-          updateSelection(child, checked, selectedSet)
-        );
-      }
-    };
-
-    updateSelection(node, checked, newSelectedSet);
-    effectiveSetSelected(Array.from(newSelectedSet));
-  };
-
   const handleToggle = (itemId: string) => {
     setExpandedNodes((prevExpanded) =>
       prevExpanded.includes(itemId)
@@ -100,110 +45,93 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
     );
   };
 
-  // Recursive info calculation for a node
-  const getRecursiveInfo = (node: ContentNode): { totalItems: number; totalChars: number } => {
-    if (node.type === 'file') {
-      // For files: totalItems=1, totalChars = length of the file content
-      const fileContent = node.content || '';
-      return { totalItems: 1, totalChars: fileContent.length };
-    } else {
-      // For directories: totalItems counts all descendants + 1 for itself,
-      // totalChars = directory name length + sum of all descendants
-      const fileNameLength = node.localPath.length;
-      let totalItems = 1;
-      let totalChars = fileNameLength;
-      if (node.children) {
-        for (const child of Object.values(node.children)) {
-          const childInfo = getRecursiveInfo(child);
-          totalItems += childInfo.totalItems;
-          totalChars += childInfo.totalChars;
-        }
+  const nodeMap = useNodeMap(contentTree);
+
+  // Mark all descendants of a node as covered
+  const coverDescendants = (node: ContentNode, covered: Set<string>) => {
+    covered.add(node.localPath);
+    if (node.children) {
+      for (const child of Object.values(node.children)) {
+        coverDescendants(child, covered);
       }
-      return { totalItems, totalChars };
     }
   };
 
-  const renderLabel = (node: ContentNode) => {
-    const label = getNameFromPath(node.localPath);
-    const selectionState = getNodeSelectionState(node);
+  const selectedStats = useMemo(() => {
+    let totalSelectedItems = 0;
+    let totalSelectedChars = 0;
+    const coveredPaths = new Set<string>();
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      event.stopPropagation();
-      const checked = event.target.checked;
-      handleCheckChange(node, checked);
-    };
+    const selectedDirs: ContentNode[] = [];
+    const selectedFiles: ContentNode[] = [];
 
-    // Determine if we show a checkbox
-    const isFolderSelectable =
-      allowFolderSelection && (allowMultiple || (!allowMultiple && !node.children));
-
-    // Always render a checkbox area for consistent layout
-    const showCheckbox = node.type === 'file' || isFolderSelectable;
-    const disabledCheckbox = node.type === 'directory' && !isFolderSelectable;
-
-    // For the display info next to the label:
-    let extraInfo = '';
-    if (node.type === 'directory') {
-      const { totalItems, totalChars } = getRecursiveInfo(node);
-      extraInfo = ` (${totalItems} total items, ${totalChars} total chars)`;
-    } else {
-      // For files, just show chars = file content length
-      const fileContent = node.content || '';
-      extraInfo = ` (${fileContent.length} chars)`;
+    // Separate selected nodes into directories and files
+    for (const path of effectiveSelected) {
+      const node = nodeMap.get(path);
+      if (!node) continue;
+      if (node.type === 'directory') {
+        selectedDirs.push(node);
+      } else {
+        selectedFiles.push(node);
+      }
     }
 
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          minHeight: '32px',
-          lineHeight: '1.5',
-        }}
-      >
-        <div style={{ marginRight: 4 }}>
-          {showCheckbox ? (
-            <Checkbox
-              checked={selectionState === 'checked'}
-              indeterminate={selectionState === 'indeterminate'}
-              onChange={handleChange}
-              onClick={(e) => e.stopPropagation()}
-              size="small"
-              disabled={disabledCheckbox}
-            />
-          ) : (
-            // If no checkbox should appear, keep space
-            <div style={{ width: '24px', height: '24px' }} />
-          )}
-        </div>
-        <span style={{ marginRight: 4 }}>{renderNodeIcon(node)}</span>
-        <span>{label}{extraInfo}</span>
-      </div>
-    );
-  };
+    // Process directories first
+    for (const dirNode of selectedDirs) {
+      // If this directory (or its ancestors) is already covered, skip
+      if (coveredPaths.has(dirNode.localPath)) {
+        continue;
+      }
 
-  const renderNodeIcon = (node: ContentNode) => {
-    const nodeId = node.localPath;
-    const isExpanded = expandedNodes.includes(nodeId);
-    if (node.type === 'file') {
-      return <InsertDriveFile style={{ marginRight: 4 }} color="action" />;
-    } else {
-      return isExpanded ? (
-        <FolderOpen style={{ marginRight: 4 }} color="primary" />
-      ) : (
-        <Folder style={{ marginRight: 4 }} color="primary" />
-      );
+      const info = getRecursiveInfo(dirNode);
+      totalSelectedItems += info.totalItems;
+      totalSelectedChars += info.totalChars;
+
+      coverDescendants(dirNode, coveredPaths);
     }
-  };
+
+    // Process files
+    for (const fileNode of selectedFiles) {
+      // If already covered by a directory, skip
+      if (coveredPaths.has(fileNode.localPath)) {
+        continue;
+      }
+
+      const fileInfo = getRecursiveInfo(fileNode);
+      totalSelectedItems += fileInfo.totalItems;
+      totalSelectedChars += fileInfo.totalChars;
+
+      coveredPaths.add(fileNode.localPath);
+    }
+
+    return { totalSelectedItems, totalSelectedChars };
+  }, [effectiveSelected, nodeMap]);
 
   const renderTreeItems = (node: ContentNode): React.ReactNode => {
     const nodeId = node.localPath;
+    const selectionState = getNodeSelectionState(
+      node,
+      effectiveSelected,
+      allowFolderSelection
+    );
 
     return (
       <TreeItem
         key={nodeId}
         itemId={nodeId}
-        label={renderLabel(node)}
+        label={
+          <NodeLabel
+            node={node}
+            selectionState={selectionState}
+            allowMultiple={allowMultiple}
+            allowFolderSelection={allowFolderSelection}
+            effectiveSelected={effectiveSelected}
+            setSelected={effectiveSetSelected}
+            onCheckChange={handleCheckChange}
+            getRecursiveInfo={getRecursiveInfo}
+            expandedNodes={expandedNodes}
+          />
+        }
         onClick={() => handleToggle(nodeId)}
       >
         {node.children &&
@@ -214,57 +142,13 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
     );
   };
 
-  // Build a map for quick lookups of nodes by localPath
-  const nodeMap = useMemo(() => {
-    const map = new Map<string, ContentNode>();
-
-    const buildMap = (node: ContentNode) => {
-      map.set(node.localPath, node);
-      if (node.children) {
-        Object.values(node.children).forEach(buildMap);
-      }
-    };
-    buildMap(contentTree);
-    return map;
-  }, [contentTree]);
-
-  // Compute stats for selected nodes
-  const selectedStats = useMemo(() => {
-    let totalSelectedItems = 0;
-    let totalSelectedChars = 0;
-    for (const path of effectiveSelected) {
-      const node = nodeMap.get(path);
-      if (node) {
-        const info = getRecursiveInfo(node);
-        totalSelectedItems += info.totalItems;
-        totalSelectedChars += info.totalChars;
-      }
-    }
-    return { totalSelectedItems, totalSelectedChars };
-  }, [effectiveSelected, nodeMap]);
-
-  // A fixed-position summary box
-  const summaryBoxStyle: React.CSSProperties = {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    background: '#fff',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    padding: '8px 12px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-    fontSize: '14px',
-    zIndex: 9999,
-  };
-
   return (
     <>
       <SimpleTreeView>{renderTreeItems(contentTree)}</SimpleTreeView>
-      <div style={summaryBoxStyle}>
-        <strong>Selected Summary:</strong><br />
-        Items: {selectedStats.totalSelectedItems}<br />
-        Chars: {selectedStats.totalSelectedChars}
-      </div>
+      <SelectedSummary
+        totalItems={selectedStats.totalSelectedItems}
+        totalChars={selectedStats.totalSelectedChars}
+      />
     </>
   );
 };
