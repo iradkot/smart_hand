@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { Checkbox } from '@mui/material';
@@ -100,15 +100,18 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
     );
   };
 
-  // Recursive info calculation
+  // Recursive info calculation for a node
   const getRecursiveInfo = (node: ContentNode): { totalItems: number; totalChars: number } => {
-    const label = getNameFromPath(node.localPath);
     if (node.type === 'file') {
-      return { totalItems: 1, totalChars: label.length };
+      // For files: totalItems=1, totalChars = length of the file content
+      const fileContent = node.content || '';
+      return { totalItems: 1, totalChars: fileContent.length };
     } else {
-      // Directory: sum up all children
-      let totalItems = 1; // Count this directory
-      let totalChars = label.length; // Count this directory's name length
+      // For directories: totalItems counts all descendants + 1 for itself,
+      // totalChars = directory name length + sum of all descendants
+      const fileNameLength = node.localPath.length;
+      let totalItems = 1;
+      let totalChars = fileNameLength;
       if (node.children) {
         for (const child of Object.values(node.children)) {
           const childInfo = getRecursiveInfo(child);
@@ -138,13 +141,15 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
     const showCheckbox = node.type === 'file' || isFolderSelectable;
     const disabledCheckbox = node.type === 'directory' && !isFolderSelectable;
 
+    // For the display info next to the label:
     let extraInfo = '';
     if (node.type === 'directory') {
       const { totalItems, totalChars } = getRecursiveInfo(node);
       extraInfo = ` (${totalItems} total items, ${totalChars} total chars)`;
     } else {
-      // For files, just show chars for its name
-      extraInfo = ` (${label.length} chars)`;
+      // For files, just show chars = file content length
+      const fileContent = node.content || '';
+      extraInfo = ` (${fileContent.length} chars)`;
     }
 
     return (
@@ -209,7 +214,59 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
     );
   };
 
-  return <SimpleTreeView>{renderTreeItems(contentTree)}</SimpleTreeView>;
+  // Build a map for quick lookups of nodes by localPath
+  const nodeMap = useMemo(() => {
+    const map = new Map<string, ContentNode>();
+
+    const buildMap = (node: ContentNode) => {
+      map.set(node.localPath, node);
+      if (node.children) {
+        Object.values(node.children).forEach(buildMap);
+      }
+    };
+    buildMap(contentTree);
+    return map;
+  }, [contentTree]);
+
+  // Compute stats for selected nodes
+  const selectedStats = useMemo(() => {
+    let totalSelectedItems = 0;
+    let totalSelectedChars = 0;
+    for (const path of effectiveSelected) {
+      const node = nodeMap.get(path);
+      if (node) {
+        const info = getRecursiveInfo(node);
+        totalSelectedItems += info.totalItems;
+        totalSelectedChars += info.totalChars;
+      }
+    }
+    return { totalSelectedItems, totalSelectedChars };
+  }, [effectiveSelected, nodeMap]);
+
+  // A fixed-position summary box
+  const summaryBoxStyle: React.CSSProperties = {
+    position: 'fixed',
+    bottom: '20px',
+    right: '20px',
+    background: '#fff',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    padding: '8px 12px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+    fontSize: '14px',
+    zIndex: 9999,
+  };
+
+  return (
+    <>
+      <SimpleTreeView>{renderTreeItems(contentTree)}</SimpleTreeView>
+      <div style={summaryBoxStyle}>
+        <strong>Selected Summary:</strong><br />
+        Items: {selectedStats.totalSelectedItems}<br />
+        Chars: {selectedStats.totalSelectedChars}
+      </div>
+    </>
+  );
 };
 
 export default ContentTreeFileSelector;
