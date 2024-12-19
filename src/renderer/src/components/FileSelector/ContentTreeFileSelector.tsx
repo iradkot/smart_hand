@@ -100,8 +100,27 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
     );
   };
 
-  const renderTreeItems = (node: ContentNode): React.ReactNode => {
-    const nodeId = node.localPath;
+  // Recursive info calculation
+  const getRecursiveInfo = (node: ContentNode): { totalItems: number; totalChars: number } => {
+    const label = getNameFromPath(node.localPath);
+    if (node.type === 'file') {
+      return { totalItems: 1, totalChars: label.length };
+    } else {
+      // Directory: sum up all children
+      let totalItems = 1; // Count this directory
+      let totalChars = label.length; // Count this directory's name length
+      if (node.children) {
+        for (const child of Object.values(node.children)) {
+          const childInfo = getRecursiveInfo(child);
+          totalItems += childInfo.totalItems;
+          totalChars += childInfo.totalChars;
+        }
+      }
+      return { totalItems, totalChars };
+    }
+  };
+
+  const renderLabel = (node: ContentNode) => {
     const label = getNameFromPath(node.localPath);
     const selectionState = getNodeSelectionState(node);
 
@@ -111,39 +130,75 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
       handleCheckChange(node, checked);
     };
 
-    const isExpanded = expandedNodes.includes(nodeId);
+    // Determine if we show a checkbox
+    const isFolderSelectable =
+      allowFolderSelection && (allowMultiple || (!allowMultiple && !node.children));
 
-    const icon =
-      node.type === 'file' ? (
-        <InsertDriveFile style={{ marginRight: 4 }} color="action" />
-      ) : isExpanded ? (
+    // Always render a checkbox area for consistent layout
+    const showCheckbox = node.type === 'file' || isFolderSelectable;
+    const disabledCheckbox = node.type === 'directory' && !isFolderSelectable;
+
+    let extraInfo = '';
+    if (node.type === 'directory') {
+      const { totalItems, totalChars } = getRecursiveInfo(node);
+      extraInfo = ` (${totalItems} total items, ${totalChars} total chars)`;
+    } else {
+      // For files, just show chars for its name
+      extraInfo = ` (${label.length} chars)`;
+    }
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          minHeight: '32px',
+          lineHeight: '1.5',
+        }}
+      >
+        <div style={{ marginRight: 4 }}>
+          {showCheckbox ? (
+            <Checkbox
+              checked={selectionState === 'checked'}
+              indeterminate={selectionState === 'indeterminate'}
+              onChange={handleChange}
+              onClick={(e) => e.stopPropagation()}
+              size="small"
+              disabled={disabledCheckbox}
+            />
+          ) : (
+            // If no checkbox should appear, keep space
+            <div style={{ width: '24px', height: '24px' }} />
+          )}
+        </div>
+        <span style={{ marginRight: 4 }}>{renderNodeIcon(node)}</span>
+        <span>{label}{extraInfo}</span>
+      </div>
+    );
+  };
+
+  const renderNodeIcon = (node: ContentNode) => {
+    const nodeId = node.localPath;
+    const isExpanded = expandedNodes.includes(nodeId);
+    if (node.type === 'file') {
+      return <InsertDriveFile style={{ marginRight: 4 }} color="action" />;
+    } else {
+      return isExpanded ? (
         <FolderOpen style={{ marginRight: 4 }} color="primary" />
       ) : (
         <Folder style={{ marginRight: 4 }} color="primary" />
       );
+    }
+  };
 
-    const isFolderSelectable =
-      allowFolderSelection && (allowMultiple || (!allowMultiple && !node.children));
+  const renderTreeItems = (node: ContentNode): React.ReactNode => {
+    const nodeId = node.localPath;
 
     return (
       <TreeItem
         key={nodeId}
         itemId={nodeId}
-        label={
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {(node.type === 'file' || isFolderSelectable) && (
-              <Checkbox
-                checked={selectionState === 'checked'}
-                indeterminate={selectionState === 'indeterminate'}
-                onChange={handleChange}
-                onClick={(e) => e.stopPropagation()}
-                size="small"
-              />
-            )}
-            {icon}
-            <span>{label}</span>
-          </div>
-        }
+        label={renderLabel(node)}
         onClick={() => handleToggle(nodeId)}
       >
         {node.children &&
