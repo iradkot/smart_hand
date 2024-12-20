@@ -1,6 +1,5 @@
-import { config } from "../config";
+import { MAX_CHARS_PER_COPY } from 'src/constants/LLM.constants'
 
-const MAX_SECTION_LENGTH = config.maxSectionLength;
 
 /**
  * Splits the given content into smaller sections based on the specified maximum section length.
@@ -8,10 +7,10 @@ const MAX_SECTION_LENGTH = config.maxSectionLength;
  * it splits the line into smaller chunks.
  *
  * @param content - The string content to be split into sections.
- * @param maxSectionLength - The maximum length of each section. Defaults to MAX_SECTION_LENGTH from config.
+ * @param maxSectionLength - The maximum length of each section. Defaults to MAX_CHARS_PER_COPY from config.
  * @returns An array of string sections.
  */
-export function splitContent(content: string, maxSectionLength = MAX_SECTION_LENGTH): string[] {
+export function splitContent(content: string, maxSectionLength = MAX_CHARS_PER_COPY): string[] {
   if (!content) {
     return [];
   }
