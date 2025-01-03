@@ -15,37 +15,88 @@ export const IGNORE_LIST = [
 ];
 
 export const ALLOWED_WHITELIST_EXTENSIONS = [
-  // Core web / Node / JS / TS / config
   ".js",
   ".jsx",
   ".ts",
   ".tsx",
   ".json",
-  ".jsonc",   // Some projects use JSON with comments
+  ".jsonc",
   ".yaml",
   ".yml",
   ".toml",
   ".ini",
-
-  // Misc. text/markup
   ".md",
   ".txt",
   ".html",
   ".xml",
-
-  // Scripting / languages beyond JS
-  ".py",      // Python
-  ".rb",      // Ruby
-  ".sh",      // Shell scripts
-  ".java",    // Java
+  ".py",
+  ".rb",
+  ".sh",
+  ".java",
   ".c",
   ".cpp",
   ".cxx",
-  ".cs",      // C#
-  ".rs",      // Rust
-  ".go",      // Go
+  ".cs",
+  ".rs",
+  ".go",
   ".scala",
-
-  // Env files
   ".env",
+  // ".lock", // optional
 ]
+
+export const ALLOWED_FILE_NAMES = [
+  // ESLint
+  ".eslintrc",
+  ".eslintignore",
+
+  // Prettier
+  ".prettierrc",
+  ".prettierignore",
+
+  // Editor
+  ".editorconfig",
+
+  // Babel
+  ".babelrc",
+
+  // Git
+  ".gitignore",
+  ".gitattributes",
+  ".gitmodules",
+
+  // Node / NPM / Yarn
+  ".nvmrc",
+  ".npmrc",
+  ".yarnrc",
+  ".yarnrc.yml",
+
+  // StyleLint
+  ".stylelintrc",
+  ".stylelintignore",
+
+  // Docker
+  ".dockerignore",
+  // "Dockerfile", // If you want to parse Dockerfile
+
+  // Lint-staged, commitlint, husky
+  ".commitlintrc",
+  ".commitlintignore",
+  ".huskyrc",
+  ".lintstagedrc",
+
+  // Release, browserslist
+  ".releaserc",
+  ".browserslistrc",
+
+  // SWC
+  ".swcrc",
+
+  // Env variants (sometimes used as dotfiles)
+  ".env.local",
+  ".env.production",
+  ".env.development",
+  // etc.
+
+  // More...
+]
+
