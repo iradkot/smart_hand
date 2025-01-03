@@ -2,6 +2,7 @@
 import path from "node:path";
 import fs from "fs";
 import { IIgnoreList } from "../types/interfaces";
+import { ALLOWED_WHITELIST_EXTENSIONS, IGNORE_LIST } from 'src/constants/ignoreList'
 
 /**
  * Combine two approaches:
@@ -13,37 +14,12 @@ export class IgnoreAndAllowList implements IIgnoreList {
    * Example: list of directories/files to ignore by exact name
    * (e.g., node_modules, build, .git, etc.).
    */
-  private readonly ignoredByName = new Set([
-    'node_modules',
-    '.git',
-    'yarn.lock',
-    'package-lock.json',
-    '.idea',
-    '.vscode',
-    'build',
-    'out',
-    'resources',
-    'dist',
-    'coverage',
-    'ts_resolution.log',
-    '.firebase'
-  ]);
+  private readonly ignoredByName = new Set(IGNORE_LIST);
 
   /**
    * Example: allowed file extensions (lowercase).
    */
-  private static readonly ALLOWED_EXTENSIONS = new Set([
-    ".js",
-    ".ts",
-    ".jsx",
-    ".tsx",
-    ".md",
-    ".txt",
-    ".py",
-    ".html",
-    ".css",
-    ".scss"
-  ]);
+  private static readonly ALLOWED_EXTENSIONS = new Set(ALLOWED_WHITELIST_EXTENSIONS);
 
   shouldIgnore(itemPath: string): boolean {
     const baseName = path.basename(itemPath);
