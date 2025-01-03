@@ -37,6 +37,8 @@ export const ALLOWED_WHITELIST_EXTENSIONS = [
   ".cpp",
   ".cxx",
   ".cs",
+  ".css",
+  ".scss",
   ".rs",
   ".go",
   ".scala",
