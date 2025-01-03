@@ -16,7 +16,7 @@ import {
 import countNestedValues from "../utils/countNestedValues";
 import findPackageJson from "./utils/findPackageJson";
 import {handleError} from "../utils/ErrorHandler";
-import {IgnoreList} from "./fileOperations/utils/IgnoreList";
+import {IgnoreAndAllowList} from "./fileOperations/utils/IgnoreAndAllowList";
 import {harvestPath} from "./fileOperations/FileSystemHarvester/HarvestPath";
 import {CopyOptions} from "./fileOperations/types/interfaces";
 import {IGNORE_LIST} from "../constants/ignoreList";
@@ -42,7 +42,7 @@ const ELECTRON_RENDERER_URL = 'ELECTRON_RENDERER_URL';
 
 const fileHandler = new FileHandler();
 const ui = new UserInterface();
-const ignoreList = new IgnoreList(IGNORE_LIST);
+const ignoreAndAllowList = new IgnoreAndAllowList();
 
 function createWindow(): void {
   createAndLoadMainWindow();
@@ -57,6 +57,8 @@ app.whenReady().then(() => {
     }
   });
 });
+
+app.commandLine.appendSwitch('disable-gpu');
 
 function createMainWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
@@ -130,7 +132,7 @@ ipcMain.handle('open-file-dialog', async (): Promise<string[]> => {
 
 ipcMain.handle(COPYING_PROCESS_INVOKE, async (_: IpcMainInvokeEvent, directoryPath: string, option: string): Promise<CopyingProcessArgs | ErrorResult> => {
   try {
-    const content = await harvestPath(directoryPath, option as CopyOptions, fileHandler, ui, ignoreList);
+    const content = await harvestPath(directoryPath, option as CopyOptions, fileHandler, ui, ignoreAndAllowList);
 
     const message = content.contentTree ? `Processed ${countNestedValues(content.contentTree, 'directory')} directories and ${countNestedValues(content.contentTree, 'file')} files` : 'No content to process';
     return { message, content };

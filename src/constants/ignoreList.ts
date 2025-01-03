@@ -10,5 +10,6 @@ export const IGNORE_LIST = [
   'resources',
   'dist',
   'coverage',
-  'ts_resolution.log'
+  'ts_resolution.log',
+  '.firebase'
 ];
