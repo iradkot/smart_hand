@@ -1,12 +1,13 @@
 import 'source-map-support/register';
 
 import {app, BrowserWindow, WebPreferences,  dialog, ipcMain, IpcMainInvokeEvent, shell} from 'electron';
-import {join} from 'path';
+import path, {join} from 'path';
 // @ts-ignore
 import icon from '../../resources/the_smart_hand_icon.png';
 import {FileHandler} from "./fileOperations/utils/FileHandler";
-import {COPYING_PROCESS_INVOKE, CREATE_AND_RUN_TEST_INVOKE, READ_PACKAGE_JSON_INVOKE} from "../invokers/constants";
+import {COPYING_PROCESS_INVOKE, CREATE_AND_RUN_TEST_INVOKE, READ_PACKAGE_JSON_INVOKE, GET_FILE_IMPORTS_INVOKE} from "../invokers/constants";
 import {UserInterface} from "./fileOperations/utils/UserInterface";
+import { parseImports, parseImportsWithTsconfig } from './utils/parseImports'
 import {
   CopyingProcessArgs,
   TestCreationArgs,
@@ -25,7 +26,9 @@ import {ContentNode} from "../types/pathHarvester.types";
 import { smartUnitTestMaker } from 'src/main/smartTasks/smartUnitTestMaker'
 
 
-import { inspector } from './inspector'; // Import the singleton inspector
+import { inspector } from './inspector';
+import { findProjectRootInContentTree } from 'src/main/utils/findProjectRootInContentTree'
+import { parseTsconfig } from 'src/main/utils/parseTsconfig' // Import the singleton inspector
 
 // Start the inspector
 inspector.start?.();
@@ -186,6 +189,26 @@ ipcMain.handle(READ_PACKAGE_JSON_INVOKE, async (_: IpcMainInvokeEvent, directory
     return handleProcessingError(error);
   }
 });
+
+ipcMain.handle(
+  GET_FILE_IMPORTS_INVOKE,
+  async (_evt, filePath: string, contentTree: ContentNode) => {
+    try {
+      const projectRoot = findProjectRootInContentTree(contentTree);
+      const tsconfigPath = path.join(projectRoot, 'tsconfig.json');
+      const tsconfig = parseTsconfig(tsconfigPath); // { baseUrl, paths }
+      const imports = parseImportsWithTsconfig(
+        filePath,
+        projectRoot,
+        tsconfig
+      );
+      return { success: true, imports };
+    } catch (err) {
+      return { success: false, error: String(err) };
+    }
+  });
+
+
 
 function handleProcessingError(err: unknown) {
   if (err instanceof Error) {

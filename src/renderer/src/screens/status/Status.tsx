@@ -73,6 +73,7 @@ const Status: React.FC = () => {
       setDisplayContent('');
     }
   }, [selectedPaths, copiedContent?.contentTree]);
+  console.log('selectedPaths', selectedPaths)
 
   return (
     <Container>

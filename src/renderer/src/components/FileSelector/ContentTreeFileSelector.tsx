@@ -114,7 +114,6 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
       effectiveSelected,
       allowFolderSelection
     );
-
     return (
       <TreeItem
         key={nodeId}
@@ -130,6 +129,7 @@ const ContentTreeFileSelector: React.FC<FolderFileSelectorProps> = (props) => {
             onCheckChange={handleCheckChange}
             getRecursiveInfo={getRecursiveInfo}
             expandedNodes={expandedNodes}
+            contentTree={contentTree}
           />
         }
         onClick={() => handleToggle(nodeId)}

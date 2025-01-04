@@ -17,6 +17,8 @@ export const IGNORE_LIST = [
 export const ALLOWED_WHITELIST_EXTENSIONS = [
   ".js",
   ".jsx",
+  '.mjs',
+  '.cjs',
   ".ts",
   ".tsx",
   ".json",
