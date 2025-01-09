@@ -1,8 +1,8 @@
 import {
   COPYING_PROCESS_INVOKE,
-  CREATE_AND_RUN_TEST_INVOKE,
-  READ_PACKAGE_JSON_INVOKE
-} from "./constants";
+  CREATE_AND_RUN_TEST_INVOKE, GET_FILE_IMPORTS_INVOKE,
+  READ_PACKAGE_JSON_INVOKE,
+} from './constants'
 import { PackageJsonReadResult } from "../main/interfaces";
 import {ContentNode} from "../types/pathHarvester.types";
 
@@ -33,3 +33,7 @@ export const invokeCreateAndRunTest = async ({ sessionId, directoryPath, fileCon
 export const invokeReadPackageJson = (directoryPath: string): Promise<PackageJsonReadResult> => {
   return window.electron.ipcRenderer.invoke(READ_PACKAGE_JSON_INVOKE, directoryPath);
 };
+
+export const invokeGetFilesImports = (filePath: string, contentTree: ContentNode) => {
+  return window.electron.ipcRenderer.invoke(GET_FILE_IMPORTS_INVOKE, filePath, contentTree);
+}
