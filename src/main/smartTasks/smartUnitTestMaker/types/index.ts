@@ -1,6 +1,6 @@
 // src/main/smartTasks/smartUnitTestMaker/types/index.ts
 
-import { ContentNode } from 'src/types/pathHarvester.types';
+import {ContentNode} from 'src/types/pathHarvester.types';
 
 export interface GenerateTestFileOutput {
   content: {

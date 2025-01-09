@@ -1,3 +1,4 @@
-export const errorHandler = ({ event }) => {;
+export const errorHandler = ({event}) => {
+
   throw new Error(event.error);
 };

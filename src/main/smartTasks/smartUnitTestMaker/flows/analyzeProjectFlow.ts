@@ -1,8 +1,8 @@
 // analyzeProjectFlow.ts
 
-import { detectPackageManager } from '../utils/fileUtils';
-import { analyzePackageJson } from 'src/api/requests/aiOperationsRequests';
-import { TestMakerContext } from '../types';
+import { detectPackageManager } from '../utils/fileUtils'
+import { analyzePackageJson } from 'src/api/requests/aiOperationsRequests'
+import { TestMakerContext } from '../types'
 import { handleError } from 'src/utils/ErrorHandler'
 
 export const analyzeProjectFlow = async ({
@@ -13,19 +13,19 @@ export const analyzeProjectFlow = async ({
   try {
     const analyzedPackageJsonResponse = await analyzePackageJson(
       input.sessionId,
-      input.packageJsonContent
-    );
+      input.packageJsonContent,
+    )
 
-    const analyzedPackageJson = analyzedPackageJsonResponse.content;
+    const analyzedPackageJson = analyzedPackageJsonResponse.content
 
-    const packageManager = detectPackageManager(input.directoryPath);
+    const packageManager = detectPackageManager(input.directoryPath)
 
     return {
       analyzedPackageJson,
       packageManager,
-    };
+    }
   } catch (error) {
-    const errorMessage = handleError(error, 'analyzeProjectFlow');
-    throw new Error(errorMessage);
+    const errorMessage = handleError(error, 'analyzeProjectFlow')
+    throw new Error(errorMessage)
   }
-};
+}

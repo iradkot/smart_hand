@@ -4,7 +4,7 @@ export const initialPrompt = (params: {
   fileName: string;
   fileContent: string;
   testExamples: string;
-   filePathsString: string;
+  filePathsString: string;
   additionalFiles?: string;
 }): string => {
   return `
@@ -36,5 +36,5 @@ Please generate a comprehensive unit test for the provided file using best pract
   "runCommand": "Your run command here",
   "requestedFiles": ["some/file/path.ts", "another/file/path.ts"]
 }
-`;
-};
+`
+}

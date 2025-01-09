@@ -1,9 +1,9 @@
-import { assign, fromPromise, setup } from 'xstate'
-import { AnalyzeProjectOutput, PrepareTestContextOutput, TestMakerContext, TestMakerInput, TestResult } from '../types'
-import { analyzeProjectFlow, handleTestFailureFlow, prepareTestContextFlow } from '../flows'
-import { cannotRetry, canRetry, testPassed } from './guards'
-import { createInitialTestMachine } from './createInitialTestMachine'
-import { errorHandler } from 'src/main/smartTasks/smartUnitTestMaker/stateMachine/xstate.utils'
+import {assign, fromPromise, setup} from 'xstate'
+import {AnalyzeProjectOutput, PrepareTestContextOutput, TestMakerContext, TestMakerInput, TestResult} from '../types'
+import {analyzeProjectFlow, handleTestFailureFlow, prepareTestContextFlow} from '../flows'
+import {cannotRetry, canRetry, testPassed} from './guards'
+import {createInitialTestMachine} from './createInitialTestMachine'
+import {errorHandler} from 'src/main/smartTasks/smartUnitTestMaker/stateMachine/xstate.utils'
 
 type ErrorEvent =
   | { type: 'error.invoke.analyzeProjectFlow'; error: unknown }
@@ -27,7 +27,7 @@ export const testMakerMachine = setup({
     events: {} as
       TestMakerEvent,
   },
-  guards: { testPassed, canRetry, cannotRetry },
+  guards: {testPassed, canRetry, cannotRetry},
   actors: {
     analyzeProjectFlow: fromPromise(analyzeProjectFlow),
     prepareTestContextFlow: fromPromise(prepareTestContextFlow),
@@ -37,7 +37,7 @@ export const testMakerMachine = setup({
 }).createMachine({
   id: 'testMaker',
   initial: 'idle',
-  context: ({ input }) => ({
+  context: ({input}) => ({
     ...input,
     retries: 0,
     maxRetries: 2,
@@ -58,10 +58,10 @@ export const testMakerMachine = setup({
     analyzingProject: {
       invoke: {
         src: 'analyzeProjectFlow',
-        input: ({ context }) => context,
+        input: ({context}) => context,
         onDone: {
           target: 'preparingTestContext',
-          actions: assign(({ context, event }) => ({
+          actions: assign(({context, event}) => ({
             analyzedPackageJson: event.output.analyzedPackageJson,
             projectPath: context.projectPath,
             packageManager: event.output.packageManager,
@@ -78,7 +78,7 @@ export const testMakerMachine = setup({
         src: 'prepareTestContextFlow',
         onDone: {
           target: 'creatingInitialTest',
-          actions: assign(({ event }) => ({
+          actions: assign(({event}) => ({
             testExamples: event.output.testExamples,
           })),
         },
@@ -91,10 +91,10 @@ export const testMakerMachine = setup({
     creatingInitialTest: {
       invoke: {
         src: 'createInitialTestMachine',
-        input: ({ context }) => context,
+        input: ({context}) => context,
         onDone: {
           target: 'checkingTestResult',
-          actions: assign(({ event }) => ({
+          actions: assign(({event}) => ({
             testResult: (event as { output: TestResult }).output,
           })),
         },
@@ -106,18 +106,18 @@ export const testMakerMachine = setup({
     },
     checkingTestResult: {
       always: [
-        { target: 'success', guard: 'testPassed' },
-        { target: 'handlingTestFailure', guard: 'canRetry' },
-        { target: 'failure', guard: 'cannotRetry' },
+        {target: 'success', guard: 'testPassed'},
+        {target: 'handlingTestFailure', guard: 'canRetry'},
+        {target: 'failure', guard: 'cannotRetry'},
       ],
     },
     handlingTestFailure: {
       invoke: {
         src: 'handleTestFailureFlow',
-        input: ({ context }) => context,
+        input: ({context}) => context,
         onDone: {
           target: 'checkingTestResult',
-          actions: assign(({ context, event }) => ({
+          actions: assign(({context, event}) => ({
             testResult: event.output,
             retries: context.retries + 1,
           })),
@@ -134,8 +134,8 @@ export const testMakerMachine = setup({
     },
     failure: {
       type: 'final',
-      output: ({ context }) => context.error,
-      entry: ({ context }) => {
+      output: ({context}) => context.error,
+      entry: ({context}) => {
         if (context.error instanceof Error) {
           console.error('Test creation and execution failed.', context.error.message);
         } else {

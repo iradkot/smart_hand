@@ -3,4 +3,4 @@
 
 export { initialPrompt } from './initialPrompt'
 
-export { errorHandlingPrompt } from './errorHandlingPrompt';
+export { errorHandlingPrompt } from './errorHandlingPrompt'

@@ -100,7 +100,7 @@ export const createInitialTestMachine = setup({
         }),
         onDone: {
           target: 'writingFile',
-          actions: assign(({ event }) => {
+          actions: assign(({event}) => {
             if (event.type !== 'xstate.done.actor.generateTestFile') {
               return {};
             }
