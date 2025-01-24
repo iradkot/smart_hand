@@ -20,7 +20,8 @@
     "build:linux": "electron-vite build && electron-builder --linux --config",
     "test": "jest",
     "test:watch": "jest --watch",
-    "type-check-specific-node-file": "node -r tsconfig-paths/register ./node_modules/typescript/bin/tsc C:/Users/irad1/projects/smart_hand/src/main/smartTasks/smartUnitTestMaker/stateMachine/testMakerMachine.ts --noEmit --skipLibCheck --target ES6 --module commonjs"  },
+    "type-check-specific-node-file": "tsc C:/Users/irad1/projects/smart_hand/src/main/smartTasks/smartUnitTestMaker/stateMachine/testMakerMachine.ts --noEmit --skipLibCheck --target ES6 --module commonjs"
+  },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
