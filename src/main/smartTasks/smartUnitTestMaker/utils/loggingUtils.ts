@@ -1,8 +1,9 @@
 // utils/loggingUtils.ts
 
+export function logInfo(msg: string) {
+  console.log(`[INFO] ${msg}`);
+}
 
-export const logInfo = (message: string) => {
-  console.log(`[INFO]: ${message}`)
-  // Optionally send to external logging service
-  // axios.post('https://logging.service/logs', { level: 'info', message });
+export function logError(msg: string) {
+  console.log(`[ERROR] ${msg}`);
 }

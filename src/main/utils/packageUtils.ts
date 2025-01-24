@@ -1,7 +1,7 @@
 // src/main/utils/packageUtils.ts
 
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Recursively searches for package.json starting from the given directory and moving up the directory tree.
@@ -41,6 +41,7 @@ export function detectPackageManager(projectPath: string): 'yarn' | 'npm' {
     return 'npm';
   } else {
     // Default to npm if no lockfile is found
+    console.log('No lockfile found. Defaulting to npm.');
     return 'npm';
   }
 }
