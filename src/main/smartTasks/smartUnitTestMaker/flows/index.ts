@@ -1,3 +1,7 @@
-export { analyzeProjectFlow } from './analyzeProjectFlow'
-export { prepareTestContextFlow } from './prepareTestContextFlow'
-export { handleTestFailureFlow } from './handleTestFailureFlow'
+// src/main/smartTasks/smartUnitTestMaker/flows/index.ts
+
+export * from './fileAnalysisFlow';
+export * from './handleTestFailureFlow';
+export * from './llmClassificationFlow';
+export * from './testExecutionFlow';
+export * from './testGenerationFlow';

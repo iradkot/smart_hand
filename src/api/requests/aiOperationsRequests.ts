@@ -80,6 +80,30 @@ export const analyzePackageJson = async (sessionId: string, packageJson?: string
   } catch (error) {
     const errorMsg = handleError(error, 'analyzePackageJson');
     throw new Error(errorMsg);
-
   }
 };
+
+interface ClassificationResponse {
+  fileType?: string;
+  mocksNeeded?: string[];
+}
+
+export async function classifyFile(
+  sessionId: string,
+  fileContent: string,
+  instructions?: string
+): Promise<ClassificationResponse> {
+  try {
+    const response = await smartHandServer.post('/classifyFile', {
+      sessionId,
+      fileContent,
+      instructions,
+    });
+    return response.data.content;
+    // => { fileType: "something", mocksNeeded: [ "...", ... ] }
+  } catch (error) {
+    const msg = handleError(error, 'classifyFile');
+    throw new Error(msg);
+  }
+}
+
