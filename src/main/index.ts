@@ -27,7 +27,8 @@ import { smartUnitTestMaker } from 'src/main/smartTasks/smartUnitTestMaker'
 
 import { inspector } from './inspector'
 import { findProjectRootInContentTree } from 'src/main/utils/findProjectRootInContentTree'
-import { parseTsconfig } from 'src/main/utils/parseTsconfig' // Import the singleton inspector
+import { parseTsconfig } from 'src/main/utils/parseTsconfig'
+import { setMainWindow } from 'src/main/mainWindow' // Import the singleton inspector
 
 // Start the inspector
 inspector.start?.()
@@ -113,8 +114,10 @@ function loadWindow(mainWindow: BrowserWindow) {
   }
 }
 
+
 function createAndLoadMainWindow() {
   const mainWindow = createMainWindow()
+  setMainWindow(mainWindow)
   loadWindow(mainWindow)
   return mainWindow
 }

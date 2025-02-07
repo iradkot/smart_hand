@@ -1,7 +1,9 @@
-// index.ts
+// src/main/smartTasks/smartUnitTestMaker/index.ts
 
-import { createActor } from 'xstate';
-import { testMakerMachine } from './stateMachine/testMakerMachine';
+import { createActor } from 'xstate'
+import { testMakerMachine } from './stateMachine/machine'
+import { getMainWindow } from 'src/main/mainWindow'
+import { XSTATE_UPDATE_INVOKE } from 'src/invokers/constants'
 
 interface SmartUnitTestMakerParams {
   sessionId: string;
@@ -17,47 +19,42 @@ interface SmartUnitTestMakerParams {
  */
 export async function smartUnitTestMaker(params: SmartUnitTestMakerParams): Promise<void> {
   return new Promise((resolve, reject) => {
-    const actor = createActor(
-      testMakerMachine,
-      {
-        input: {
-          sessionId: params.sessionId,
-          directoryPath: params.directoryPath,
-          fileName: params.fileName,
-          fileContent: params.fileContent,
-          packageManager: params.packageManager,
-          maxRetries: params.maxRetries ?? 2,
-        },
-      }
-    );
+    const actor = createActor(testMakerMachine, {
+      input: {
+        sessionId: params.sessionId,
+        directoryPath: params.directoryPath,
+        fileName: params.fileName,
+        fileContent: params.fileContent,
+        packageManager: params.packageManager,
+        maxRetries: params.maxRetries ?? 2,
+      },
+    })
 
     actor.subscribe({
       next: (snapshot) => {
-        // The machine transitions
+        const win = getMainWindow()
+        if (win && !win.isDestroyed()) {
+          win.webContents.send(XSTATE_UPDATE_INVOKE, JSON.stringify(snapshot))
+        }
         if (snapshot.status === 'done') {
-          // If final state is 'success', we resolve. If it's 'failure', we reject.
           if (snapshot.value === 'success') {
-            resolve();
+            resolve()
           } else {
-            // If it's 'failure', check if there's an error
-            // The machine logs the error, but let's also throw
-            reject(new Error('State machine ended in failure'));
+            reject(snapshot.context.error ?? new Error('State machine ended in failure'))
           }
-          actor.stop();
+          actor.stop()
         }
       },
       error: (err) => {
-        console.error('XState encountered an error:', err);
-        reject(err);
-        actor.stop();
+        console.error('XState encountered an error:', err)
+        reject(err)
+        actor.stop()
       },
       complete: () => {
-        console.log('XState actor completed');
-        // Usually won't happen if we have a final state
+        console.log('XState actor completed')
       },
-    });
+    })
 
-    // Start!
-    actor.start();
-  });
+    actor.start()
+  })
 }

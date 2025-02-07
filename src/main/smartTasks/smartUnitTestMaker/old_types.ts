@@ -39,19 +39,18 @@ export interface TestMakerContext {
   packageManager: string;
 
   // Results stored along the way:
-  analysis?: FileAnalysisResult;
-  classification?: LlmClassificationResult;
-  testGeneration?: TestGenerationResult;
-  testResult?: TestResult;
+  analysis: FileAnalysisResult | null;
+  classification: LlmClassificationResult | null;
+  testGeneration: TestGenerationResult | null;
+  testResult: TestResult | null;
 
   // Control how many times we can retry
   retries: number;
   maxRetries: number;
 
-  // Optional debugging or error-tracking
-  error?: unknown;
+  // Error tracking
+  error: unknown | null;
 }
-
 // types.ts (or wherever you define your types)
 
 export type TestMakerInput = {
