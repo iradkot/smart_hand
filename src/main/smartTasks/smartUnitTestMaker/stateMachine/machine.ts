@@ -5,6 +5,7 @@ import { testMakerStates } from './states';
 import { testMakerActors } from './actors';
 import { detectPackageManager } from '../../../utils/packageUtils';
 import { testMakerGuards } from './guards';
+import { validateMocks } from './states/validateMocks';
 import {
   TestMakerContext,
   TestMakerInput,
@@ -39,5 +40,39 @@ export const testMakerMachine = setup({
     error: null,
     mocks: [], // Initialize empty mocks array
   }),
-  states: testMakerStates,
+  states: {
+    ...testMakerStates,
+    testGeneration: {
+      ...testMakerStates.testGeneration,
+      on: {
+        NEXT: 'validateMocks'
+      }
+    },
+    validateMocks: {
+      invoke: {
+        id: 'validateMocks',
+        src: validateMocks,
+        onDone: {
+          target: 'executeTests'
+        },
+        onError: {
+          target: 'failure',
+          // ...existing error handling...
+        }
+      }
+    },
+    executeTests: {
+      ...testMakerStates.executeTests,
+      on: {
+        SUCCESS: 'success',
+        FAILURE: 'failure'
+      }
+    },
+    success: {
+      ...testMakerStates.success
+    },
+    failure: {
+      ...testMakerStates.failure
+    }
+  }
 });
