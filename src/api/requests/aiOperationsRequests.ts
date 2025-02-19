@@ -107,3 +107,19 @@ export async function classifyFile(
   }
 }
 
+export const getTestSummary = async (
+  sessionId: string, 
+  context: any
+): Promise<APIResponse<string>> => {
+  try {
+    const response = await smartHandServer.post('/testSummary', {
+      sessionId,
+      context,
+    });
+    return response.data;
+  } catch (error) {
+    const errorMsg = handleError(error, 'getTestSummary');
+    throw new Error(errorMsg);
+  }
+};
+

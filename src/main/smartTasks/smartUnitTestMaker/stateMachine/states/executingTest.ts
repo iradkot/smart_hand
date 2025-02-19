@@ -9,6 +9,8 @@ export const executingTest = {
       packageManager: context.packageManager,
       directoryPath: context.directoryPath,
       testFileName: context.testGeneration!.testFileName,
+      mockPaths: context.testGeneration?.generatedMocks?.map(mock => mock.mockPath) || [],
+      sessionId: context.sessionId // Add sessionId for integrated AI assistance
     }),
     onDone: {
       target: States.checkingIfFailed,

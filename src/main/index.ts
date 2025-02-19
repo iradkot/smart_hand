@@ -156,9 +156,9 @@ ipcMain.handle(CREATE_AND_RUN_TEST_INVOKE, async (_: IpcMainInvokeEvent, session
         directoryPath,
         fileContent,
         fileName,
-        packageJsonPath,
-        contentTree,
-        packageJsonContent,
+        packageManager: 'yarn',
+        // contentTree,
+        // packageJsonContent,
       })
     return { success: true }
   } catch (error) {

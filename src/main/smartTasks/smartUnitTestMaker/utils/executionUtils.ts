@@ -2,44 +2,92 @@
 
 import { exec } from 'child_process';
 import { TestResult } from '../types';
+import { generateTestFile } from 'src/api/requests/aiOperationsRequests';
 const stripAnsi = require('strip-ansi');
 import * as path from 'path';
 import { promises as fs } from 'fs';
 
+interface ExecutionContext {
+  complexity?: number;
+  hasAsyncOperations?: boolean;
+  sessionId?: string;
+  mockPaths?: string[];
+}
+
+const analyzeFailure = async (error: Error | string, context: ExecutionContext): Promise<TestResult> => {
+  const errorStr = error instanceof Error ? error.message : error;
+  let needsAIAssistance = false;
+  let complexFailure = false;
+
+  // Check if error is complex enough for AI
+  if (
+    context.complexity && context.complexity > 5 ||
+    context.hasAsyncOperations ||
+    errorStr.includes('async') ||
+    errorStr.includes('timeout') ||
+    errorStr.includes('undefined') ||
+    errorStr.toLowerCase().includes('expect')
+  ) {
+    needsAIAssistance = true;
+    complexFailure = true;
+  }
+
+  // If we have a session ID and need AI, get suggestions
+  if (needsAIAssistance && context.sessionId) {
+    const prompt = `Analyze this test failure and provide specific fixes:
+Error: ${errorStr}
+
+Key points to consider:
+- Is this an async timing issue?
+- Are all mocks properly set up?
+- Are there any undefined values?
+- Is the test expectation correct?
+
+Please provide specific suggestions for fixing the test.`;
+
+    const aiResponse = await generateTestFile(context.sessionId, 'error-analysis', prompt);
+    return {
+      success: false,
+      errorMessage: errorStr,
+      needsAIAssistance,
+      complexFailure,
+      suggestedFixes: [aiResponse.content.testCode]
+    };
+  }
+
+  return {
+    success: false,
+    errorMessage: errorStr,
+    needsAIAssistance,
+    complexFailure
+  };
+};
+
 /**
- * Actually run the test.
- * We'll assume the user has some test runner set up (Jest, etc.).
- * If a test fails, we parse the output or read a results file, etc.
+ * Executes a test with integrated local and AI assistance
  */
-export function executeTest(
+export async function executeTest(
   packageManager: string,
   directoryPath: string,
-  testFileName: string
+  testFileName: string,
+  context: ExecutionContext = {}
 ): Promise<TestResult> {
   return new Promise((resolve) => {
     const command = buildTestCommand(packageManager, testFileName);
-    exec(command, { cwd: directoryPath }, async (error, _stdout, stderr) => {
+    
+    exec(command, { cwd: directoryPath }, async (error, stdout, stderr) => {
       if (error) {
-        // Try reading jest-results.json if you have that set up
-        const resultsPath = path.join(directoryPath, 'jest-results.json');
         try {
-          const resultsContent = await fs.readFile(resultsPath, 'utf-8');
+          // Try reading jest-results.json if available
+          const resultsPath = path.join(directoryPath, 'jest-results.json');
+          const resultsContent = await fs.readFile(resultsPath, 'utf8');
           const results = JSON.parse(resultsContent);
 
-          // You can parse the results here for more detail
-          const errorMessage = JSON.stringify(results, null, 2);
-          resolve({
-            success: false,
-            errorMessage,
-            details: results,
-          });
+          // Analyze the failure with context
+          resolve(await analyzeFailure(results, context));
         } catch (readError) {
-          // fallback: parse stderr
-          const cleanedStderr = stripAnsi(stderr);
-          resolve({
-            success: false,
-            errorMessage: cleanedStderr,
-          });
+          // Handle raw error output
+          resolve(await analyzeFailure(stderr || error.message, context));
         }
       } else {
         resolve({ success: true });
@@ -49,10 +97,6 @@ export function executeTest(
 }
 
 function buildTestCommand(packageManager: string, testFileName: string): string {
-  // Adjust as needed for your test runner
   const testCommand = packageManager === 'yarn' ? 'yarn test' : 'npm test';
-  // If using Jest, we could do:
-  // return `${testCommand} -- ${testFileName} --json --outputFile=jest-results.json`;
-  // But for general usage, let's keep it simple:
-  return `${testCommand} -- ${testFileName}`;
+  return `${testCommand} -- ${testFileName} --json --outputFile=jest-results.json`;
 }

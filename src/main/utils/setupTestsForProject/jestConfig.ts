@@ -14,9 +14,13 @@ module.exports = {
   transform: {
     '^.+\\\\.(ts|tsx)$': 'ts-jest'
   },
-    moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/src/$1' // Maps absolute imports like 'src/renderer/...' to their actual paths
-  }
+  moduleNameMapper: {
+    '^src/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$': '<rootDir>/src/$1'
+  },
+  moduleDirectories: ['node_modules', '__mocks__'],
+  clearMocks: true,
+  restoreMocks: true
 };
 `.trim();
 
@@ -27,6 +31,12 @@ module.exports = {
 export const createJestSetup = async (directoryPath: string): Promise<void> => {
   const jestSetup = `
 import '@testing-library/jest-dom';
+
+// Reset all mocks before each test
+beforeEach(() => {
+  jest.resetModules();
+  jest.clearAllMocks();
+});
 `.trim();
 
   fs.writeFileSync(path.join(directoryPath, 'jest-setup.ts'), jestSetup);

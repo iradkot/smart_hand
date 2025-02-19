@@ -8,8 +8,8 @@ import { XSTATE_UPDATE_INVOKE } from 'src/invokers/constants'
 interface SmartUnitTestMakerParams {
   sessionId: string;
   directoryPath: string;
-  fileName: string;
   fileContent: string;
+  fileName: string;
   packageManager: string;
   maxRetries?: number;
 }

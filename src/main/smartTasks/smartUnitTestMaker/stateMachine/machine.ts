@@ -37,6 +37,7 @@ export const testMakerMachine = setup({
     testGeneration: null,
     testResult: null,
     error: null,
+    mocks: [], // Initialize empty mocks array
   }),
   states: testMakerStates,
 });

@@ -5,6 +5,7 @@ import {
   LlmClassificationResult,
   TestGenerationResult,
   TestResult,
+  MockDefinition
 } from './flows';
 
 /**
@@ -23,6 +24,7 @@ export interface TestMakerContext {
   classification: LlmClassificationResult | null;
   testGeneration: TestGenerationResult | null;
   testResult: TestResult | null;
+  mocks: MockDefinition[]; // Add tracking for all mocks
 
   // Control how many times we can retry
   retries: number;
